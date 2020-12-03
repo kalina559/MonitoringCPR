@@ -51,8 +51,8 @@ Mat R2 = Mat(Size(3, 3), CV_64FC1);
 
 //paths to two series of images
 
-VideoCapture sequence1("C:/Users/Kalin/Desktop/in¿ynierka/kalibracja/zdjecia/zdjeciaMarkerow/seria2/camera1/video1.avi");
-VideoCapture sequence2("C:/Users/Kalin/Desktop/in¿ynierka/kalibracja/zdjecia/zdjeciaMarkerow/seria2/camera2/video2.avi");
+VideoCapture sequence1("../MonitoringCPR/images/movement/seria2/camera1/video1.avi");
+VideoCapture sequence2("../MonitoringCPR/images/movement/seria2/camera2/video2.avi");
 
 cv::Ptr<cv::MultiTracker> multiTracker1;
 cv::Ptr<cv::MultiTracker> multiTracker2;
@@ -62,7 +62,6 @@ std::vector<cv::Rect> bboxes1, bboxes2;
 
 int firstFrame;
 int _scale = 1;
-
 extern "C" int __declspec(dllexport) __stdcall Init(int& outCameraWidth, int& outCameraHeight)
 {
 	CameraCalibration::loadMatrix("matrices/singleCamCalibration/firstCamMatrix", 3, 3, firstCamMatrix);

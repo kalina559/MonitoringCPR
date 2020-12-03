@@ -18,9 +18,6 @@
     <ClCompile Include="CameraCalibration.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CoordinatesAcquisition.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
