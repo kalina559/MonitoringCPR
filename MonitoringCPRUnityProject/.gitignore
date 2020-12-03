@@ -74,4 +74,5 @@ crashlytics-build.properties
 opencv_world411.dll
 opencv_world411d.dll
 ExportToUnity.dll
+opencv_videoio_ffmpeg411_64.dll
 bin/
