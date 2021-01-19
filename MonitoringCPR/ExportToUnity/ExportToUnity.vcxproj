@@ -142,12 +142,16 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ImgProcUtility.cpp" />
     <ClCompile Include="InteropFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MonitoringCPR\MonitoringCPR.vcxproj">
       <Project>{742b6e53-7aaa-4156-ac87-5d9c14b040e1}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ImgProcUtility.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

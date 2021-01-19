@@ -13,21 +13,25 @@
 
 using namespace std;
 using namespace cv;
-class CameraCalibration
+namespace CameraCalibration
 {
-public:
-	static void loadPhotos(string, vector<Mat>&);
+	void loadPhotos(string path, vector<Mat>& images);
 
-	static void realLifeCirclePositions(Size, float, vector<Point3f>&);
+    void realLifeCirclePositions(Size boardSize, float distance, vector<Point3f>& circleCenters);
 
-	static void getCirclePositions(vector<Mat>, vector<vector<Point2f>>&, Size, bool = false);
+	void getCirclePositions(vector<Mat> images, vector<vector<Point2f>>& centers, Size arrayOfCirclesSize);
 
-	static void cameraCalibration(vector<Mat>, Size, float, Mat&, Mat&);
+	void singleCameraCalibration(vector<Mat> calibrationImages, Size boardSize, float distanceBetweenCircles, Mat& cameraMatrix, Mat& distCoefficients);
 
-	static bool saveMatrix(string, Mat);
+	bool saveMatrix(string name, Mat mat);
 
-	static bool loadMatrix(string, int, int, Mat&);
+	bool loadMatrix(string name, int cols, int rows, Mat& outMatrix);
 
-	static void stereoCalibration(string, string, Mat, Mat, Mat, Mat, Size, Mat&, Mat&, Mat&, Mat&, float);
+	void stereoCalibration(vector<Mat> images1, vector<Mat> images2, Mat firstCamMatrix, Mat secondCamMatrix, Mat firstCamCoeffs,
+		Mat secondCamCoeffs, Size boardSize, Mat& R, Mat& T, Mat& E, Mat& F, float distanceBetweenCircles);
 
+	void getSingleCamerasCoeffs(vector<Mat> firstCamImgs, vector<Mat> secondCamImgs, Size boardSize, float distanceBetweenCircles,
+		Mat& firstCamMatrix, Mat& secondCamMatrix, Mat& firstCamCoeffs, Mat& secondCamCoeffs);
+	
+	void saveRectifiedMatrices(cv::Mat R1, cv::Mat R2, cv::Mat P1, cv::Mat P2, cv::Mat Q);
 };

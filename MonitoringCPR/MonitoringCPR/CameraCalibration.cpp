@@ -28,21 +28,16 @@ void CameraCalibration::realLifeCirclePositions(Size boardSize, float distance, 
 	}
 }
 
-void CameraCalibration::getCirclePositions(vector<Mat> images, vector<vector<Point2f>>& centers, Size arrayOfCirclesSize, bool showResults)
+void CameraCalibration::getCirclePositions(vector<Mat> images, vector<vector<Point2f>>& centers, Size arrayOfCirclesSize)
 {
 	for (size_t i = 0; i < images.size(); ++i) {
 		bool patternFound = findCirclesGrid(images[i], arrayOfCirclesSize, centers[i], CALIB_CB_SYMMETRIC_GRID);
-		drawChessboardCorners(images[i], arrayOfCirclesSize, Mat(centers[i]), patternFound);
-
-		if (showResults == true)
-		{
-			imshow("e", images[i]);
-			waitKey(0);
-		}
+		//just for debug purposes
+		//drawChessboardCorners(images[i], arrayOfCirclesSize, Mat(centers[i]), patternFound);
 	}
 }
 
-void CameraCalibration::cameraCalibration(vector<Mat> calibrationImages, Size boardSize, float distanceBetweenCircles, Mat& cameraMatrix, Mat& distCoefficients)
+void CameraCalibration::singleCameraCalibration(vector<Mat> calibrationImages, Size boardSize, float distanceBetweenCircles, Mat& cameraMatrix, Mat& distCoefficients)
 {
 	vector<vector<Point3f>> worldSpaceCircleCenters(1);
 	realLifeCirclePositions(boardSize, distanceBetweenCircles, worldSpaceCircleCenters[0]);
@@ -50,7 +45,6 @@ void CameraCalibration::cameraCalibration(vector<Mat> calibrationImages, Size bo
 
 	vector<Mat> rVectors, tVectors;
 	distCoefficients = Mat::zeros(8, 1, CV_64F);
-
 
 	vector<vector<Point2f> > centers(calibrationImages.size());
 
@@ -99,19 +93,13 @@ bool CameraCalibration::loadMatrix(string name, int cols, int rows, Mat& outMatr
 	return false;
 }
 
-void CameraCalibration::stereoCalibration(string firstPath, string secondPath, Mat firstCamMatrix, Mat secondCamMatrix, Mat firstCamCoeffs,
+void CameraCalibration::stereoCalibration(vector<Mat> images1, vector<Mat> images2, Mat firstCamMatrix, Mat secondCamMatrix, Mat firstCamCoeffs,
 	Mat secondCamCoeffs, Size boardSize, Mat& R, Mat& T, Mat& E, Mat& F, float distanceBetweenCircles)
 {
-	vector<Mat> images1;
-	CameraCalibration::loadPhotos(firstPath, images1);
-	vector<Mat> images2;
-	CameraCalibration::loadPhotos(secondPath, images2);
-
 	vector<vector<Point2f> > centers1(images1.size());
 	CameraCalibration::getCirclePositions(images1, centers1, boardSize);
 	vector<vector<Point2f> > centers2(images2.size());
 	CameraCalibration::getCirclePositions(images2, centers2, boardSize);
-
 	vector<vector<Point3f>> worldSpaceCircleCenters(1);
 	CameraCalibration::realLifeCirclePositions(boardSize, distanceBetweenCircles, worldSpaceCircleCenters[0]);
 	worldSpaceCircleCenters.resize(images1.size(), worldSpaceCircleCenters[0]);
@@ -119,10 +107,29 @@ void CameraCalibration::stereoCalibration(string firstPath, string secondPath, M
 	stereoCalibrate(worldSpaceCircleCenters, centers1, centers2, firstCamMatrix, firstCamCoeffs, secondCamMatrix,
 		secondCamCoeffs, Size(1224, 1024), R, T, E, F, CALIB_FIX_INTRINSIC, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, 1e-6));
 	//std::cout << "after stereo" << std::endl;
-	CameraCalibration::saveMatrix("matrices/stereoCalibration/R", R);
-	CameraCalibration::saveMatrix("matrices/stereoCalibration/T", T);
-	CameraCalibration::saveMatrix("matrices/stereoCalibration/E", E);
-	CameraCalibration::saveMatrix("matrices/stereoCalibration/F", F);
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/R", R);
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/T", T);
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/E", E);
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/F", F);
+}
 
+void CameraCalibration::getSingleCamerasCoeffs(vector<Mat> firstCamImgs, vector<Mat> secondCamImgs, Size boardSize, float distanceBetweenCircles, 
+	Mat& firstCamMatrix, Mat& secondCamMatrix, Mat& firstCamCoeffs, Mat& secondCamCoeffs)
+{
+	CameraCalibration::singleCameraCalibration(firstCamImgs, boardSize, distanceBetweenCircles, firstCamMatrix, firstCamCoeffs);
+	CameraCalibration::singleCameraCalibration(secondCamImgs, boardSize, distanceBetweenCircles, secondCamMatrix, secondCamCoeffs);
+	//saving matrices to Unity Project directory
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/singleCamCalibration/firstCamMatrix", firstCamMatrix);
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/singleCamCalibration/secondCamMatrix", secondCamMatrix);
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/singleCamCalibration/firstCamCoeffs", firstCamCoeffs);
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/singleCamCalibration/secondCamCoeffs", secondCamCoeffs);
+}
 
+void CameraCalibration::saveRectifiedMatrices(cv::Mat R1, cv::Mat R2, cv::Mat P1, cv::Mat P2, cv::Mat Q)
+{
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoRectifyResults/R1", R1);
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoRectifyResults/R2", R2);
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoRectifyResults/P1", P1);
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoRectifyResults/P2", P2);
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoRectifyResults/Q", Q);
 }
