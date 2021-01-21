@@ -38,7 +38,7 @@ public class OpenCVMarkerLocation : MonoBehaviour
         }
 
         CameraResolution = new Vector2(camWidth, camHeight);
-        _balls = new CvCoordinates[_maxBallsDetectCount];
+        _balls = new CvCoordinates[_maxBallsDetectCount]; //tworzymy bufor o podanej wielkości
         NormalizedBallsPositions = new List<Vector3>();
         OpenCVInterop.SetScale(DetectionDownScale);
         _ready = true;
@@ -74,7 +74,8 @@ public class OpenCVMarkerLocation : MonoBehaviour
 
         }
 
-        if (Input.GetKey(KeyCode.Escape) == true)        // jeśli wciśniemy 'k' to wychodzimy z apki
+        Debug.Log("update");
+        if (Input.GetKey(KeyCode.K) == true)        // jeśli wciśniemy k to wychodzimy z apki
         {
             Debug.Log("wcisnieto escape");
             NormalizedBallsPositions.Clear();
