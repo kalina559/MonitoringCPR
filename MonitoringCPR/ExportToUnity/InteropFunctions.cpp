@@ -26,43 +26,30 @@
 using namespace std;
 using namespace cv;
 
-//declaring matrices that'll be loaded from text files
-
-Mat firstCamMatrix = Mat(Size(3, 3), CV_64FC1);
-Mat secondCamMatrix = Mat(Size(3, 3), CV_64FC1);
-Mat firstCamCoeffs = Mat(Size(1, 5), CV_64FC1);
-Mat secondCamCoeffs = Mat(Size(1, 5), CV_64FC1);
-Mat P1 = Mat(Size(4, 3), CV_64FC1);
-Mat P2 = Mat(Size(4, 3), CV_64FC1);
-Mat R1 = Mat(Size(3, 3), CV_64FC1);
-Mat R2 = Mat(Size(3, 3), CV_64FC1);
-
+Matrices matrices;
 //paths to two series of images
 
 VideoCapture firstSequence("../MonitoringCPR/images/movement/seria2/camera1/video1.avi");
 VideoCapture secondSequence("../MonitoringCPR/images/movement/seria2/camera2/video2.avi");
 
-cv::Ptr<cv::MultiTracker> firstMultiTracker;
-cv::Ptr<cv::MultiTracker> secondMultiTracker;
-
-std::vector<cv::Rect> firstROIs, secondROIs;
-
+pair<Ptr<MultiTracker>, Ptr<MultiTracker>> multiTrackers;
+StereoROISets ROIs;
 
 bool firstFrame;
 int _scale = 1;
 extern "C" int __declspec(dllexport) __stdcall Init(int& outCameraWidth, int& outCameraHeight)
 {
-	CameraCalibration::loadMatrix("matrices/singleCamCalibration/firstCamMatrix", 3, 3, firstCamMatrix);
-	CameraCalibration::loadMatrix("matrices/singleCamCalibration/secondCamMatrix", 3, 3, secondCamMatrix);
-	CameraCalibration::loadMatrix("matrices/singleCamCalibration/firstCamCoeffs", 5, 1, firstCamCoeffs);
-	CameraCalibration::loadMatrix("matrices/singleCamCalibration/secondCamCoeffs", 5, 1, secondCamCoeffs);
-	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/P1", 3, 4, P1);
-	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/P2", 3, 4, P2);
-	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/R1", 3, 3, R1);
-	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/R2", 3, 3, R2);
+	CameraCalibration::loadMatrix("matrices/singleCamCalibration/firstCamMatrix", 3, 3, matrices.firstCamMatrix);
+	CameraCalibration::loadMatrix("matrices/singleCamCalibration/secondCamMatrix", 3, 3, matrices.secondCamMatrix);
+	CameraCalibration::loadMatrix("matrices/singleCamCalibration/firstCamCoeffs", 5, 1, matrices.firstCamCoeffs);
+	CameraCalibration::loadMatrix("matrices/singleCamCalibration/secondCamCoeffs", 5, 1, matrices.secondCamCoeffs);
+	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/P1", 3, 4, matrices.P1);
+	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/P2", 3, 4, matrices.P2);
+	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/R1", 3, 3, matrices.R1);
+	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/R2", 3, 3, matrices.R2);
 
-	firstMultiTracker = cv::MultiTracker::create();
-	secondMultiTracker = cv::MultiTracker::create();
+	multiTrackers.first = cv::MultiTracker::create();
+	multiTrackers.second = cv::MultiTracker::create();
 
 	// Open the stream.
 
@@ -83,8 +70,7 @@ extern "C" int __declspec(dllexport) __stdcall Init(int& outCameraWidth, int& ou
 extern "C" void __declspec(dllexport) __stdcall  Close()
 {
 	firstSequence.release();
-	secondSequence.release();
-	
+	secondSequence.release();	
 }
 
 extern "C" void __declspec(dllexport) __stdcall SetScale(int scale)
@@ -92,44 +78,42 @@ extern "C" void __declspec(dllexport) __stdcall SetScale(int scale)
 	_scale = scale;
 }
 
-
 //TODO clean this shit
 using namespace ImgProcUtility;
 extern "C" void __declspec(dllexport) __stdcall Detect(Coordinates* outBalls, int maxOutBallsCount, int& outDetectedBallsCount)
 {
-	Mat firstCameraFrame, secondCameraFrame,  croppedImg1, croppedImg2,
-		threshImg1, threshImg2, croppedColor1, croppedColor2, gray1, gray2;
+	Mat firstCameraFrame, secondCameraFrame, croppedImg1, croppedImg2,
+		threshImg1, threshImg2, croppedColor1, croppedColor2;
 
 	vector<Vec3f> v3fCircles1, v3fCircles2;
 
 	firstSequence >> firstCameraFrame;
 	secondSequence >> secondCameraFrame;
-	StereoFrames frames = readFrames(firstSequence, secondSequence);
+	pair<Mat, Mat> frames = readFrames(firstSequence, secondSequence);
 
 	if (frames.first.empty() || frames.second.empty())
 	{
-		firstMultiTracker.release();
-		secondMultiTracker.release();
+		multiTrackers.first.release();
+		multiTrackers.second.release();
 		firstSequence.release();
 		secondSequence.release();
 		cv::destroyAllWindows();
 		return;
 	}
-	StereoFrames resizedFrames = resizeFrames(frames, 0.5);
-	selectMarkers(firstFrame, resizedFrames, firstROIs, secondROIs, firstMultiTracker, secondMultiTracker);
-
-	std::vector<cv::Vec2f> firstCamCoordinates2D(firstROIs.size()), secondCamCoordinates2D(secondROIs.size());
-
-	updateTrackers(firstMultiTracker, secondMultiTracker, resizedFrames.first, resizedFrames.second);
-	convertFramesToGray(resizedFrames.first, resizedFrames.second, gray1, gray2);
-
-	if (getMarkersCoordinates2D(gray1, gray2, firstROIs, secondROIs, firstMultiTracker, secondMultiTracker,
-		resizedFrames.first, resizedFrames.second, firstCamCoordinates2D, secondCamCoordinates2D) == firstROIs.size()) //jeœli znaleziona jest oczekiwana liczba wspó³rzêdnych
-	{		
-		Mat triangCoords = process2DCoordinates(firstCamCoordinates2D, secondCamCoordinates2D, firstCamMatrix, secondCamMatrix, firstCamCoeffs, secondCamCoeffs, R1, R2, P1, P2);
-		getMarkersCoordinates3D(triangCoords, outBalls, outDetectedBallsCount);
-		displayDistanceBetweenMarkers(resizedFrames.first, outBalls, 0, 1);
+	pair<Mat, Mat> resizedFrames = resizeFrames(frames, 0.5);
+	if (firstFrame == true)
+	{
+		ROIs = selectMarkers(resizedFrames, multiTrackers);
+		firstFrame = false;
 	}
+	updateTrackers(multiTrackers, resizedFrames);
+	pair<Mat, Mat> grayFrames = convertFramesToGray(resizedFrames);
+
+	StereoCoordinates2D coordinates2D = getMarkersCoordinates2D(grayFrames, multiTrackers, resizedFrames);	
+	Mat triangCoords = process2DCoordinates(coordinates2D, matrices);
+	getMarkersCoordinates3D(triangCoords, outBalls, outDetectedBallsCount);
+	displayDistanceBetweenMarkers(resizedFrames.first, outBalls, 0, 1);
+
 	imshow("frame camera 1", resizedFrames.first);
 	imshow("frame camera 2", resizedFrames.second);
 	waitKey(1);

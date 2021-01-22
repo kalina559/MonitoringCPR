@@ -1,131 +1,132 @@
 #include"ImgProcUtility.h"
 
-StereoFrames ImgProcUtility::readFrames(VideoCapture firstSequence, VideoCapture secondSequence)
+pair<Mat, Mat> ImgProcUtility::readFrames(VideoCapture firstSequence, VideoCapture secondSequence)
 {
-	StereoFrames frames;
+	pair<Mat, Mat> frames;
 	firstSequence >> frames.first;
 	secondSequence >> frames.second;
 	return frames;
 }
 
-StereoFrames ImgProcUtility::resizeFrames(StereoFrames frames, double scale)
+pair<Mat, Mat> ImgProcUtility::resizeFrames(pair<Mat, Mat> frames, double scale)
 {
-	StereoFrames resizedFrames;
+	pair<Mat, Mat> resizedFrames;
 	resize(frames.first, resizedFrames.first, Size(), 0.5, 0.5);
 	resize(frames.second, resizedFrames.second, Size(), 0.5, 0.5);
 	return resizedFrames;
 }
 
-void ImgProcUtility::selectMarkers(bool& condition, StereoFrames frames, std::vector<cv::Rect>& firstROIs, std::vector<cv::Rect>& secondROIs, cv::Ptr<cv::MultiTracker> firstMultiTracker, cv::Ptr<cv::MultiTracker> secondMultiTracker)
+StereoROISets ImgProcUtility::selectMarkers(pair<Mat, Mat> frames, pair<Ptr<MultiTracker>, Ptr<MultiTracker>> multitrackers)
 {	
-	if (condition == true)
+	StereoROISets ROISets;	
+	selectROIs("firstMultiTracker", frames.first, ROISets.first);
+	for (int i = 0; i < ROISets.first.size(); i++)
 	{
-		condition = false;
+		multitrackers.first->add(cv::TrackerCSRT::create(), frames.first, cv::Rect2d(ROISets.first[i]));
+	}
+	selectROIs("secondMultiTracker", frames.second, ROISets.second);
+	for (int i = 0; i < ROISets.second.size(); i++)
+	{
+		multitrackers.second->add(cv::TrackerCSRT::create(), frames.second, cv::Rect2d(ROISets.second[i]));
+	}
+	return ROISets;
+}
 
-		// ponizsze wrzucic do funkcji choose markers w utility
-		selectROIs("firstMultiTracker", frames.first, firstROIs);
+void ImgProcUtility::updateTrackers(pair<Ptr<MultiTracker>, Ptr<MultiTracker>> multitrackers, pair<Mat, Mat> frames)
+{
+	multitrackers.first->update(frames.first);
+	multitrackers.second->update(frames.second);
+}
 
-		for (int i = 0; i < firstROIs.size(); i++)
-		{
-			firstMultiTracker->add(cv::TrackerCSRT::create(), frames.first, cv::Rect2d(firstROIs[i]));
-		}
+pair<Mat, Mat> ImgProcUtility::convertFramesToGray(pair<Mat, Mat> colorFrames)
+{
+	pair<Mat, Mat> grayFrames;
+	cvtColor(colorFrames.first, grayFrames.first, COLOR_BGR2GRAY);
+	cvtColor(colorFrames.second, grayFrames.second, COLOR_BGR2GRAY);
+	return grayFrames;
+}
 
-		selectROIs("secondMultiTracker", frames.second, secondROIs);
+pair<Mat, Mat> ImgProcUtility::cutROIsFromFrames(pair<Mat, Mat> grayFrames, pair<Rect, Rect> ROI)
+{
+	pair<Mat, Mat> croppedFrames;
+	croppedFrames.first = grayFrames.first(ROI.first);          // cropping ROIs to see the analysed part of the image	
+	croppedFrames.second = grayFrames.second(ROI.second);  
+	return croppedFrames;
+}
 
-		for (int i = 0; i < secondROIs.size(); i++)
-		{
-			secondMultiTracker->add(cv::TrackerCSRT::create(), frames.second, cv::Rect2d(secondROIs[i]));
-		}
+pair<Mat, Mat> ImgProcUtility::thresholdImages(pair<Mat, Mat> frames)
+{
+	pair<Mat, Mat> threshFrames;
+	threshold(frames.first, threshFrames.first, 150, 255, THRESH_BINARY);
+	threshold(frames.second, threshFrames.second, 150, 255, THRESH_BINARY);
+	return threshFrames;
+}
+
+void ImgProcUtility::drawCirclesAroundMarkers(pair<Mat, Mat> frames, StereoCoordinates2D circleCoordinates, vector<pair<int, int>> radiuses)
+{
+	for (int i = 0; i < expectedNumberOfMarkers; ++i)
+	{
+		Point firstCenter(circleCoordinates.first[i](0), circleCoordinates.first[i](1));
+		Point secondCenter(circleCoordinates.second[i](0), circleCoordinates.second[i](1));
+		circle(frames.first, firstCenter, radiuses[i].first, cv::Scalar(0, 0, 255));
+		circle(frames.second, secondCenter, radiuses[i].second, cv::Scalar(0, 0, 255));
 	}
 }
 
-void ImgProcUtility::updateTrackers(cv::Ptr<cv::MultiTracker> firstMultiTracker, cv::Ptr<cv::MultiTracker> secondMultiTracker, Mat firstCamFrame, Mat secondCamFrame)
+void ImgProcUtility::drawRectAroundROI(pair<Mat, Mat> frames, pair<Rect, Rect> trackedAreas)
 {
-	firstMultiTracker->update(firstCamFrame);
-	secondMultiTracker->update(secondCamFrame);
+	rectangle(frames.first, trackedAreas.first, cv::Scalar(255, 0, 0), 2, 1);
+	rectangle(frames.second, trackedAreas.second, cv::Scalar(255, 0, 0), 2, 1);
 }
 
-void ImgProcUtility::convertFramesToGray(Mat firstCamFrame, Mat secondCamFrame, Mat& firstCamGray, Mat& secondCamGray)
+void ImgProcUtility::findCirclesInROIs(pair<vector<Vec3f>, vector<Vec3f>>& circles, pair<Mat, Mat> frames)
 {
-	cvtColor(firstCamFrame, firstCamGray, COLOR_BGR2GRAY);
-	cvtColor(secondCamFrame, secondCamGray, COLOR_BGR2GRAY);
+	cv::HoughCircles(frames.first, circles.first, cv::HOUGH_GRADIENT, 2, frames.first.rows, 150, 10);
+	cv::HoughCircles(frames.second, circles.second, cv::HOUGH_GRADIENT, 2, frames.second.rows, 150, 10);          //do utility
 }
 
-void ImgProcUtility::cutROIsFromFrames(Mat& croppedImg1, Mat& croppedImg2, Mat gray1, Mat gray2, Rect2d firstROI, Rect2d secondROI)
+StereoCoordinates2D ImgProcUtility::getMarkersCoordinates2D(pair<Mat, Mat> grayFrames, pair<Ptr<MultiTracker>, Ptr<MultiTracker>> multitrackers, pair<Mat, Mat> frames)
 {
-	croppedImg1 = gray1(firstROI);          // cropping ROIs to see the analysed part of the image	
-	croppedImg2 = gray2(secondROI);  
-}
-
-void ImgProcUtility::thresholdImages(Mat& threshImg1, Mat& threshImg2, Mat croppedImg1, Mat croppedImg2, double thresh, double maxval, int type)
-{
-	threshold(croppedImg1, threshImg1, thresh, maxval, type);
-	threshold(croppedImg2, threshImg2, thresh, maxval, type);
-}
-
-void ImgProcUtility::drawCirclesAroundMarkers(Mat& firstCamFrame, Mat& secondCamFrame, Point firstCenter, Point secondCenter, int firstRadius, int secondRadius, Scalar color)
-{
-	circle(firstCamFrame, firstCenter, firstRadius, color);
-	circle(secondCamFrame, secondCenter, secondRadius, color);
-}
-
-void ImgProcUtility::drawRectAroundROI(Mat& firstCamFrame, Mat& secondCamFrame, Rect firstCamTrackedArea, Rect secondCamTrackedArea, Scalar color, int thickness, int linetype)
-{
-	rectangle(firstCamFrame, firstCamTrackedArea, color, thickness, linetype);
-	rectangle(secondCamFrame, secondCamTrackedArea, color, thickness, linetype);
-}
-
-void ImgProcUtility::findCirclesInROIs(vector<Vec3f>& firstCamCircles, vector<Vec3f>& secondCamCircles, Mat threshImg1, Mat threshImg2)
-{
-	cv::HoughCircles(threshImg1, firstCamCircles, cv::HOUGH_GRADIENT, 2, threshImg1.rows, 150, 10);
-	cv::HoughCircles(threshImg2, secondCamCircles, cv::HOUGH_GRADIENT, 2, threshImg2.rows, 150, 10);          //do utility
-}
-
-int ImgProcUtility::getMarkersCoordinates2D(Mat gray1, Mat gray2, std::vector<cv::Rect> firstROIs, std::vector<cv::Rect> secondROIs, cv::Ptr<cv::MultiTracker> firstMultiTracker, 
-	cv::Ptr<cv::MultiTracker> secondMultiTracker, Mat& firstCamFrame, Mat& secondCamFrame, std::vector<cv::Vec2f>& firstCamCoordinates2D, std::vector<cv::Vec2f>& secondCamCoordinates2D)
-{
-	Mat croppedImg1, croppedImg2, threshImg1, threshImg2;
-	vector<Vec3f> v3fCircles1, v3fCircles2;
+	pair<vector<Vec3f>, vector<Vec3f>> v3fCircles;
+	vector<pair<int, int>> radiuses = vector<pair<int, int>>(expectedNumberOfMarkers);
+	StereoCoordinates2D coordinates2D;
 	int detectedMarkers = 0;
 
-	for (unsigned int i = 0; i < firstROIs.size(); ++i)
+	for (unsigned int i = 0; i < expectedNumberOfMarkers; ++i)
 	{
-		ImgProcUtility::cutROIsFromFrames(croppedImg1, croppedImg2, gray1, gray2, firstMultiTracker->getObjects()[i], secondMultiTracker->getObjects()[i]);
-		ImgProcUtility::thresholdImages(threshImg1, threshImg2, croppedImg1, croppedImg2, 150, 255, THRESH_BINARY);
+		pair<Rect, Rect> ROI(multitrackers.first->getObjects()[i], multitrackers.second->getObjects()[i]);
+		pair<Mat, Mat> croppedFrames = ImgProcUtility::cutROIsFromFrames(grayFrames, ROI);
+		pair<Mat, Mat> threshFrames = ImgProcUtility::thresholdImages(croppedFrames);
 	//stuff above has the biggest effect on fps
-		ImgProcUtility::findCirclesInROIs(v3fCircles1, v3fCircles2, threshImg1, threshImg2);
+		ImgProcUtility::findCirclesInROIs(v3fCircles, croppedFrames);
 
-		if (v3fCircles1.size() == 1 && v3fCircles2.size() == 1)       //only one circle should be found in a single ROI, no effect on fps
+		if (v3fCircles.first.size() == 1 && v3fCircles.second.size() == 1)       //only one circle should be found in a single ROI, no effect on fps
 		{
-			ImgProcUtility::drawCirclesAroundMarkers(firstCamFrame, secondCamFrame,
-				Point(v3fCircles1[0](0) + firstMultiTracker->getObjects()[i].x, v3fCircles1[0](1) + firstMultiTracker->getObjects()[i].y),
-				Point(v3fCircles2[0](0) + secondMultiTracker->getObjects()[i].x, v3fCircles2[0](1) + secondMultiTracker->getObjects()[i].y),
-				v3fCircles1[0](2), v3fCircles2[0](2), cv::Scalar(0, 0, 255));
+			coordinates2D.first[i](0) = v3fCircles.first[0](0) + multitrackers.first->getObjects()[i].x;
+			coordinates2D.first[i](1) = v3fCircles.first[0](1) + multitrackers.first->getObjects()[i].y;
+			coordinates2D.second[i](0) = v3fCircles.second[0](0) + multitrackers.second->getObjects()[i].x;
+			coordinates2D.second[i](1) = v3fCircles.second[0](1) + multitrackers.second->getObjects()[i].y;
+			radiuses[i].first = v3fCircles.first[0](2);
+			radiuses[i].second = v3fCircles.second[0](2);			
 
-			firstCamCoordinates2D[i](0) = v3fCircles1[0](0) + firstMultiTracker->getObjects()[i].x;
-			firstCamCoordinates2D[i](1) = v3fCircles1[0](1) + firstMultiTracker->getObjects()[i].y;
-			secondCamCoordinates2D[i](0) = v3fCircles2[0](0) + secondMultiTracker->getObjects()[i].x;
-			secondCamCoordinates2D[i](1) = v3fCircles2[0](1) + secondMultiTracker->getObjects()[i].y;
 			++detectedMarkers;
 		}
-		ImgProcUtility::drawRectAroundROI(firstCamFrame, secondCamFrame, firstMultiTracker->getObjects()[i], secondMultiTracker->getObjects()[i], cv::Scalar(255, 0, 0), 2, 1);
+		ImgProcUtility::drawCirclesAroundMarkers(frames, coordinates2D, radiuses);
+		ImgProcUtility::drawRectAroundROI(frames, pair<Rect, Rect>(multitrackers.first->getObjects()[i], multitrackers.second->getObjects()[i]));
 	}
-	return detectedMarkers;
+	return coordinates2D;
 }
 
-Mat ImgProcUtility::process2DCoordinates(std::vector<cv::Vec2f> firstCamCoordinates2D, std::vector<cv::Vec2f> secondCamCoordinates2D, Mat firstCamMatrix, Mat secondCamMatrix,
-		Mat firstCamCoeffs, Mat secondCamCoeffs, Mat R1, Mat R2, Mat P1, Mat P2)
+Mat ImgProcUtility::process2DCoordinates(StereoCoordinates2D coordinates2D, Matrices& matrices)
 {
-	Mat distCoords1 = Mat(Size(2, firstCamCoordinates2D.size()), CV_64FC1);      		//declaring distorded coordinates
-	Mat distCoords2 = Mat(Size(2, secondCamCoordinates2D.size()), CV_64FC1);
-	ImgProcUtility::populateMatriceFromVector(firstCamCoordinates2D, secondCamCoordinates2D, distCoords1, distCoords2);
+	pair<Mat, Mat> distCoords = ImgProcUtility::populateMatricesFromVectors(coordinates2D);
 
 	vector<Vec2d> undistCoords1, undistCoords2;
-	undistortPoints(distCoords1, undistCoords1, firstCamMatrix, firstCamCoeffs, R1, P1);         //undistorting the coordinates
-	undistortPoints(distCoords2, undistCoords2, secondCamMatrix, secondCamCoeffs, R2, P2);
+	undistortPoints(distCoords.first, undistCoords1, matrices.firstCamMatrix, matrices.firstCamCoeffs, matrices.R1, matrices.P1);         //undistorting the coordinates
+	undistortPoints(distCoords.second, undistCoords2, matrices.secondCamMatrix, matrices.secondCamCoeffs, matrices.R2, matrices.P2);
 
-	Mat triangCoords;/* = Mat(Size(firstCamCoordinates2D.size(), 4), CV_64FC1);*/
-	triangulatePoints(P1, P2, undistCoords1, undistCoords2, triangCoords);     //triangulation (not that much effect on fps (probably no effect)
+	Mat triangCoords;
+	triangulatePoints(matrices.P1, matrices.P2, undistCoords1, undistCoords2, triangCoords);     //triangulation (not that much effect on fps (probably no effect)
 	return triangCoords;
 }
 
@@ -141,16 +142,21 @@ void ImgProcUtility::getMarkersCoordinates3D(Mat triangCoords, Coordinates* outB
 	}
 }
 
-void ImgProcUtility::populateMatriceFromVector(std::vector<cv::Vec2f> firstCamCoordinates2D, std::vector<cv::Vec2f> secondCamCoordinates2D, Mat& firstCamDistCoords, Mat& secondCamDistCoords)
+pair<Mat, Mat> ImgProcUtility::populateMatricesFromVectors(StereoCoordinates2D coordinates2D)
 {
-	for (int i = 0; i < firstCamCoordinates2D.size(); ++i)
-	{
-		firstCamDistCoords.at<double>(i, 0) = firstCamCoordinates2D[i](0);
-		firstCamDistCoords.at<double>(i, 1) = firstCamCoordinates2D[i](1);
+	Mat firstCamCoordinates = Mat(Size(2, coordinates2D.first.size()), CV_64FC1);      		//declaring distorded coordinates
+	Mat secondCamCoordinates = Mat(Size(2, coordinates2D.second.size()), CV_64FC1);
+	pair<Mat, Mat> coordinates2DMat(firstCamCoordinates, secondCamCoordinates);
 
-		secondCamDistCoords.at<double>(i, 0) = secondCamCoordinates2D[i](0);
-		secondCamDistCoords.at<double>(i, 1) = secondCamCoordinates2D[i](1);
+	for (int i = 0; i < coordinates2D.first.size(); ++i)
+	{
+		coordinates2DMat.first.at<double>(i, 0) = coordinates2D.first[i](0);
+		coordinates2DMat.first.at<double>(i, 1) = coordinates2D.first[i](1);
+
+		coordinates2DMat.second.at<double>(i, 0) = coordinates2D.second[i](0);
+		coordinates2DMat.second.at<double>(i, 1) = coordinates2D.second[i](1);
 	}
+	return coordinates2DMat;
 }
 
 double ImgProcUtility::calculateDistanceBetweenMarkers(Coordinates* outBalls, int firstMarkerId, int secondMarkerId)
