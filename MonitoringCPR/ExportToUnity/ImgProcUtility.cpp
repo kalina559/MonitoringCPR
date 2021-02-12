@@ -17,8 +17,8 @@ pair<Mat, Mat> ImgProcUtility::resizeFrames(pair<Mat, Mat> frames, double scale)
 }
 
 StereoROISets ImgProcUtility::selectMarkers(pair<Mat, Mat> frames, pair<Ptr<MultiTracker>, Ptr<MultiTracker>> multitrackers)
-{	
-	StereoROISets ROISets;	
+{
+	StereoROISets ROISets;
 	selectROIs("firstMultiTracker", frames.first, ROISets.first);
 	for (int i = 0; i < ROISets.first.size(); i++)
 	{
@@ -50,16 +50,39 @@ pair<Mat, Mat> ImgProcUtility::cutROIsFromFrames(pair<Mat, Mat> grayFrames, pair
 {
 	pair<Mat, Mat> croppedFrames;
 	croppedFrames.first = grayFrames.first(ROI.first);          // cropping ROIs to see the analysed part of the image	
-	croppedFrames.second = grayFrames.second(ROI.second);  
+	croppedFrames.second = grayFrames.second(ROI.second);
 	return croppedFrames;
 }
 
-pair<Mat, Mat> ImgProcUtility::thresholdImages(pair<Mat, Mat> frames)
+pair<Mat, Mat> ImgProcUtility::thresholdImages(pair<Mat, Mat> frames, int thresh)
 {
 	pair<Mat, Mat> threshFrames;
-	threshold(frames.first, threshFrames.first, 150, 255, THRESH_BINARY);
-	threshold(frames.second, threshFrames.second, 150, 255, THRESH_BINARY);
+	threshold(frames.first, threshFrames.first, thresh, 255, THRESH_BINARY);
+	threshold(frames.second, threshFrames.second, thresh, 255, THRESH_BINARY);
 	return threshFrames;
+}
+
+pair<Mat, Mat> ImgProcUtility::erodeImages(pair<Mat, Mat> frames, int erosionSize = 1, int erosionType = MORPH_RECT)
+{
+	pair<Mat, Mat> erodedFrames;
+
+	Mat element = getStructuringElement(erosionType,
+		Size(2 * erosionSize + 1, 2 * erosionSize + 1),
+		Point(erosionSize, erosionSize));
+
+	erode(frames.first, erodedFrames.first, element);
+	erode(frames.second, erodedFrames.second, element);
+
+	return erodedFrames;
+}
+
+pair<Mat, Mat> ImgProcUtility::performCanny(pair<Mat, Mat> frames, int threshold)
+{
+	pair<Mat, Mat> cannyFrames;
+	cv::Canny(frames.first, cannyFrames.first, threshold, 255);
+	cv::Canny(frames.second, cannyFrames.second, threshold, 255);
+
+	return cannyFrames;
 }
 
 void ImgProcUtility::drawCirclesAroundMarkers(pair<Mat, Mat> frames, StereoCoordinates2D circleCoordinates, vector<pair<int, int>> radiuses)
@@ -79,15 +102,53 @@ void ImgProcUtility::drawRectAroundROI(pair<Mat, Mat> frames, pair<Rect, Rect> t
 	rectangle(frames.second, trackedAreas.second, cv::Scalar(255, 0, 0), 2, 1);
 }
 
-void ImgProcUtility::findCirclesInROIs(pair<vector<Vec3f>, vector<Vec3f>>& circles, pair<Mat, Mat> frames)
+pair<vector<Point>, vector<Point>> ImgProcUtility::getBiggestContours(pair<Mat, Mat> frames)
 {
-	cv::HoughCircles(frames.first, circles.first, cv::HOUGH_GRADIENT, 2, frames.first.rows, 150, 10);
-	cv::HoughCircles(frames.second, circles.second, cv::HOUGH_GRADIENT, 2, frames.second.rows, 150, 10);          //do utility
+	vector<vector<Point> > firstContours, secondContours;
+	findContours(frames.first, firstContours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+	findContours(frames.second, secondContours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+
+	double maxContour1 = 0, maxContour2 = 0;
+	int firstBiggestContour = 0, secondBiggestContour = 0;
+	for (size_t i = 0; i < max(firstContours.size(), secondContours.size()); i++) {
+
+		if (i < firstContours.size() && contourArea(firstContours[i]) > maxContour1)
+		{
+			maxContour1 = contourArea(firstContours[i]);
+			firstBiggestContour = i;
+		}
+		if (i < secondContours.size() && contourArea(secondContours[i]) > maxContour2)
+		{
+			maxContour2 = contourArea(secondContours[i]);
+			secondBiggestContour = i;
+		}
+	}
+	return{ firstContours[firstBiggestContour], secondContours[secondBiggestContour] };
+}
+
+Vec3f ImgProcUtility::getContoursCenterOfMass(vector<Point> contour)
+{
+	auto M = moments(contour);
+	float CX = M.m10 / M.m00;
+	float CY = M.m01 / M.m00;
+	float R = sqrt(contourArea(contour) / M_PI);
+
+	return { CX, CY, R };
+}
+
+
+pair<Vec3f, Vec3f> ImgProcUtility::findCirclesInROIs(pair<Mat, Mat> frames)
+{
+	auto cannyFrames = performCanny(frames, 43);
+	auto circleCenters = getBiggestContours(cannyFrames);
+	auto firstCenter = getContoursCenterOfMass(circleCenters.first);
+	auto secondCenter = getContoursCenterOfMass(circleCenters.second);
+
+	return { firstCenter, secondCenter };
 }
 
 StereoCoordinates2D ImgProcUtility::getMarkersCoordinates2D(pair<Mat, Mat> grayFrames, pair<Ptr<MultiTracker>, Ptr<MultiTracker>> multitrackers, pair<Mat, Mat> frames)
 {
-	pair<vector<Vec3f>, vector<Vec3f>> v3fCircles;
 	vector<pair<int, int>> radiuses = vector<pair<int, int>>(expectedNumberOfMarkers);
 	StereoCoordinates2D coordinates2D;
 	int detectedMarkers = 0;
@@ -96,21 +157,21 @@ StereoCoordinates2D ImgProcUtility::getMarkersCoordinates2D(pair<Mat, Mat> grayF
 	{
 		pair<Rect, Rect> ROI(multitrackers.first->getObjects()[i], multitrackers.second->getObjects()[i]);
 		pair<Mat, Mat> croppedFrames = ImgProcUtility::cutROIsFromFrames(grayFrames, ROI);
-		pair<Mat, Mat> threshFrames = ImgProcUtility::thresholdImages(croppedFrames);
-	//stuff above has the biggest effect on fps
-		ImgProcUtility::findCirclesInROIs(v3fCircles, croppedFrames);
+		pair<Mat, Mat> threshFrames = ImgProcUtility::thresholdImages(croppedFrames, 150);
+		auto erodeFrames = erodeImages(threshFrames, 1);
 
-		if (v3fCircles.first.size() == 1 && v3fCircles.second.size() == 1)       //only one circle should be found in a single ROI, no effect on fps
-		{
-			coordinates2D.first[i](0) = v3fCircles.first[0](0) + multitrackers.first->getObjects()[i].x;
-			coordinates2D.first[i](1) = v3fCircles.first[0](1) + multitrackers.first->getObjects()[i].y;
-			coordinates2D.second[i](0) = v3fCircles.second[0](0) + multitrackers.second->getObjects()[i].x;
-			coordinates2D.second[i](1) = v3fCircles.second[0](1) + multitrackers.second->getObjects()[i].y;
-			radiuses[i].first = v3fCircles.first[0](2);
-			radiuses[i].second = v3fCircles.second[0](2);			
+		//stuff above has the biggest effect on fps
+		pair<Vec3f, Vec3f> v3fCircles = findCirclesInROIs(erodeFrames);
 
-			++detectedMarkers;
-		}
+		coordinates2D.first[i](0) = v3fCircles.first(0) + multitrackers.first->getObjects()[i].x;
+		coordinates2D.first[i](1) = v3fCircles.first(1) + multitrackers.first->getObjects()[i].y;
+		coordinates2D.second[i](0) = v3fCircles.second(0) + multitrackers.second->getObjects()[i].x;
+		coordinates2D.second[i](1) = v3fCircles.second(1) + multitrackers.second->getObjects()[i].y;
+		radiuses[i].first = v3fCircles.first(2);
+		radiuses[i].second = v3fCircles.second(2);
+
+		++detectedMarkers;
+
 		ImgProcUtility::drawCirclesAroundMarkers(frames, coordinates2D, radiuses);
 		ImgProcUtility::drawRectAroundROI(frames, pair<Rect, Rect>(multitrackers.first->getObjects()[i], multitrackers.second->getObjects()[i]));
 	}
@@ -161,12 +222,12 @@ pair<Mat, Mat> ImgProcUtility::populateMatricesFromVectors(StereoCoordinates2D c
 
 double ImgProcUtility::calculateDistanceBetweenMarkers(Coordinates* outBalls, int firstMarkerId, int secondMarkerId)
 {
-	return sqrt(pow(outBalls[firstMarkerId].X - outBalls[secondMarkerId].X, 2) + pow(outBalls[firstMarkerId].Y - outBalls[secondMarkerId].Y, 2) 
+	return sqrt(pow(outBalls[firstMarkerId].X - outBalls[secondMarkerId].X, 2) + pow(outBalls[firstMarkerId].Y - outBalls[secondMarkerId].Y, 2)
 		+ pow(outBalls[firstMarkerId].Z - outBalls[secondMarkerId].Z, 2));
 }
 
 void ImgProcUtility::displayDistanceBetweenMarkers(Mat& displayMatrix, Coordinates* outBalls, int firstMarkerId, int secondMarkerId)
-{	
-	cv::putText(displayMatrix, ("Distance between markers " + to_string(firstMarkerId) + " and " + to_string(secondMarkerId) +": "+ to_string(calculateDistanceBetweenMarkers(outBalls, firstMarkerId, secondMarkerId))),
+{
+	cv::putText(displayMatrix, ("Distance between markers " + to_string(firstMarkerId) + " and " + to_string(secondMarkerId) + ": " + to_string(calculateDistanceBetweenMarkers(outBalls, firstMarkerId, secondMarkerId))),
 		Point(200, 200), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 0, 255));
 }

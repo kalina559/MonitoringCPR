@@ -9,7 +9,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <opencv2/tracking.hpp>
-
+#define _USE_MATH_DEFINES
+#include <math.h>
 const int expectedNumberOfMarkers = 2;
 
 struct StereoROISets
@@ -49,11 +50,15 @@ namespace ImgProcUtility
 	void updateTrackers(pair<Ptr<MultiTracker>, Ptr<MultiTracker>> multitrackers, pair<Mat, Mat> frames);
 	pair<Mat, Mat> convertFramesToGray(pair<Mat, Mat> colorFrames);
 	pair<Mat, Mat> cutROIsFromFrames(pair<Mat, Mat> grayFrames, pair<Rect, Rect> ROI);
-	pair<Mat, Mat> thresholdImages(pair<Mat, Mat> frames);
+	pair<Mat, Mat> thresholdImages(pair<Mat, Mat> frames, int thresh);
+	pair<Mat, Mat> erodeImages(pair<Mat, Mat> frames, int erosionSize, int erosionType);
+	pair<Mat, Mat> performCanny(pair<Mat, Mat> frames, int threshold);
 	StereoCoordinates2D getMarkersCoordinates2D(pair<Mat, Mat> grayFrames, pair<Ptr<MultiTracker>, Ptr<MultiTracker>> multitrackers, pair<Mat, Mat> frames);
 	void drawCirclesAroundMarkers(pair<Mat, Mat> frames, StereoCoordinates2D circleCoordinates, vector<std::pair<int, int>> radiuses);
 	void drawRectAroundROI(pair<Mat, Mat> frames, pair<Rect, Rect> trackedAreas);
-	void findCirclesInROIs(pair<vector<Vec3f>, vector<Vec3f>>& circles, pair<Mat, Mat> frames);
+	pair<vector<Point>, vector<Point>> getBiggestContours(pair<Mat, Mat> frames);
+	Vec3f getContoursCenterOfMass(vector<Point> contour);	
+	pair<Vec3f, Vec3f> findCirclesInROIs(pair<Mat, Mat> frames);
 	Mat process2DCoordinates(StereoCoordinates2D coordinates2D, Matrices& matrices);
 	void getMarkersCoordinates3D(Mat triangCoords, ImgProcUtility::Coordinates* outBalls, int& outDetectedBallsCount);
 	pair<Mat, Mat> populateMatricesFromVectors(StereoCoordinates2D coordinates2D);
