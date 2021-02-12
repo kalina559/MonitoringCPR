@@ -75,7 +75,7 @@ public class OpenCVMarkerLocation : MonoBehaviour
         }
 
         Debug.Log("update");
-        if (Input.GetKey(KeyCode.K) == true)        // jeśli wciśniemy k to wychodzimy z apki
+        if (Input.GetKey(KeyCode.K) == true)        // jeśli wciśniemy k to wychodzimy z apki     TODO ZMIENIC NA ESC
         {
             Debug.Log("wcisnieto escape");
             NormalizedBallsPositions.Clear();

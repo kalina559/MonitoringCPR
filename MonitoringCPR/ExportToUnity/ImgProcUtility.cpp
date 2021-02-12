@@ -183,7 +183,7 @@ Mat ImgProcUtility::process2DCoordinates(StereoCoordinates2D coordinates2D, Matr
 	pair<Mat, Mat> distCoords = ImgProcUtility::populateMatricesFromVectors(coordinates2D);
 
 	vector<Vec2d> undistCoords1, undistCoords2;
-	undistortPoints(distCoords.first, undistCoords1, matrices.firstCamMatrix, matrices.firstCamCoeffs, matrices.R1, matrices.P1);         //undistorting the coordinates
+	undistortPoints(distCoords.first, undistCoords1, matrices.firstCamMatrix, matrices.firstCamCoeffs, matrices.R1, matrices.P1);
 	undistortPoints(distCoords.second, undistCoords2, matrices.secondCamMatrix, matrices.secondCamCoeffs, matrices.R2, matrices.P2);
 
 	Mat triangCoords;
@@ -205,7 +205,7 @@ void ImgProcUtility::getMarkersCoordinates3D(Mat triangCoords, Coordinates* outB
 
 pair<Mat, Mat> ImgProcUtility::populateMatricesFromVectors(StereoCoordinates2D coordinates2D)
 {
-	Mat firstCamCoordinates = Mat(Size(2, coordinates2D.first.size()), CV_64FC1);      		//declaring distorded coordinates
+	Mat firstCamCoordinates = Mat(Size(2, coordinates2D.first.size()), CV_64FC1);  
 	Mat secondCamCoordinates = Mat(Size(2, coordinates2D.second.size()), CV_64FC1);
 	pair<Mat, Mat> coordinates2DMat(firstCamCoordinates, secondCamCoordinates);
 
