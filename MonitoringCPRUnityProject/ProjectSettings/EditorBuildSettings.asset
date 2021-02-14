@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 0
-    path: Assets/Scenes/Menu.unity
+    path: 
     guid: 726332e4563f0ed4da7250bb2a5de926
   - enabled: 1
     path: Assets/Scenes/MainMenu.unity
@@ -17,4 +17,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/MarkerMovement.unity
     guid: 56a64c0e724e82144986b0993e67f289
+  - enabled: 1
+    path: Assets/Scenes/CaptureCalibrationFrames.unity
+    guid: f1c4310047ccf4748967f37cedb49f24
   m_configObjects: {}

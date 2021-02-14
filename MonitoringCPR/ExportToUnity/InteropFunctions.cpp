@@ -77,9 +77,28 @@ extern "C" void __declspec(dllexport) __stdcall SetScale(int scale)
 {
 	_scale = scale;
 }
-
-//TODO clean this shit
 using namespace ImgProcUtility;
+extern "C" void __declspec(dllexport) __stdcall GetCurrentFrame(unsigned char * firstFrameData, unsigned char* secondFrameData,int width, int height)
+{
+	pair<Mat, Mat> frames = readFrames(firstSequence, secondSequence);
+
+	if (frames.first.empty() || frames.second.empty())       //wrzucic to w jakas funkcje
+	{
+		firstSequence.release();
+		secondSequence.release();
+		return;
+	}
+	cv::Mat firstResizedMat(height, width, frames.first.type());
+	cv::Mat secondResizedMat(height, width, frames.first.type());
+	cv::resize(frames.first, firstResizedMat, firstResizedMat.size(), cv::INTER_CUBIC);	
+	cv::resize(frames.second, secondResizedMat, secondResizedMat.size(), cv::INTER_CUBIC);
+	cv::Mat firstArgbImg, secondArgbImg;
+	cv::cvtColor(firstResizedMat, firstArgbImg, CV_BGR2RGBA);	
+	cv::cvtColor(secondResizedMat, secondArgbImg, CV_BGR2RGBA);
+	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
+	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
+}
+
 extern "C" void __declspec(dllexport) __stdcall Detect(Coordinates* outBalls, int maxOutBallsCount, int& outDetectedBallsCount)
 {
 	Mat firstCameraFrame, secondCameraFrame, croppedImg1, croppedImg2,
@@ -87,8 +106,6 @@ extern "C" void __declspec(dllexport) __stdcall Detect(Coordinates* outBalls, in
 
 	vector<Vec3f> v3fCircles1, v3fCircles2;
 
-	firstSequence >> firstCameraFrame;
-	secondSequence >> secondCameraFrame;
 	pair<Mat, Mat> frames = readFrames(firstSequence, secondSequence);
 
 	if (frames.first.empty() || frames.second.empty())

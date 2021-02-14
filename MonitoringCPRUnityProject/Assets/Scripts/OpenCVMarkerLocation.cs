@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.InteropServices;
+using System;
 
 public class OpenCVMarkerLocation : MonoBehaviour
 {
@@ -13,7 +14,6 @@ public class OpenCVMarkerLocation : MonoBehaviour
     /// Downscale factor to speed up detection.
     /// </summary>
     private const int DetectionDownScale = 1;
-
     private bool _ready;
     private int _maxBallsDetectCount = 10;
     private CvCoordinates[] _balls;
@@ -98,6 +98,8 @@ internal static class OpenCVInterop
 
     [DllImport("ExportToUnity")]
     internal unsafe static extern void Detect(CvCoordinates* outBalls, int maxOutBallsCount, ref int outDetectedBallsCount);
+   
+
 }
 
 // Define the structure to be sequential and with the correct byte size (3 ints = 4 bytes * 3 = 12 bytes)

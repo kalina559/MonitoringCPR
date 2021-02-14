@@ -5,20 +5,32 @@ using UnityEngine.SceneManagement;
 
 public class Menu : MonoBehaviour
 {
-    public void StartMonitoring()
+    enum Scenes
     {
-        SceneManager.LoadScene(2);
+        MainMenu,
+        CalibrationMenu,
+        MarkerMovement,
+        CaptureCalibrationFrames
+    }
+    public void GoToMarkerMovement()
+    {
+        var e = Scenes.MarkerMovement;
+        SceneManager.LoadScene((int)Scenes.MarkerMovement);
     }
 
-    public void PrepareCameras()
+    public void GoToCalibrationMenu()
     {
         // chyba nie ma sensu robić nowej sceny, po prostu wywywoła się tu funkcja z .dll
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene((int)Scenes.CalibrationMenu);
     }
 
     public void GoToMainMenu()
     {
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene((int)Scenes.MainMenu);
+    }
+    public void GoToCaptureCalibrationFrames()
+    {
+        SceneManager.LoadScene((int)Scenes.CaptureCalibrationFrames);
     }
     public void Quit()
     {
