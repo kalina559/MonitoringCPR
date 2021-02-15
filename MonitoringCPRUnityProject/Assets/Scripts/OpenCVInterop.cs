@@ -31,6 +31,8 @@ internal static class OpenCVInterop
     internal static extern void CloseSDLCameras();
     [DllImport("ExportToUnity")]
     internal static extern void saveCurrentFrames();
+    [DllImport("ExportToUnity")]
+    internal static extern void clearCalibrationFramesFolder();
 
 
 }

@@ -1,16 +1,19 @@
 #pragma once
 #include "CameraCalibration.h"
-#include<opencv2/tracker.hpp>
-#include<opencv2/cuda.hpp>
-#include<cstdlib>
+#include <opencv2/tracker.hpp>
+#include <opencv2/cuda.hpp>
+#include <cstdlib>
 #include "opencv2/objdetect.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include <iostream>
 #include <stdio.h>
 #include <opencv2/tracking.hpp>
-#define _USE_MATH_DEFINES
 #include <math.h>
+#include <SDL.h>
+#include "ps3eye.h"
+#include"RealTimeCapture.h"
+
 const int expectedNumberOfMarkers = 2;
 
 struct StereoROISets
@@ -37,6 +40,21 @@ struct Matrices
 	cv::Mat R2 = cv::Mat(cv::Size(3, 3), CV_64FC1);
 };
 
+class realTimeCapturePair
+{
+	RealTimeCapture first;
+	RealTimeCapture second;
+public:
+	RealTimeCapture& getFirstCapture()
+	{
+		return first;
+	}
+	RealTimeCapture& getSecondCapture()
+	{
+		return second;
+	}
+};
+
 namespace ImgProcUtility
 {
 	struct Coordinates
@@ -44,7 +62,9 @@ namespace ImgProcUtility
 		Coordinates(float x, float y, float z) : X(x), Y(y), Z(z) {}
 		float X, Y, Z;
 	};
+	int initializeCameras(realTimeCapturePair& stereoCapture);
 	std::pair<cv::Mat, cv::Mat> readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence);
+	void readRealTimeFrames(realTimeCapturePair& stereoCapture, int width, int height);
 	std::pair<cv::Mat, cv::Mat> resizeFrames(std::pair<cv::Mat, cv::Mat> frames, double scale);
 	StereoROISets selectMarkers(std::pair<cv::Mat, cv::Mat> frames, std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers);
 	void updateTrackers(std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames);

@@ -1,11 +1,47 @@
 #include"ImgProcUtility.h"
-
+int ImgProcUtility::initializeCameras(realTimeCapturePair& stereoCapture)
+{
+	auto& devices = ps3eye::PS3EYECam::getDevices(true);
+	if (devices.empty())
+	{
+		return -1;
+	}
+	stereoCapture.getFirstCapture().setCamera(devices[0]);
+	stereoCapture.getSecondCapture().setCamera(devices[1]);
+	bool success1 = stereoCapture.getFirstCapture().getCamera()->init(640, 480, 60);
+	bool success2 = stereoCapture.getSecondCapture().getCamera()->init(640, 480, 60);
+	if (!success1 || !success2)
+	{
+		return -2;
+	}
+	stereoCapture.getFirstCapture().getCamera()->start();
+	stereoCapture.getSecondCapture().getCamera()->start();
+	return 0;
+}
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence)
 {
 	std::pair<cv::Mat, cv::Mat> frames;
 	firstSequence >> frames.first;
 	secondSequence >> frames.second;
 	return frames;
+}
+
+void ImgProcUtility::readRealTimeFrames(realTimeCapturePair& stereoCapture, int width, int height)
+{
+	cv::Mat firstFrame = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
+	cv::Mat secondFrame = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
+
+	stereoCapture.getFirstCapture().getCamera()->getFrame(firstFrame.data);
+	stereoCapture.getSecondCapture().getCamera()->getFrame(secondFrame.data);
+
+	cv::Mat firstResizedMat(height, width, firstFrame.type());
+	cv::Mat secondResizedMat(height, width, secondFrame.type());
+
+	cv::resize(firstFrame, firstResizedMat, firstResizedMat.size(), cv::INTER_CUBIC);
+	cv::resize(secondFrame, secondResizedMat, secondResizedMat.size(), cv::INTER_CUBIC);
+
+	stereoCapture.getFirstCapture().setCurrentFrame(firstResizedMat);
+	stereoCapture.getSecondCapture().setCurrentFrame(secondResizedMat);
 }
 
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::resizeFrames(std::pair<cv::Mat, cv::Mat> frames, double scale)
@@ -110,7 +146,7 @@ std::pair<std::vector<cv::Point>, std::vector<cv::Point>> ImgProcUtility::getBig
 
 	double maxContour1 = 0, maxContour2 = 0;
 	int firstBiggestContour = 0, secondBiggestContour = 0;
-	for (size_t i = 0; i < std::max(firstContours.size(), secondContours.size()); i++) {
+	for (size_t i = 0; i < max(firstContours.size(), secondContours.size()); i++) {
 
 		if (i < firstContours.size() && contourArea(firstContours[i]) > maxContour1)
 		{

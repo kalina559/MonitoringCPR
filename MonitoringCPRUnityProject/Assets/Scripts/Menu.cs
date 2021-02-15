@@ -39,6 +39,10 @@ public class Menu : MonoBehaviour
     {
         OpenCVInterop.saveCurrentFrames();
     }
+    public void clearCalibrationFramesFolder()
+    {
+        OpenCVInterop.clearCalibrationFramesFolder();
+    }
     void OnApplicationQuit()
     {
         OpenCVInterop.CloseSDLCameras();

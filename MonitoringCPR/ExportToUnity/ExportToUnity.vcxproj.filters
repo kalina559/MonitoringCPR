@@ -21,9 +21,15 @@
     <ClCompile Include="ImgProcUtility.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RealTimeCapture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImgProcUtility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RealTimeCapture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
