@@ -9,6 +9,10 @@
 #include <stdio.h>
 #include <opencv2/tracking.hpp>
 #include"ImgProcUtility.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <SDL.h>
+#include "ps3eye.h"
 //in case cuda is needed
 //#include<opencv2/cudaarithm.hpp>
 //#include<opencv2/cuda.hpp>
@@ -22,21 +26,21 @@
 //#include<opencv2/cudastereo.hpp>
 //#include<opencv2/cudawarping.hpp>
 
-
-using namespace std;
-using namespace cv;
-
 Matrices matrices;
-//paths to two series of images
+cv::VideoCapture firstSequence("../MonitoringCPR/images/movement/seria2/camera1/video1.avi");
+cv::VideoCapture secondSequence("../MonitoringCPR/images/movement/seria2/camera2/video2.avi");
 
-VideoCapture firstSequence("../MonitoringCPR/images/movement/seria2/camera1/video1.avi");
-VideoCapture secondSequence("../MonitoringCPR/images/movement/seria2/camera2/video2.avi");
-
-pair<Ptr<MultiTracker>, Ptr<MultiTracker>> multiTrackers;
+std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multiTrackers;
 StereoROISets ROIs;
 
 bool firstFrame;
 int _scale = 1;
+
+ps3eye::PS3EYECam::PS3EYERef cam1 = NULL;
+ps3eye::PS3EYECam::PS3EYERef cam2 = NULL;
+
+std::pair<cv::Mat, cv::Mat> currentFrames;
+
 extern "C" int __declspec(dllexport) __stdcall Init(int& outCameraWidth, int& outCameraHeight)
 {
 	CameraCalibration::loadMatrix("matrices/singleCamCalibration/firstCamMatrix", 3, 3, matrices.firstCamMatrix);
@@ -61,16 +65,10 @@ extern "C" int __declspec(dllexport) __stdcall Init(int& outCameraWidth, int& ou
 		return -2;
 	}
 	firstFrame = true;
-	outCameraWidth = firstSequence.get(CAP_PROP_FRAME_WIDTH);
-	outCameraHeight = firstSequence.get(CAP_PROP_FRAME_HEIGHT);
+	outCameraWidth = firstSequence.get(cv::CAP_PROP_FRAME_WIDTH);
+	outCameraHeight = firstSequence.get(cv::CAP_PROP_FRAME_HEIGHT);
 
 	return 0;
-}
-
-extern "C" void __declspec(dllexport) __stdcall  Close()
-{
-	firstSequence.release();
-	secondSequence.release();	
 }
 
 extern "C" void __declspec(dllexport) __stdcall SetScale(int scale)
@@ -78,9 +76,9 @@ extern "C" void __declspec(dllexport) __stdcall SetScale(int scale)
 	_scale = scale;
 }
 using namespace ImgProcUtility;
-extern "C" void __declspec(dllexport) __stdcall GetCurrentFrame(unsigned char * firstFrameData, unsigned char* secondFrameData,int width, int height)
+extern "C" void __declspec(dllexport) __stdcall GetCurrentFrame(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
 {
-	pair<Mat, Mat> frames = readFrames(firstSequence, secondSequence);
+	std::pair<cv::Mat, cv::Mat> frames = readFrames(firstSequence, secondSequence);
 
 	if (frames.first.empty() || frames.second.empty())       //wrzucic to w jakas funkcje
 	{
@@ -88,25 +86,26 @@ extern "C" void __declspec(dllexport) __stdcall GetCurrentFrame(unsigned char * 
 		secondSequence.release();
 		return;
 	}
+
 	cv::Mat firstResizedMat(height, width, frames.first.type());
 	cv::Mat secondResizedMat(height, width, frames.first.type());
-	cv::resize(frames.first, firstResizedMat, firstResizedMat.size(), cv::INTER_CUBIC);	
+	cv::resize(frames.first, firstResizedMat, firstResizedMat.size(), cv::INTER_CUBIC);
 	cv::resize(frames.second, secondResizedMat, secondResizedMat.size(), cv::INTER_CUBIC);
 	cv::Mat firstArgbImg, secondArgbImg;
-	cv::cvtColor(firstResizedMat, firstArgbImg, CV_BGR2RGBA);	
+	cv::cvtColor(firstResizedMat, firstArgbImg, CV_BGR2RGBA);
 	cv::cvtColor(secondResizedMat, secondArgbImg, CV_BGR2RGBA);
 	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
 
-extern "C" void __declspec(dllexport) __stdcall Detect(Coordinates* outBalls, int maxOutBallsCount, int& outDetectedBallsCount)
+extern "C" void __declspec(dllexport) __stdcall Detect(Coordinates * outBalls, int maxOutBallsCount, int& outDetectedBallsCount) // w parametrach powinno byc jeszcze frames.first i frames.second, tak zeby mozna bylo wyswietlac je w unity
 {
-	Mat firstCameraFrame, secondCameraFrame, croppedImg1, croppedImg2,
+	cv::Mat firstCameraFrame, secondCameraFrame, croppedImg1, croppedImg2,
 		threshImg1, threshImg2, croppedColor1, croppedColor2;
 
-	vector<Vec3f> v3fCircles1, v3fCircles2;
+	std::vector<cv::Vec3f> v3fCircles1, v3fCircles2;
 
-	pair<Mat, Mat> frames = readFrames(firstSequence, secondSequence);
+	std::pair<cv::Mat, cv::Mat> frames = readFrames(firstSequence, secondSequence);
 
 	if (frames.first.empty() || frames.second.empty())
 	{
@@ -117,21 +116,104 @@ extern "C" void __declspec(dllexport) __stdcall Detect(Coordinates* outBalls, in
 		cv::destroyAllWindows();
 		return;
 	}
-	pair<Mat, Mat> resizedFrames = resizeFrames(frames, 0.5);
+	std::pair<cv::Mat, cv::Mat> resizedFrames = resizeFrames(frames, 0.5);
 	if (firstFrame == true)
 	{
 		ROIs = selectMarkers(resizedFrames, multiTrackers);
 		firstFrame = false;
 	}
 	updateTrackers(multiTrackers, resizedFrames);
-	pair<Mat, Mat> grayFrames = convertFramesToGray(resizedFrames);
+	std::pair<cv::Mat, cv::Mat> grayFrames = convertFramesToGray(resizedFrames);
 
-	StereoCoordinates2D coordinates2D = getMarkersCoordinates2D(grayFrames, multiTrackers, resizedFrames);	
-	Mat triangCoords = process2DCoordinates(coordinates2D, matrices);
+	StereoCoordinates2D coordinates2D = getMarkersCoordinates2D(grayFrames, multiTrackers, resizedFrames);
+	cv::Mat triangCoords = process2DCoordinates(coordinates2D, matrices);
 	getMarkersCoordinates3D(triangCoords, outBalls, outDetectedBallsCount);
 	displayDistanceBetweenMarkers(resizedFrames.first, outBalls, 0, 1);
 
 	imshow("frame camera 1", resizedFrames.first);
 	imshow("frame camera 2", resizedFrames.second);
-	waitKey(1);
+	cv::waitKey(1);
 }
+
+extern "C" void __declspec(dllexport) __stdcall  Close()
+{
+	firstSequence.release();
+	secondSequence.release();
+}
+
+extern "C" int __declspec(dllexport) __stdcall InitSDLCameras(int& outCameraWidth, int& outCameraHeight)
+{
+	auto& devices = ps3eye::PS3EYECam::getDevices(true);
+	if (devices.empty())
+	{
+		return -1;
+	}
+	cam1 = devices[0];
+	cam2 = devices[1];
+	bool success1 = cam1->init(640, 480, 60);
+	bool success2 = cam2->init(640, 480, 60);
+	if (!success1 || !success2)
+	{
+		return -2;
+	}
+	cam1->start();
+	cam2->start();
+	return 0;
+}
+
+extern "C" void __declspec(dllexport) __stdcall GetSDLCurrentFrame(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
+{
+	cv::Mat frame1 = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
+	cv::Mat frame2 = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
+
+	cam1->getFrame(frame1.data);
+	cam2->getFrame(frame2.data);
+
+	cv::Mat firstResizedMat(height, width, frame1.type());
+	cv::Mat secondResizedMat(height, width, frame2.type());
+
+	cv::resize(frame1, firstResizedMat, firstResizedMat.size(), cv::INTER_CUBIC);
+	cv::resize(frame2, secondResizedMat, secondResizedMat.size(), cv::INTER_CUBIC);
+
+	currentFrames.first = firstResizedMat;
+	currentFrames.second = secondResizedMat;
+
+	cv::Mat firstArgbImg, secondArgbImg;
+	cv::cvtColor(firstResizedMat, firstArgbImg, CV_BGR2RGBA);
+	cv::cvtColor(secondResizedMat, secondArgbImg, CV_BGR2RGBA);
+	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
+	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
+}
+
+extern "C" void __declspec(dllexport) __stdcall showCurrentFrames()
+{
+	cv::imshow("e", currentFrames.first);
+	cv::imshow("edd", currentFrames.second);
+	cv::waitKey(1);
+}
+extern "C" void __declspec(dllexport) __stdcall  CloseSDLCameras()
+{
+	cam1->stop();
+	cam2->stop();
+	cam1 = NULL;
+	cam2 = NULL;
+}
+
+extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames()
+{
+
+	char buffer[30];
+	char dateStr[30];
+	char timeStr[30];
+	_strdate_s(dateStr);
+	_strtime_s(timeStr);
+
+	sprintf_s(buffer, "img%s_%s.jpg", dateStr, timeStr);
+
+	std::string timestamp(buffer);
+	std::replace(timestamp.begin(), timestamp.end(), ':', '_');
+	std::replace(timestamp.begin(), timestamp.end(), '/', '_');
+	cv::imwrite("../MonitoringCPR/images/UnityTest/CAM1_" + timestamp + ".jpg", currentFrames.first);
+	cv::imwrite("../MonitoringCPR/images/UnityTest/CAM2_" + timestamp + ".jpg", currentFrames.second);
+}
+

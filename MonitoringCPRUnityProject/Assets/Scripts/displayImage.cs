@@ -4,12 +4,10 @@ using UnityEngine;
 using System.Runtime.InteropServices;
 using System;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class displayImage : MonoBehaviour
 {
-    [DllImport("ExportToUnity")]
-    private static extern void GetCurrentFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
-
     private Texture2D firstTex;
     private Texture2D secondTex;
 
@@ -21,34 +19,17 @@ public class displayImage : MonoBehaviour
 
     private IntPtr firstPixelPtr;
     private IntPtr secondPixelPtr;
-
-
     private bool _ready;
+
     void Start()
     {
-        int camWidth = 0, camHeight = 0;
-        int result = OpenCVInterop.Init(ref camWidth, ref camHeight);
-        if (result < 0)
-        {
-            if (result == -1)
-            {
-                Debug.LogWarningFormat("[{0}] Failed to find cascades definition.", GetType());
-            }
-            else if (result == -2)
-            {
-                Debug.LogWarningFormat("[{0}] Failed to open camera stream.", GetType());
-            }
 
-            return;
-        }
+        Debug.Log("displayImage start");
         InitTexture();
         GameObject.Find("firstFrame").GetComponent<RawImage>().texture = firstTex;
         GameObject.Find("secondFrame").GetComponent<RawImage>().texture = secondTex;
-        //gameObject.GetComponent<RawImage>().texture = tex;
         _ready = true;
     }
-
-
     void Update()
     {
         if (!_ready)
@@ -57,12 +38,10 @@ public class displayImage : MonoBehaviour
         }
         MatToTexture2D();
     }
-
-
     void InitTexture()
     {
-        firstTex = new Texture2D(512, 512, TextureFormat.ARGB32, false);
-        secondTex = new Texture2D(512, 512, TextureFormat.ARGB32, false);
+        firstTex = new Texture2D(640, 480, TextureFormat.ARGB32, false);
+        secondTex = new Texture2D(640, 480, TextureFormat.ARGB32, false);
         firstPixel32 = firstTex.GetPixels32();
         secondPixel32 = secondTex.GetPixels32();
         //Pin pixel32 array
@@ -76,22 +55,25 @@ public class displayImage : MonoBehaviour
     void MatToTexture2D()
     {
         //Convert Mat to Texture2D
-        GetCurrentFrame(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height);
+        OpenCVInterop.GetSDLCurrentFrame(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height);
         //Update the Texture2D with array updated in C++
         firstTex.SetPixels32(firstPixel32);
         secondTex.SetPixels32(secondPixel32);
         firstTex.Apply();
         secondTex.Apply();
     }
-
-    void OnApplicationQuit()
+    //void OnApplicationQuit()
+    //{
+    //    //Free handle
+    //    firstPixelHandle.Free();
+    //    secondPixelHandle.Free();
+    //    Debug.Log("Freed textures in displayImage");
+    //}
+    private void OnDisable()
     {
         //Free handle
         firstPixelHandle.Free();
         secondPixelHandle.Free();
-        if (_ready)
-        {
-            OpenCVInterop.Close();
-        }
+        Debug.Log("Freed textures in onDisable displayImage");
     }
 }

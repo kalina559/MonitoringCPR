@@ -27,14 +27,14 @@ struct StereoCoordinates2D
 
 struct Matrices
 {
-	Mat firstCamMatrix = Mat(Size(3, 3), CV_64FC1);
-	Mat secondCamMatrix = Mat(Size(3, 3), CV_64FC1);
-	Mat firstCamCoeffs = Mat(Size(1, 5), CV_64FC1);
-	Mat secondCamCoeffs = Mat(Size(1, 5), CV_64FC1);
-	Mat P1 = Mat(Size(4, 3), CV_64FC1);
-	Mat P2 = Mat(Size(4, 3), CV_64FC1);
-	Mat R1 = Mat(Size(3, 3), CV_64FC1);
-	Mat R2 = Mat(Size(3, 3), CV_64FC1);
+	cv::Mat firstCamMatrix = cv::Mat(cv::Size(3, 3), CV_64FC1);
+	cv::Mat secondCamMatrix = cv::Mat(cv::Size(3, 3), CV_64FC1);
+	cv::Mat firstCamCoeffs = cv::Mat(cv::Size(1, 5), CV_64FC1);
+	cv::Mat secondCamCoeffs = cv::Mat(cv::Size(1, 5), CV_64FC1);
+	cv::Mat P1 = cv::Mat(cv::Size(4, 3), CV_64FC1);
+	cv::Mat P2 = cv::Mat(cv::Size(4, 3), CV_64FC1);
+	cv::Mat R1 = cv::Mat(cv::Size(3, 3), CV_64FC1);
+	cv::Mat R2 = cv::Mat(cv::Size(3, 3), CV_64FC1);
 };
 
 namespace ImgProcUtility
@@ -44,24 +44,24 @@ namespace ImgProcUtility
 		Coordinates(float x, float y, float z) : X(x), Y(y), Z(z) {}
 		float X, Y, Z;
 	};
-	pair<Mat, Mat> readFrames(VideoCapture firstSequence, VideoCapture secondSequence);
-	pair<Mat, Mat> resizeFrames(pair<Mat, Mat> frames, double scale);
-	StereoROISets selectMarkers(pair<Mat, Mat> frames, pair<Ptr<MultiTracker>, Ptr<MultiTracker>> multitrackers);
-	void updateTrackers(pair<Ptr<MultiTracker>, Ptr<MultiTracker>> multitrackers, pair<Mat, Mat> frames);
-	pair<Mat, Mat> convertFramesToGray(pair<Mat, Mat> colorFrames);
-	pair<Mat, Mat> cutROIsFromFrames(pair<Mat, Mat> grayFrames, pair<Rect, Rect> ROI);
-	pair<Mat, Mat> thresholdImages(pair<Mat, Mat> frames, int thresh);
-	pair<Mat, Mat> erodeImages(pair<Mat, Mat> frames, int erosionSize, int erosionType);
-	pair<Mat, Mat> performCanny(pair<Mat, Mat> frames, int threshold);
-	StereoCoordinates2D getMarkersCoordinates2D(pair<Mat, Mat> grayFrames, pair<Ptr<MultiTracker>, Ptr<MultiTracker>> multitrackers, pair<Mat, Mat> frames);
-	void drawCirclesAroundMarkers(pair<Mat, Mat> frames, StereoCoordinates2D circleCoordinates, vector<std::pair<int, int>> radiuses);
-	void drawRectAroundROI(pair<Mat, Mat> frames, pair<Rect, Rect> trackedAreas);
-	pair<vector<Point>, vector<Point>> getBiggestContours(pair<Mat, Mat> frames);
-	Vec3f getContoursCenterOfMass(vector<Point> contour);	
-	pair<Vec3f, Vec3f> findCirclesInROIs(pair<Mat, Mat> frames);
-	Mat process2DCoordinates(StereoCoordinates2D coordinates2D, Matrices& matrices);
-	void getMarkersCoordinates3D(Mat triangCoords, ImgProcUtility::Coordinates* outBalls, int& outDetectedBallsCount);
-	pair<Mat, Mat> populateMatricesFromVectors(StereoCoordinates2D coordinates2D);
+	std::pair<cv::Mat, cv::Mat> readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence);
+	std::pair<cv::Mat, cv::Mat> resizeFrames(std::pair<cv::Mat, cv::Mat> frames, double scale);
+	StereoROISets selectMarkers(std::pair<cv::Mat, cv::Mat> frames, std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers);
+	void updateTrackers(std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames);
+	std::pair<cv::Mat, cv::Mat> convertFramesToGray(std::pair<cv::Mat, cv::Mat> colorFrames);
+	std::pair<cv::Mat, cv::Mat> cutROIsFromFrames(std::pair<cv::Mat, cv::Mat> grayFrames, std::pair<cv::Rect, cv::Rect> ROI);
+	std::pair<cv::Mat, cv::Mat> thresholdImages(std::pair<cv::Mat, cv::Mat> frames, int thresh);
+	std::pair<cv::Mat, cv::Mat> erodeImages(std::pair<cv::Mat, cv::Mat> frames, int erosionSize, int erosionType);
+	std::pair<cv::Mat, cv::Mat> performCanny(std::pair<cv::Mat, cv::Mat> frames, int threshold);
+	StereoCoordinates2D getMarkersCoordinates2D(std::pair<cv::Mat, cv::Mat> grayFrames, std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames);
+	void drawCirclesAroundMarkers(std::pair<cv::Mat, cv::Mat> frames, StereoCoordinates2D circleCoordinates, std::vector<std::pair<int, int>> radiuses);
+	void drawRectAroundROI(std::pair<cv::Mat, cv::Mat> frames, std::pair<cv::Rect, cv::Rect> trackedAreas);
+	std::pair<std::vector<cv::Point>, std::vector<cv::Point>> getBiggestContours(std::pair<cv::Mat, cv::Mat> frames);
+	cv::Vec3f getContoursCenterOfMass(std::vector<cv::Point> contour);
+	std::pair<cv::Vec3f, cv::Vec3f> findCirclesInROIs(std::pair<cv::Mat, cv::Mat> frames);
+	cv::Mat process2DCoordinates(StereoCoordinates2D coordinates2D, Matrices& matrices);
+	void getMarkersCoordinates3D(cv::Mat triangCoords, ImgProcUtility::Coordinates* outBalls, int& outDetectedBallsCount);
+	std::pair<cv::Mat, cv::Mat> populateMatricesFromVectors(StereoCoordinates2D coordinates2D);
 	double calculateDistanceBetweenMarkers(Coordinates* outBalls, int firstMarkerId, int secondMarkerId);
-	void displayDistanceBetweenMarkers(Mat& displayMatrix, Coordinates* outBalls, int firstMarkerId, int secondMarkerId);
+	void displayDistanceBetweenMarkers(cv::Mat& displayMatrix, Coordinates* outBalls, int firstMarkerId, int secondMarkerId);
 }

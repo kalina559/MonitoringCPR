@@ -85,22 +85,7 @@ public class OpenCVMarkerLocation : MonoBehaviour
 }
 
 // Define the functions which can be called from the .dll.
-internal static class OpenCVInterop
-{
-    [DllImport("ExportToUnity")]
-    internal static extern int Init(ref int outCameraWidth, ref int outCameraHeight);
 
-    [DllImport("ExportToUnity")]
-    internal static extern int Close();
-
-    [DllImport("ExportToUnity")]
-    internal static extern int SetScale(int downscale);
-
-    [DllImport("ExportToUnity")]
-    internal unsafe static extern void Detect(CvCoordinates* outBalls, int maxOutBallsCount, ref int outDetectedBallsCount);
-   
-
-}
 
 // Define the structure to be sequential and with the correct byte size (3 ints = 4 bytes * 3 = 12 bytes)
 [StructLayout(LayoutKind.Sequential, Size = 12)]

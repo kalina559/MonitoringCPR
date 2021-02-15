@@ -11,27 +11,25 @@
 #include<fstream>
 #include<string>
 
-using namespace std;
-using namespace cv;
 namespace CameraCalibration
 {
-	void loadPhotos(string path, vector<Mat>& images);
+	void loadPhotos(std::string path, std::vector<cv::Mat>& images);
 
-    void realLifeCirclePositions(Size boardSize, float distance, vector<Point3f>& circleCenters);
+    void realLifeCirclePositions(cv::Size boardSize, float distance, std::vector<cv::Point3f>& circleCenters);
 
-	void getCirclePositions(vector<Mat> images, vector<vector<Point2f>>& centers, Size arrayOfCirclesSize);
+	void getCirclePositions(std::vector<cv::Mat> images, std::vector<std::vector<cv::Point2f>>& centers, cv::Size arrayOfCirclesSize);
 
-	void singleCameraCalibration(vector<Mat> calibrationImages, Size boardSize, float distanceBetweenCircles, Mat& cameraMatrix, Mat& distCoefficients);
+	void singleCameraCalibration(std::vector<cv::Mat> calibrationImages, cv::Size boardSize, float distanceBetweenCircles, cv::Mat& cameraMatrix, cv::Mat& distCoefficients);
 
-	bool saveMatrix(string name, Mat mat);
+	bool saveMatrix(std::string name, cv::Mat mat);
 
-	bool loadMatrix(string name, int cols, int rows, Mat& outMatrix);
+	bool loadMatrix(std::string name, int cols, int rows, cv::Mat& outMatrix);
 
-	void stereoCalibration(vector<Mat> images1, vector<Mat> images2, Mat firstCamMatrix, Mat secondCamMatrix, Mat firstCamCoeffs,
-		Mat secondCamCoeffs, Size boardSize, Mat& R, Mat& T, Mat& E, Mat& F, float distanceBetweenCircles);
+	void stereoCalibration(std::vector<cv::Mat> images1, std::vector<cv::Mat> images2, cv::Mat firstCamMatrix, cv::Mat secondCamMatrix, cv::Mat firstCamCoeffs,
+		cv::Mat secondCamCoeffs, cv::Size boardSize, cv::Mat& R, cv::Mat& T, cv::Mat& E, cv::Mat& F, float distanceBetweenCircles);
 
-	void getSingleCamerasCoeffs(vector<Mat> firstCamImgs, vector<Mat> secondCamImgs, Size boardSize, float distanceBetweenCircles,
-		Mat& firstCamMatrix, Mat& secondCamMatrix, Mat& firstCamCoeffs, Mat& secondCamCoeffs);
+	void getSingleCamerasCoeffs(std::vector<cv::Mat> firstCamImgs, std::vector<cv::Mat> secondCamImgs, cv::Size boardSize, float distanceBetweenCircles,
+		cv::Mat& firstCamMatrix, cv::Mat& secondCamMatrix, cv::Mat& firstCamCoeffs, cv::Mat& secondCamCoeffs);
 	
 	void saveRectifiedMatrices(cv::Mat R1, cv::Mat R2, cv::Mat P1, cv::Mat P2, cv::Mat Q);
 };

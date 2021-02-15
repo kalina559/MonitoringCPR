@@ -5,8 +5,9 @@ using UnityEngine.SceneManagement;
 
 public class Menu : MonoBehaviour
 {
-    enum Scenes
+    public enum Scenes
     {
+        Init,
         MainMenu,
         CalibrationMenu,
         MarkerMovement,
@@ -14,13 +15,11 @@ public class Menu : MonoBehaviour
     }
     public void GoToMarkerMovement()
     {
-        var e = Scenes.MarkerMovement;
         SceneManager.LoadScene((int)Scenes.MarkerMovement);
     }
 
     public void GoToCalibrationMenu()
     {
-        // chyba nie ma sensu robić nowej sceny, po prostu wywywoła się tu funkcja z .dll
         SceneManager.LoadScene((int)Scenes.CalibrationMenu);
     }
 
@@ -35,5 +34,14 @@ public class Menu : MonoBehaviour
     public void Quit()
     {
         Application.Quit();
+    }
+    public void SaveFrames()
+    {
+        OpenCVInterop.saveCurrentFrames();
+    }
+    void OnApplicationQuit()
+    {
+        OpenCVInterop.CloseSDLCameras();
+        Debug.Log("Closed SDL cameras in Menu manager");
     }
 }

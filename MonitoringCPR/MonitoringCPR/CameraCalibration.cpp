@@ -1,61 +1,58 @@
 #include "CameraCalibration.h"
 
-using namespace std;
-using namespace cv;
-
 void CameraCalibration::loadPhotos(std::string path, std::vector<cv::Mat>& images)
 {
-	vector<cv::String> fileNames;
-	glob(path, fileNames, false);
+	std::vector<cv::String> fileNames;
+	cv::glob(path, fileNames, false);
 
 	for (size_t i = 0; i < fileNames.size(); ++i)
 	{
-		cout << "Processing photo nr: " << i << endl;
-		Mat resized;
-		resize(imread(fileNames[i]), resized, Size(), 0.5, 0.5);
+		std::cout << "Processing photo nr: " << i << std::endl;
+		cv::Mat resized;
+		resize(cv::imread(fileNames[i]), resized, cv::Size(), 0.5, 0.5);
 		images.push_back(resized);
 	}
 }
 
-void CameraCalibration::realLifeCirclePositions(Size boardSize, float distance, vector<Point3f>& circleCenters)
+void CameraCalibration::realLifeCirclePositions(cv::Size boardSize, float distance, std::vector<cv::Point3f>& circleCenters)
 {
 	for (int i = 0; i < boardSize.height; ++i)
 	{
 		for (int j = 0; j < boardSize.width; ++j)
 		{
-			circleCenters.push_back(Point3f(j * distance, i * distance, 0.0f));
+			circleCenters.push_back(cv::Point3f(j * distance, i * distance, 0.0f));
 		}
 	}
 }
 
-void CameraCalibration::getCirclePositions(vector<Mat> images, vector<vector<Point2f>>& centers, Size arrayOfCirclesSize)
+void CameraCalibration::getCirclePositions(std::vector<cv::Mat> images, std::vector<std::vector<cv::Point2f>>& centers, cv::Size arrayOfCirclesSize)
 {
 	for (size_t i = 0; i < images.size(); ++i) {
-		bool patternFound = findCirclesGrid(images[i], arrayOfCirclesSize, centers[i], CALIB_CB_SYMMETRIC_GRID);
+		bool patternFound = findCirclesGrid(images[i], arrayOfCirclesSize, centers[i], cv::CALIB_CB_SYMMETRIC_GRID);
 		//just for debug purposes
 		//drawChessboardCorners(images[i], arrayOfCirclesSize, Mat(centers[i]), patternFound);
 	}
 }
 
-void CameraCalibration::singleCameraCalibration(vector<Mat> calibrationImages, Size boardSize, float distanceBetweenCircles, Mat& cameraMatrix, Mat& distCoefficients)
+void CameraCalibration::singleCameraCalibration(std::vector<cv::Mat> calibrationImages, cv::Size boardSize, float distanceBetweenCircles, cv::Mat& cameraMatrix, cv::Mat& distCoefficients)
 {
-	vector<vector<Point3f>> worldSpaceCircleCenters(1);
+	std::vector<std::vector<cv::Point3f>> worldSpaceCircleCenters(1);
 	realLifeCirclePositions(boardSize, distanceBetweenCircles, worldSpaceCircleCenters[0]);
 	worldSpaceCircleCenters.resize(calibrationImages.size(), worldSpaceCircleCenters[0]);
 
-	vector<Mat> rVectors, tVectors;
-	distCoefficients = Mat::zeros(8, 1, CV_64F);
+	std::vector<cv::Mat> rVectors, tVectors;
+	distCoefficients = cv::Mat::zeros(8, 1, CV_64F);
 
-	vector<vector<Point2f> > centers(calibrationImages.size());
+	std::vector<std::vector<cv::Point2f> > centers(calibrationImages.size());
 
 	getCirclePositions(calibrationImages, centers, boardSize);
 	
 	calibrateCamera(worldSpaceCircleCenters, centers, boardSize, cameraMatrix, distCoefficients, rVectors, tVectors);
 }
 
-bool CameraCalibration::saveMatrix(string name, Mat mat)
+bool CameraCalibration::saveMatrix(std::string name, cv::Mat mat)
 {
-	ofstream outStream(name);
+	std::ofstream outStream(name);
 	if (outStream)
 	{
 		size_t rows = mat.rows;
@@ -66,7 +63,7 @@ bool CameraCalibration::saveMatrix(string name, Mat mat)
 			for (size_t j = 0; j < columns; ++j)
 			{
 				double value = mat.at<double>(i, j);
-				outStream << value << endl;
+				outStream << value << std::endl;
 			}
 		}
 		outStream.close();
@@ -75,9 +72,9 @@ bool CameraCalibration::saveMatrix(string name, Mat mat)
 	return false;
 }
 
-bool CameraCalibration::loadMatrix(string name, int cols, int rows, Mat& outMatrix)
+bool CameraCalibration::loadMatrix(std::string name, int cols, int rows, cv::Mat& outMatrix)
 {
-	ifstream ifStream(name);
+	std::ifstream ifStream(name);
 	if (ifStream)
 	{
 		for (size_t i = 0; i < cols; ++i)
@@ -93,19 +90,19 @@ bool CameraCalibration::loadMatrix(string name, int cols, int rows, Mat& outMatr
 	return false;
 }
 
-void CameraCalibration::stereoCalibration(vector<Mat> images1, vector<Mat> images2, Mat firstCamMatrix, Mat secondCamMatrix, Mat firstCamCoeffs,
-	Mat secondCamCoeffs, Size boardSize, Mat& R, Mat& T, Mat& E, Mat& F, float distanceBetweenCircles)
+void CameraCalibration::stereoCalibration(std::vector<cv::Mat> images1, std::vector<cv::Mat> images2, cv::Mat firstCamMatrix, cv::Mat secondCamMatrix, cv::Mat firstCamCoeffs,
+	cv::Mat secondCamCoeffs, cv::Size boardSize, cv::Mat& R, cv::Mat& T, cv::Mat& E, cv::Mat& F, float distanceBetweenCircles)
 {
-	vector<vector<Point2f> > centers1(images1.size());
+	std::vector<std::vector<cv::Point2f> > centers1(images1.size());
 	CameraCalibration::getCirclePositions(images1, centers1, boardSize);
-	vector<vector<Point2f> > centers2(images2.size());
+	std::vector<std::vector<cv::Point2f> > centers2(images2.size());
 	CameraCalibration::getCirclePositions(images2, centers2, boardSize);
-	vector<vector<Point3f>> worldSpaceCircleCenters(1);
+	std::vector<std::vector<cv::Point3f>> worldSpaceCircleCenters(1);
 	CameraCalibration::realLifeCirclePositions(boardSize, distanceBetweenCircles, worldSpaceCircleCenters[0]);
 	worldSpaceCircleCenters.resize(images1.size(), worldSpaceCircleCenters[0]);
 
 	stereoCalibrate(worldSpaceCircleCenters, centers1, centers2, firstCamMatrix, firstCamCoeffs, secondCamMatrix,
-		secondCamCoeffs, Size(1224, 1024), R, T, E, F, CALIB_FIX_INTRINSIC, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, 1e-6));
+		secondCamCoeffs, cv::Size(1224, 1024), R, T, E, F, cv::CALIB_FIX_INTRINSIC, cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-6));
 	//std::cout << "after stereo" << std::endl;
 	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/R", R);
 	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/T", T);
@@ -113,8 +110,8 @@ void CameraCalibration::stereoCalibration(vector<Mat> images1, vector<Mat> image
 	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/F", F);
 }
 
-void CameraCalibration::getSingleCamerasCoeffs(vector<Mat> firstCamImgs, vector<Mat> secondCamImgs, Size boardSize, float distanceBetweenCircles, 
-	Mat& firstCamMatrix, Mat& secondCamMatrix, Mat& firstCamCoeffs, Mat& secondCamCoeffs)
+void CameraCalibration::getSingleCamerasCoeffs(std::vector<cv::Mat> firstCamImgs, std::vector<cv::Mat> secondCamImgs, cv::Size boardSize, float distanceBetweenCircles,
+	cv::Mat& firstCamMatrix, cv::Mat& secondCamMatrix, cv::Mat& firstCamCoeffs, cv::Mat& secondCamCoeffs)
 {
 	CameraCalibration::singleCameraCalibration(firstCamImgs, boardSize, distanceBetweenCircles, firstCamMatrix, firstCamCoeffs);
 	CameraCalibration::singleCameraCalibration(secondCamImgs, boardSize, distanceBetweenCircles, secondCamMatrix, secondCamCoeffs);
