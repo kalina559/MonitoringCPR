@@ -38,7 +38,7 @@ internal static class OpenCVInterop
     internal static extern void checkCalibrationFrames(ref int invalidFrames, ref int totalFrames);    
 
     [DllImport("ExportToUnity")]
-    internal static extern bool showInvalidFrame(IntPtr firstFrame, IntPtr secondFrame);
+    internal static extern bool showValidFrame(IntPtr firstFrame, IntPtr secondFrame);
     [DllImport("ExportToUnity")]
     internal static extern bool deleteCurrentFrames();
     [DllImport("ExportToUnity")]

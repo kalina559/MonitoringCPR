@@ -24,13 +24,15 @@ public class CalibrationFramesCheck : MonoBehaviour
     private IntPtr secondPixelPtr;
 
     int invalidFrames = 0, totalFrames = 0;
-    public TextMeshProUGUI invalidFramesLabel;
-    public TextMeshProUGUI totalFramesLabel;
+    public TextMeshProUGUI messageLabel;
+    public TextMeshProUGUI pairNumberLabel;
+    private int currentPairNumber = 1;
+    private int validPairsCount;
     void Start()
     {
         OpenCVInterop.checkCalibrationFrames(ref invalidFrames, ref totalFrames);
-
-        updateInvalidFramesLabel();
+        validPairsCount = totalFrames - invalidFrames;
+        updateLabels();
         Debug.Log("CalibFramesCheck start");
         InitTexture();
         GameObject.Find("firstFrame").GetComponent<RawImage>().texture = firstTex;
@@ -53,16 +55,17 @@ public class CalibrationFramesCheck : MonoBehaviour
 
     void MatToTexture2D()
     {
-        OpenCVInterop.showInvalidFrame(firstPixelPtr, secondPixelPtr);
+        OpenCVInterop.showValidFrame(firstPixelPtr, secondPixelPtr);
         //Update the Texture2D with array updated in C++
         firstTex.SetPixels32(firstPixel32);
         secondTex.SetPixels32(secondPixel32);
         firstTex.Apply();
         secondTex.Apply();
     }
-    private void updateInvalidFramesLabel()
+    private void updateLabels()
     {
-        invalidFramesLabel.SetText("Usunięto " + invalidFrames + " nieprawidłowych par zdjęć z całkowitej liczby " + totalFrames + " par.");
+        messageLabel.SetText("Usunięto " + invalidFrames + " nieprawidłowych par zdjęć z całkowitej liczby " + totalFrames + " par.");
+        pairNumberLabel.SetText(currentPairNumber + " / " + validPairsCount);
     }
     private void OnDisable()
     {
@@ -76,18 +79,24 @@ public class CalibrationFramesCheck : MonoBehaviour
     {
         if (OpenCVInterop.moveToNextFrames())
         {
+            currentPairNumber++;
+            updateLabels();
             MatToTexture2D();
         }
         else
         {
-            SceneManager.LoadScene((int)Menu.Scenes.MainMenu);
+            SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
     }
     public void deleteCurrentFrames()
     {
         invalidFrames++;
-        updateInvalidFramesLabel();
+        validPairsCount = totalFrames - invalidFrames;
         OpenCVInterop.deleteCurrentFrames();
-        moveToNextFrame();
+        if(!OpenCVInterop.moveToNextFrames())
+        {
+            SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
+        }
+       // updateLabels();
     }
 }

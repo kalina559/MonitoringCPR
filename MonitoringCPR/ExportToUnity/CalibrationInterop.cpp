@@ -66,7 +66,7 @@ extern "C" void __declspec(dllexport) __stdcall checkCalibrationFrames(int& inva
 	}
 	invalidFramesCount = invalid;
 }
-extern "C" bool __declspec(dllexport) __stdcall showInvalidFrame(unsigned char* firstFrameData, unsigned char* secondFrameData/*, int firstMaxValue, int secondMaxValue, int firstBlocksize = 11, int secondBlocksize = 11, int firstC = 12, int secondC = 12*/)
+extern "C" bool __declspec(dllexport) __stdcall showValidFrame(unsigned char* firstFrameData, unsigned char* secondFrameData)
 {
 		auto firstFrame = cv::imread(validFramesPaths.back().first);
 		auto secondFrame = cv::imread(validFramesPaths.back().second);
