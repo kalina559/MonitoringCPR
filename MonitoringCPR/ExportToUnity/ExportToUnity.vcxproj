@@ -144,9 +144,10 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CalibrationInterop.cpp" />
     <ClCompile Include="ImgProcUtility.cpp" />
-    <ClCompile Include="InteropFunctions.cpp" />
-    <ClCompile Include="RealTimeCapture.cpp" />
+    <ClCompile Include="RealTimeInterop.cpp" />
+    <ClCompile Include="RecordedCaptureInterop.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MonitoringCPR\MonitoringCPR.vcxproj">

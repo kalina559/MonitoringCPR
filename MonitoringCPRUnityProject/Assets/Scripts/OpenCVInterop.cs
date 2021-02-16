@@ -34,5 +34,13 @@ internal static class OpenCVInterop
     [DllImport("ExportToUnity")]
     internal static extern void clearCalibrationFramesFolder();
 
+    [DllImport("ExportToUnity")]
+    internal static extern void checkCalibrationFrames(ref int invalidFrames, ref int totalFrames);    
 
+    [DllImport("ExportToUnity")]
+    internal static extern bool showInvalidFrame(IntPtr firstFrame, IntPtr secondFrame);
+    [DllImport("ExportToUnity")]
+    internal static extern bool deleteCurrentFrames();
+    [DllImport("ExportToUnity")]
+    internal static extern bool moveToNextFrames();
 }

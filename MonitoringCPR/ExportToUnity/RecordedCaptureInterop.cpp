@@ -1,3 +1,4 @@
+#pragma once
 #include "CameraCalibration.h"
 #include<opencv2/tracker.hpp>
 #include<opencv2/cuda.hpp>
@@ -11,19 +12,6 @@
 #include"ImgProcUtility.h"
 #include <filesystem>
 
-//in case cuda is needed
-//#include<opencv2/cudaarithm.hpp>
-//#include<opencv2/cuda.hpp>
-//#include<opencv2/cudabgsegm.hpp>
-//#include<opencv2/cudacodec.hpp>
-//#include<opencv2/cudafeatures2d.hpp>
-//#include<opencv2/cudafilters.hpp>
-//#include<opencv2/cudaimgproc.hpp>
-//#include<opencv2/cudaobjdetect.hpp>
-//#include<opencv2/cudaoptflow.hpp>
-//#include<opencv2/cudastereo.hpp>
-//#include<opencv2/cudawarping.hpp>
-
 Matrices matrices;
 cv::VideoCapture firstSequence("../MonitoringCPR/images/movement/seria2/camera1/video1.avi");
 cv::VideoCapture secondSequence("../MonitoringCPR/images/movement/seria2/camera2/video2.avi");
@@ -33,8 +21,6 @@ StereoROISets ROIs;    //do schowania w stereoCapture
 
 bool firstFrame;
 int _scale = 1;
-
-realTimeCapturePair stereoCapture;
 
 // tracking on a previously recorded video
 extern "C" int __declspec(dllexport) __stdcall Init(int& outCameraWidth, int& outCameraHeight)
@@ -134,56 +120,3 @@ extern "C" void __declspec(dllexport) __stdcall  Close()
 	firstSequence.release();
 	secondSequence.release();
 }
-
-
-
-
-// real-time tracking functions
-extern "C" int __declspec(dllexport) __stdcall InitSDLCameras(int& outCameraWidth, int& outCameraHeight)
-{
-	return ImgProcUtility::initializeCameras(stereoCapture);
-}
-
-extern "C" void __declspec(dllexport) __stdcall GetSDLCurrentFrame(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
-{
-	ImgProcUtility::readRealTimeFrames(stereoCapture, width, height);
-
-	cv::Mat firstArgbImg, secondArgbImg;
-	cv::cvtColor(stereoCapture.getFirstCapture().getCurrentFrame(), firstArgbImg, CV_BGR2RGBA);
-	cv::cvtColor(stereoCapture.getSecondCapture().getCurrentFrame(), secondArgbImg, CV_BGR2RGBA);
-	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
-	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
-}
-
-extern "C" void __declspec(dllexport) __stdcall  CloseSDLCameras()
-{
-	stereoCapture.getFirstCapture().getCamera()->stop();
-	stereoCapture.getSecondCapture().getCamera()->stop();
-	stereoCapture.getFirstCapture().setCamera(NULL);
-	stereoCapture.getSecondCapture().setCamera(NULL);
-}
-
-extern "C" void __declspec(dllexport) __stdcall clearCalibrationFramesFolder()
-{
-	std::string command = "del /Q ";
-	std::string path = "..\\MonitoringCPR\\images\\UnityTest\\*.jpg";
-	system(command.append(path).c_str());
-}
-
-extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames()
-{
-	char buffer[30];
-	char dateStr[30];
-	char timeStr[30];
-	_strdate_s(dateStr);
-	_strtime_s(timeStr);
-
-	sprintf_s(buffer, "img%s_%s.jpg", dateStr, timeStr);
-
-	std::string timestamp(buffer);
-	std::replace(timestamp.begin(), timestamp.end(), ':', '_');
-	std::replace(timestamp.begin(), timestamp.end(), '/', '_');
-	cv::imwrite("../MonitoringCPR/images/UnityTest/CAM1_" + timestamp, stereoCapture.getFirstCapture().getCurrentFrame());
-	cv::imwrite("../MonitoringCPR/images/UnityTest/CAM2_" + timestamp, stereoCapture.getSecondCapture().getCurrentFrame());
-}
-

@@ -62,13 +62,6 @@ public class displayImage : MonoBehaviour
         firstTex.Apply();
         secondTex.Apply();
     }
-    //void OnApplicationQuit()
-    //{
-    //    //Free handle
-    //    firstPixelHandle.Free();
-    //    secondPixelHandle.Free();
-    //    Debug.Log("Freed textures in displayImage");
-    //}
     private void OnDisable()
     {
         //Free handle
