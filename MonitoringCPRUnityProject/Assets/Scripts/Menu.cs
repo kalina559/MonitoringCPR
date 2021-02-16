@@ -12,7 +12,8 @@ public class Menu : MonoBehaviour
         CalibrationMenu,
         MarkerMovement,
         CaptureCalibrationFrames,
-        CalibrationFramesCheck
+        CalibrationFramesCheck,
+        Calibration
     }
     public void GoToMarkerMovement()
     {
@@ -36,12 +37,24 @@ public class Menu : MonoBehaviour
     {
         SceneManager.LoadScene((int)Scenes.CalibrationFramesCheck);
     }
+    public void GoToCalibration()
+    {
+        if (PlayerPrefs.GetInt("CalibrationValidate") == 1)
+        {
+            SceneManager.LoadScene((int)Scenes.Calibration);
+        }
+        else
+        {
+            Debug.Log("Nie sprawdzono zdjęć");
+        }
+    }
     public void Quit()
     {
         Application.Quit();
     }
     public void SaveFrames()
     {
+        PlayerPrefs.SetInt("CalibrationValidate", 0);
         OpenCVInterop.saveCurrentFrames();
     }
     public void clearCalibrationFramesFolder()

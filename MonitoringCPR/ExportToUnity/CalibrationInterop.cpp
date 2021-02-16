@@ -22,6 +22,7 @@ std::vector<std::pair<std::string, std::string>> validFramesPaths;
 
 extern "C" void __declspec(dllexport) __stdcall checkCalibrationFrames(int& invalidFramesCount, int& totalFramesCount)
 {
+	validFramesPaths.clear();
 	std::string path1 = "../MonitoringCPR/images/Calibration/UnityFirstCam/*.jpg";
 	std::string path2 = "../MonitoringCPR/images/Calibration/UnitySecondCam/*.jpg";
 	int invalid = 0;
@@ -110,15 +111,16 @@ extern "C" void __declspec(dllexport) __stdcall deleteCurrentFrames()
 
 extern "C" bool __declspec(dllexport) __stdcall moveToNextFrames()
 {
-	if (validFramesPaths.size() > 0)
+	if (validFramesPaths.size() > 1)
 	{
 		validFramesPaths.pop_back();
 
-		if (validFramesPaths.size() == 1)
+		/*if (validFramesPaths.size() == 1)
 		{
 			return false;
 		}
-		return true;
+		return true;*/
 	}
-	else return false;
+	else 
+		return false;
 }

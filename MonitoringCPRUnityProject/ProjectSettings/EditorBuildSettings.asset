@@ -26,4 +26,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/CalibrationFramesCheck.unity
     guid: 89435cc5251fde84bbac68a3f9e135a2
+  - enabled: 1
+    path: Assets/Scenes/Calibration.unity
+    guid: a6b31544cb4138d4588d7fc14c9d3363
   m_configObjects: {}

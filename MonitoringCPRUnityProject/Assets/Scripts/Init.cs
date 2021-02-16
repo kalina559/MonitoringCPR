@@ -12,8 +12,6 @@ public class Init : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
-
         int camWidth = 640, camHeight = 480;
         Debug.Log("init SDL");
         int result = InitSDLCameras(ref camWidth, ref camHeight);

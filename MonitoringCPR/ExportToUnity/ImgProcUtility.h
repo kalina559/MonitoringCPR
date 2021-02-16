@@ -55,6 +55,10 @@ public:
 	}
 };
 
+
+// stworzyc na tej podstawie klase StereoFrames: pola Mat first, second, colorFrames, grayFrames itd.
+// potem klase pochodn¹ StereoCapture, dodaæ multitrackery, ROI itd. i w zast¹piæ niektóre parametry funkcji za pomoc¹ pól klasy
+
 namespace ImgProcUtility
 {
 	struct Coordinates

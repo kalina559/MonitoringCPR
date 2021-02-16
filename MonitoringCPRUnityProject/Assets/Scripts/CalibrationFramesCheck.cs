@@ -85,6 +85,7 @@ public class CalibrationFramesCheck : MonoBehaviour
         }
         else
         {
+            PlayerPrefs.SetInt("CalibrationValidate", 1);
             SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
     }
@@ -95,6 +96,7 @@ public class CalibrationFramesCheck : MonoBehaviour
         OpenCVInterop.deleteCurrentFrames();
         if(!OpenCVInterop.moveToNextFrames())
         {
+            PlayerPrefs.SetInt("CalibrationValidate", 1);
             SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
        // updateLabels();
