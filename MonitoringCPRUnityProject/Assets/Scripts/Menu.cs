@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class Menu : MonoBehaviour
 {
@@ -37,17 +38,6 @@ public class Menu : MonoBehaviour
     {
         SceneManager.LoadScene((int)Scenes.CalibrationFramesCheck);
     }
-    public void GoToCalibration()
-    {
-        if (PlayerPrefs.GetInt("CalibrationValidate") == 1)
-        {
-            SceneManager.LoadScene((int)Scenes.Calibration);
-        }
-        else
-        {
-            Debug.Log("Nie sprawdzono zdjęć");
-        }
-    }
     public void Quit()
     {
         Application.Quit();
@@ -59,11 +49,14 @@ public class Menu : MonoBehaviour
     }
     public void clearCalibrationFramesFolder()
     {
+        PlayerPrefs.SetInt("CalibrationValidate", 0);
         OpenCVInterop.clearCalibrationFramesFolder();
     }
     void OnApplicationQuit()
     {
-        OpenCVInterop.CloseSDLCameras();
-        Debug.Log("Closed SDL cameras in Menu manager");
+        if (OpenCVInterop.CloseSDLCameras())
+        {
+            Debug.Log("Closed SDL cameras in Menu manager");
+        }
     }
 }

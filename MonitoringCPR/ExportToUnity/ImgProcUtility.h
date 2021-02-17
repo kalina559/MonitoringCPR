@@ -44,6 +44,7 @@ class realTimeCapturePair
 {
 	RealTimeCapture first;
 	RealTimeCapture second;
+	bool isInitialized = false;
 public:
 	RealTimeCapture& getFirstCapture()
 	{
@@ -52,6 +53,14 @@ public:
 	RealTimeCapture& getSecondCapture()
 	{
 		return second;
+	}
+	void setIsInitialized(bool value)
+	{
+		isInitialized = value;
+	}
+	bool getIsInitialized()
+	{
+		return isInitialized;
 	}
 };
 

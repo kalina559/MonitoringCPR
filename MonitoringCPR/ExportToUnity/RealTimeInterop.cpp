@@ -15,7 +15,6 @@
 #include"RealTimeCapture.h"
 #include "ImgProcUtility.h"
 
-bool initialized = false;
 realTimeCapturePair stereoCapture;
 const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 // real-time tracking functions
@@ -64,18 +63,18 @@ extern "C" void __declspec(dllexport) __stdcall GetSDLCurrentFrame(unsigned char
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
 
-
-
-
-extern "C" void __declspec(dllexport) __stdcall  CloseSDLCameras()
+extern "C" bool __declspec(dllexport) __stdcall  CloseSDLCameras()
 {
-	if (initialized)
+	if (stereoCapture.getIsInitialized())
 	{
 		stereoCapture.getFirstCapture().getCamera()->stop();
 		stereoCapture.getSecondCapture().getCamera()->stop();
 		stereoCapture.getFirstCapture().setCamera(NULL);
 		stereoCapture.getSecondCapture().setCamera(NULL);
+
+		return true;
 	}
+	return false;
 }
 
 extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames()

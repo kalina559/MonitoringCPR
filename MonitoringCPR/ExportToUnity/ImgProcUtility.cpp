@@ -2,7 +2,7 @@
 int ImgProcUtility::initializeCameras(realTimeCapturePair& stereoCapture)
 {
 	auto& devices = ps3eye::PS3EYECam::getDevices(true);
-	if (devices.size() != 2)
+	if (devices.empty())
 	{
 		return -1;
 	}
@@ -16,6 +16,8 @@ int ImgProcUtility::initializeCameras(realTimeCapturePair& stereoCapture)
 	}
 	stereoCapture.getFirstCapture().getCamera()->start();
 	stereoCapture.getSecondCapture().getCamera()->start();
+	
+	stereoCapture.setIsInitialized(true);
 	return 0;
 }
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence)

@@ -6,6 +6,7 @@ using System;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System.Text;
 public class CalibrationFramesCheck : MonoBehaviour
 {
     [DllImport("ExportToUnity")]
@@ -44,7 +45,7 @@ public class CalibrationFramesCheck : MonoBehaviour
         else
         {
             errorMessagePanel.gameObject.SetActive(true);
-            //moze jakis popup "W folderze nie ma żadnych zdjęć"
+            //moze jakis popup "W folderze nie ma żadnych poprawnych zdjęć"
             //SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
     }
@@ -97,7 +98,12 @@ public class CalibrationFramesCheck : MonoBehaviour
         }
         else
         {
-            PlayerPrefs.SetInt("CalibrationValidate", 1);
+            // PlayerPrefs.SetInt("CalibrationValidate", 1);
+            //StringBuilder str = new StringBuilder();
+            string s = OpenCVInterop.getImageData();
+            PlayerPrefs.SetString("FirstDataString", s);
+            Debug.Log("zapisano firstDataString" + s);
+            //PlayerPrefs.SetString("SecondDataString", sb2.ToString());
             SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
     }
@@ -108,13 +114,20 @@ public class CalibrationFramesCheck : MonoBehaviour
         OpenCVInterop.deleteCurrentFrames();
 
         if (OpenCVInterop.moveToNextFrames())
-        {            
+        {
             updateLabels();
             MatToTexture2D();
         }
         else
         {
-            PlayerPrefs.SetInt("CalibrationValidate", 1);
+            if (validPairsCount != 0)
+            {
+                PlayerPrefs.SetInt("CalibrationValidate", 1);
+                //string firstDataString = " ", secondDataString = " ";
+                //OpenCVInterop.getImageData(ref firstDataString, ref secondDataString);
+                //PlayerPrefs.SetString("FirstDataString", firstDataString);
+                //PlayerPrefs.SetString("SecondDataString", secondDataString);
+            }          
             SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
     }

@@ -14,6 +14,7 @@
 #include "ps3eye.h"
 #include"RealTimeCapture.h"
 #include "ImgProcUtility.h"
+#include<filesystem>
 
 const float distanceBetweenCircles = 0.0355f;
 const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
@@ -37,7 +38,7 @@ extern "C" bool __declspec(dllexport) __stdcall checkCalibrationFrames(int& inva
 	}
 	else
 	{
-		return false; //-3 nie wszystkie zdjêcia maj¹ parê
+		return false; 
 	}
 	for (size_t i = 0; i < fileNames1.size(); ++i)
 	{
@@ -148,4 +149,47 @@ extern "C" void __declspec(dllexport) __stdcall clearCalibrationFramesFolder()
 	command = "del /Q ";
 	path = "..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg";	
 	system(command.append(path).c_str());
+}
+
+std::string test = "halo";
+extern "C" __declspec(dllexport) BSTR __stdcall  getImageData()
+{
+	std::string firstPath = "..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg";
+	std::string secondPath = "..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg";
+
+	std::vector<cv::String> fileNames1, fileNames2;
+
+	cv::glob(firstPath, fileNames1, false);
+	cv::glob(secondPath, fileNames2, false);
+
+	std::wstring outDigitString;
+	if (fileNames1.size() == fileNames2.size() && fileNames1.size() != 0)
+	{
+		for (int i = 0; i < fileNames1.size(); ++i)
+		{
+			auto firstFileName = std::filesystem::path(fileNames1[i]).filename();
+			auto secondFileName = std::filesystem::path(fileNames2[i]).filename();
+			std::string firstFileNameStr{ firstFileName.u8string() };
+			std::string secondFileNameStr{ secondFileName.u8string() };
+			
+			for (int j = 0; j < firstFileNameStr.size(); ++j)
+			{
+				if (isdigit(firstFileNameStr[j]))
+					outDigitString += firstFileNameStr[j];
+			}
+			for (int j = 0; j < secondFileNameStr.size(); ++j)
+			{
+				if (isdigit(secondFileNameStr[j]))
+					outDigitString += secondFileNameStr[j];
+			}
+		}
+		
+		//str = &outDigitString[0];
+		
+	}
+
+	BSTR bs = SysAllocStringLen(outDigitString.data(), outDigitString.size());
+	return SysAllocString(bs);
+	
+
 }
