@@ -2,7 +2,7 @@
 int ImgProcUtility::initializeCameras(realTimeCapturePair& stereoCapture)
 {
 	auto& devices = ps3eye::PS3EYECam::getDevices(true);
-	if (devices.empty())
+	if (devices.size() != 2)
 	{
 		return -1;
 	}

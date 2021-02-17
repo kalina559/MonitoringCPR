@@ -31,7 +31,14 @@ extern "C" bool __declspec(dllexport) __stdcall checkCalibrationFrames(int& inva
 	std::vector<int> invalidIds;
 	cv::glob(path1, fileNames1, false);
 	cv::glob(path2, fileNames2, false);
-	totalFramesCount = fileNames1.size();
+	if (fileNames1.size() == fileNames2.size())
+	{
+		totalFramesCount = fileNames1.size();
+	}
+	else
+	{
+		return false; //-3 nie wszystkie zdjêcia maj¹ parê
+	}
 	for (size_t i = 0; i < fileNames1.size(); ++i)
 	{
 		cv::Mat img1 = cv::imread(fileNames1[i]);
@@ -66,8 +73,10 @@ extern "C" bool __declspec(dllexport) __stdcall checkCalibrationFrames(int& inva
 		}
 	}
 	invalidFramesCount = invalid;
-	if(totalFramesCount == invalidFramesCount)
+	if (totalFramesCount == invalidFramesCount)
+	{
 		return false;
+	}
 
 	return true;
 

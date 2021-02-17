@@ -23,6 +23,7 @@ public class CalibrationFramesCheck : MonoBehaviour
     private IntPtr firstPixelPtr;
     private IntPtr secondPixelPtr;
 
+    public Image errorMessagePanel;
     int invalidFrames = 0, totalFrames = 0;
     public TextMeshProUGUI messageLabel;
     public TextMeshProUGUI pairNumberLabel;
@@ -42,7 +43,9 @@ public class CalibrationFramesCheck : MonoBehaviour
         }
         else
         {
-            SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
+            errorMessagePanel.gameObject.SetActive(true);
+            //moze jakis popup "W folderze nie ma żadnych zdjęć"
+            //SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
     }
     void InitTexture()
@@ -74,11 +77,14 @@ public class CalibrationFramesCheck : MonoBehaviour
         pairNumberLabel.SetText(currentPairNumber + " / " + validPairsCount);
     }
     private void OnDisable()
-    {   //TODO check if handles were initialized
-        //Free handle
-        firstPixelHandle.Free();
-        secondPixelHandle.Free();
-        Debug.Log("Freed textures in onDisable displayImage");
+    { 
+        if (firstPixelHandle.IsAllocated && secondPixelHandle.IsAllocated)
+        {
+            //Free handle
+            firstPixelHandle.Free();
+            secondPixelHandle.Free();
+            Debug.Log("Freed textures in onDisable displayImage");
+        }
     }
 
     public void moveToNextFrame()
