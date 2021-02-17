@@ -20,7 +20,7 @@ const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 
 std::vector<std::pair<std::string, std::string>> validFramesPaths;
 
-extern "C" void __declspec(dllexport) __stdcall checkCalibrationFrames(int& invalidFramesCount, int& totalFramesCount)
+extern "C" bool __declspec(dllexport) __stdcall checkCalibrationFrames(int& invalidFramesCount, int& totalFramesCount)
 {
 	validFramesPaths.clear();
 	std::string path1 = "../MonitoringCPR/images/Calibration/UnityFirstCam/*.jpg";
@@ -54,7 +54,7 @@ extern "C" void __declspec(dllexport) __stdcall checkCalibrationFrames(int& inva
 		bool patternFound2 = findCirclesGrid(gray2, arrayOfCirclesSize, centers2, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
 
 		if (patternFound1 && patternFound2)
-		{			
+		{
 			invalidIds.push_back(i);
 			validFramesPaths.push_back({ fileNames1[i], fileNames2[i] });
 		}
@@ -66,41 +66,46 @@ extern "C" void __declspec(dllexport) __stdcall checkCalibrationFrames(int& inva
 		}
 	}
 	invalidFramesCount = invalid;
+	if(totalFramesCount == invalidFramesCount)
+		return false;
+
+	return true;
+
 }
 extern "C" bool __declspec(dllexport) __stdcall showValidFrame(unsigned char* firstFrameData, unsigned char* secondFrameData)
 {
-		auto firstFrame = cv::imread(validFramesPaths.back().first);
-		auto secondFrame = cv::imread(validFramesPaths.back().second);
+	auto firstFrame = cv::imread(validFramesPaths.back().first);
+	auto secondFrame = cv::imread(validFramesPaths.back().second);
 
-		cv::Mat gray1, gray2;
-		cvtColor(firstFrame, gray1, cv::COLOR_BGR2GRAY);
-		cvtColor(secondFrame, gray2, cv::COLOR_BGR2GRAY);
-		std::vector<cv::Point2f> centers1, centers2;
+	cv::Mat gray1, gray2;
+	cvtColor(firstFrame, gray1, cv::COLOR_BGR2GRAY);
+	cvtColor(secondFrame, gray2, cv::COLOR_BGR2GRAY);
+	std::vector<cv::Point2f> centers1, centers2;
 
-		cv::SimpleBlobDetector::Params params;
-		params.minArea = 10;
-		params.minThreshold = 1;
+	cv::SimpleBlobDetector::Params params;
+	params.minArea = 10;
+	params.minThreshold = 1;
 
-		params.filterByConvexity = 1;
-		params.minConvexity = 0.5;
+	params.filterByConvexity = 1;
+	params.minConvexity = 0.5;
 
-		cv::Ptr<cv::FeatureDetector> blobDetector = cv::SimpleBlobDetector::create(params);
+	cv::Ptr<cv::FeatureDetector> blobDetector = cv::SimpleBlobDetector::create(params);
 
-		//cv::Mat firstThresh, secondThresh;
-		//cv::adaptiveThreshold(gray1, firstThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 11, 12);
-		//cv::adaptiveThreshold(gray2, secondThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 11, 12);
+	//cv::Mat firstThresh, secondThresh;
+	//cv::adaptiveThreshold(gray1, firstThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 11, 12);
+	//cv::adaptiveThreshold(gray2, secondThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 11, 12);
 
-		bool patternFound1 = findCirclesGrid(gray1, arrayOfCirclesSize, centers1, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
-		bool patternFound2 = findCirclesGrid(gray2, arrayOfCirclesSize, centers2, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
+	bool patternFound1 = findCirclesGrid(gray1, arrayOfCirclesSize, centers1, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
+	bool patternFound2 = findCirclesGrid(gray2, arrayOfCirclesSize, centers2, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
 
-		drawChessboardCorners(firstFrame, arrayOfCirclesSize, cv::Mat(centers1), patternFound1);
-		drawChessboardCorners(secondFrame, arrayOfCirclesSize, cv::Mat(centers2), patternFound2);
+	drawChessboardCorners(firstFrame, arrayOfCirclesSize, cv::Mat(centers1), patternFound1);
+	drawChessboardCorners(secondFrame, arrayOfCirclesSize, cv::Mat(centers2), patternFound2);
 
-		cv::Mat firstArgbImg, secondArgbImg;
-		cv::cvtColor(firstFrame, firstArgbImg, CV_BGR2RGBA);
-		cv::cvtColor(secondFrame, secondArgbImg, CV_BGR2RGBA);
-		std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
-		std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
+	cv::Mat firstArgbImg, secondArgbImg;
+	cv::cvtColor(firstFrame, firstArgbImg, CV_BGR2RGBA);
+	cv::cvtColor(secondFrame, secondArgbImg, CV_BGR2RGBA);
+	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
+	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
 
 extern "C" void __declspec(dllexport) __stdcall deleteCurrentFrames()
@@ -121,6 +126,17 @@ extern "C" bool __declspec(dllexport) __stdcall moveToNextFrames()
 		}
 		return true;*/
 	}
-	else 
+	else
 		return false;
+}
+
+extern "C" void __declspec(dllexport) __stdcall clearCalibrationFramesFolder()
+{
+	std::string command = "del /Q ";
+	std::string path = "..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg";
+	system(command.append(path).c_str());
+
+	command = "del /Q ";
+	path = "..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg";	
+	system(command.append(path).c_str());
 }

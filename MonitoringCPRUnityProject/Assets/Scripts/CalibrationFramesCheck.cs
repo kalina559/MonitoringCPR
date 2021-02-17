@@ -30,14 +30,20 @@ public class CalibrationFramesCheck : MonoBehaviour
     private int validPairsCount;
     void Start()
     {
-        OpenCVInterop.checkCalibrationFrames(ref invalidFrames, ref totalFrames);
-        validPairsCount = totalFrames - invalidFrames;
-        updateLabels();
-        Debug.Log("CalibFramesCheck start");
-        InitTexture();
-        GameObject.Find("firstFrame").GetComponent<RawImage>().texture = firstTex;
-        GameObject.Find("secondFrame").GetComponent<RawImage>().texture = secondTex;
-        MatToTexture2D();
+        if (OpenCVInterop.checkCalibrationFrames(ref invalidFrames, ref totalFrames))
+        {
+            validPairsCount = totalFrames - invalidFrames;
+            updateLabels();
+            Debug.Log("CalibFramesCheck start");
+            InitTexture();
+            GameObject.Find("firstFrame").GetComponent<RawImage>().texture = firstTex;
+            GameObject.Find("secondFrame").GetComponent<RawImage>().texture = secondTex;
+            MatToTexture2D();
+        }
+        else
+        {
+            SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
+        }
     }
     void InitTexture()
     {
@@ -68,7 +74,7 @@ public class CalibrationFramesCheck : MonoBehaviour
         pairNumberLabel.SetText(currentPairNumber + " / " + validPairsCount);
     }
     private void OnDisable()
-    {
+    {   //TODO check if handles were initialized
         //Free handle
         firstPixelHandle.Free();
         secondPixelHandle.Free();
@@ -94,11 +100,16 @@ public class CalibrationFramesCheck : MonoBehaviour
         invalidFrames++;
         validPairsCount = totalFrames - invalidFrames;
         OpenCVInterop.deleteCurrentFrames();
-        if(!OpenCVInterop.moveToNextFrames())
+
+        if (OpenCVInterop.moveToNextFrames())
+        {            
+            updateLabels();
+            MatToTexture2D();
+        }
+        else
         {
             PlayerPrefs.SetInt("CalibrationValidate", 1);
             SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
-       // updateLabels();
     }
 }

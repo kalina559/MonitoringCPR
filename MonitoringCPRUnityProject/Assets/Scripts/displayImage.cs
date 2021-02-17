@@ -55,7 +55,7 @@ public class displayImage : MonoBehaviour
     void MatToTexture2D()
     {
         //Convert Mat to Texture2D
-        OpenCVInterop.GetSDLCurrentFrame(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height);
+        OpenCVInterop.GetCalibrationFrame(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height);
         //Update the Texture2D with array updated in C++
         firstTex.SetPixels32(firstPixel32);
         secondTex.SetPixels32(secondPixel32);
