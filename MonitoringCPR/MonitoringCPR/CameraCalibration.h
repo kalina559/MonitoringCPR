@@ -10,11 +10,14 @@
 #include<iostream>
 #include<fstream>
 #include<string>
-
+#include<filesystem>
 namespace CameraCalibration
 {
 	void loadPhotos(std::string path, std::vector<cv::Mat>& images);
 
+	std::vector<std::string> checkFramesPairs(std::string firstPath, std::string secondPath, std::string format);
+
+	std::set<std::string> getFileNames(std::vector<cv::String> filePaths);
     void realLifeCirclePositions(cv::Size boardSize, float distance, std::vector<cv::Point3f>& circleCenters);
 
 	void getCirclePositions(std::vector<cv::Mat> images, std::vector<std::vector<cv::Point2f>>& centers, cv::Size arrayOfCirclesSize);

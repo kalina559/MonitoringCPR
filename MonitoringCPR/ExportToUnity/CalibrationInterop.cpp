@@ -21,24 +21,33 @@ const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 
 std::vector<std::pair<std::string, std::string>> validFramesPaths;
 
-extern "C" bool __declspec(dllexport) __stdcall checkCalibrationFrames(int& invalidFramesCount, int& totalFramesCount)
-{
+extern "C" int __declspec(dllexport) __stdcall checkCalibrationFrames(int& invalidFramesCount, int& framesWithoutPair, int& totalFramesCount)   //komunikaty - brak poprawnych zdjec / zdjecia nie do pary
+{	
 	validFramesPaths.clear();
-	std::string path1 = "../MonitoringCPR/images/Calibration/UnityFirstCam/*.jpg";
-	std::string path2 = "../MonitoringCPR/images/Calibration/UnitySecondCam/*.jpg";
+	std::string path1 = "../MonitoringCPR/images/Calibration/UnityFirstCam/";
+	std::string path2 = "../MonitoringCPR/images/Calibration/UnitySecondCam/";
+	std::string imgFormat = "*.jpg";
+
+	auto singleFrames = CameraCalibration::checkFramesPairs(path1, path2, imgFormat);
+	framesWithoutPair = singleFrames.size();
+	while (singleFrames.size() > 0)
+	{
+		remove((singleFrames.back()).c_str());
+		singleFrames.pop_back();
+	}
 	int invalid = 0;
 
 	std::vector<cv::String> fileNames1, fileNames2;
 	std::vector<int> invalidIds;
-	cv::glob(path1, fileNames1, false);
-	cv::glob(path2, fileNames2, false);
+	cv::glob(path1 + imgFormat, fileNames1, false);
+	cv::glob(path2 + imgFormat, fileNames2, false);
 	if (fileNames1.size() == fileNames2.size())
 	{
 		totalFramesCount = fileNames1.size();
 	}
 	else
 	{
-		return false; 
+		return -1; //zdjecia nie do pary
 	}
 	for (size_t i = 0; i < fileNames1.size(); ++i)
 	{
@@ -76,10 +85,10 @@ extern "C" bool __declspec(dllexport) __stdcall checkCalibrationFrames(int& inva
 	invalidFramesCount = invalid;
 	if (totalFramesCount == invalidFramesCount)
 	{
-		return false;
+		return -2;  //brak poprawnych zdjec
 	}
 
-	return true;
+	return 0;     //wszystko git
 
 }
 extern "C" bool __declspec(dllexport) __stdcall showValidFrame(unsigned char* firstFrameData, unsigned char* secondFrameData)
@@ -129,15 +138,11 @@ extern "C" bool __declspec(dllexport) __stdcall moveToNextFrames()
 	if (validFramesPaths.size() > 1)
 	{
 		validFramesPaths.pop_back();
-
-		/*if (validFramesPaths.size() == 1)
-		{
-			return false;
-		}
-		return true;*/
 	}
 	else
+	{
 		return false;
+	}
 }
 
 extern "C" void __declspec(dllexport) __stdcall clearCalibrationFramesFolder()
@@ -152,14 +157,14 @@ extern "C" void __declspec(dllexport) __stdcall clearCalibrationFramesFolder()
 }
 
 std::string test = "halo";
-extern "C" __declspec(dllexport) BSTR __stdcall  getImageData()
+extern "C" __declspec(dllexport) BSTR __stdcall  getFramesSetId()
 {
+	BSTR bs;
 	std::string firstPath = "..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg";
 	std::string secondPath = "..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg";
-
 	std::vector<cv::String> fileNames1, fileNames2;
-
-	cv::glob(firstPath, fileNames1, false);
+    
+	cv::glob(firstPath, fileNames1, false); //todo wrzucic to w imgprocutility 
 	cv::glob(secondPath, fileNames2, false);
 
 	std::wstring outDigitString;
@@ -169,27 +174,14 @@ extern "C" __declspec(dllexport) BSTR __stdcall  getImageData()
 		{
 			auto firstFileName = std::filesystem::path(fileNames1[i]).filename();
 			auto secondFileName = std::filesystem::path(fileNames2[i]).filename();
-			std::string firstFileNameStr{ firstFileName.u8string() };
-			std::string secondFileNameStr{ secondFileName.u8string() };
+			std::wstring firstFileNameStr{ firstFileName.wstring() };
+			std::wstring secondFileNameStr{ secondFileName.wstring() };
 			
-			for (int j = 0; j < firstFileNameStr.size(); ++j)
-			{
-				if (isdigit(firstFileNameStr[j]))
-					outDigitString += firstFileNameStr[j];
-			}
-			for (int j = 0; j < secondFileNameStr.size(); ++j)
-			{
-				if (isdigit(secondFileNameStr[j]))
-					outDigitString += secondFileNameStr[j];
-			}
+			outDigitString += firstFileNameStr += secondFileNameStr;
 		}
-		
-		//str = &outDigitString[0];
-		
+		bs = SysAllocStringLen(outDigitString.data(), outDigitString.size());
+		return SysAllocString(bs);
 	}
-
-	BSTR bs = SysAllocStringLen(outDigitString.data(), outDigitString.size());
+	bs = SysAllocString(L"");
 	return SysAllocString(bs);
-	
-
 }

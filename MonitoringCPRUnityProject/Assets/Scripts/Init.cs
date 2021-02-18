@@ -10,10 +10,13 @@ public class Init : MonoBehaviour
     [DllImport("ExportToUnity")]
     internal static extern int InitSDLCameras(ref int outCameraWidth, ref int outCameraHeight);
     public Image errorMessagePanel;
+
+    public static bool camerasInitialized = false;
     // Start is called before the first frame update
     void Start()
     {
         initializeCameras();
+        camerasInitialized = true;
     }
 
     public void initializeCameras()

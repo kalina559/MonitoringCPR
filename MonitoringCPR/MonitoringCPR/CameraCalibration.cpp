@@ -14,6 +14,45 @@ void CameraCalibration::loadPhotos(std::string path, std::vector<cv::Mat>& image
 	}
 }
 
+std::vector<std::string> CameraCalibration::checkFramesPairs(std::string firstPath, std::string secondPath, std::string format)
+{
+	std::vector<cv::String> firstFilePaths, secondFilePaths;
+	cv::glob(firstPath + format, firstFilePaths, false);
+	cv::glob(secondPath + format, secondFilePaths, false);
+	auto firstFileNames = getFileNames(firstFilePaths);
+	auto secondFileNames = getFileNames(secondFilePaths);
+
+	std::vector<std::string> framesWithoutPairPaths;
+
+	for (const std::string& fileName : firstFileNames)
+	{
+		if (secondFileNames.find(fileName) == secondFileNames.end())  
+		{
+			framesWithoutPairPaths.push_back(firstPath + fileName);
+		}
+	}
+	for (const std::string& fileName : secondFileNames)
+	{
+		if (firstFileNames.find(fileName) == firstFileNames.end())  
+		{
+			framesWithoutPairPaths.push_back(secondPath + fileName);
+		}
+	}
+	return framesWithoutPairPaths;
+}
+
+std::set<std::string> CameraCalibration::getFileNames(std::vector<cv::String> filePaths)
+{
+	//std::vector<std::string> fileNames;
+	std::set<std::string> fileNames;
+	for (int i = 0; i < filePaths.size(); ++i)
+	{
+		auto fileName = std::filesystem::path(filePaths[i]).filename();
+		fileNames.insert(fileName.string());   
+	}
+	return fileNames;
+}
+
 void CameraCalibration::realLifeCirclePositions(cv::Size boardSize, float distance, std::vector<cv::Point3f>& circleCenters)
 {
 	for (int i = 0; i < boardSize.height; ++i)

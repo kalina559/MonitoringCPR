@@ -42,15 +42,25 @@ struct Matrices
 
 class realTimeCapturePair
 {
-	RealTimeCapture first;
-	RealTimeCapture second;
+	RealTimeCapture* first;
+	RealTimeCapture* second;
 	bool isInitialized = false;
 public:
-	RealTimeCapture& getFirstCapture()
+	realTimeCapturePair()
+	{
+		first = new RealTimeCapture();
+		second = new RealTimeCapture();
+	}
+	~realTimeCapturePair()
+	{
+		delete first;
+		delete second;
+	}
+	RealTimeCapture* getFirstCapture()
 	{
 		return first;
 	}
-	RealTimeCapture& getSecondCapture()
+	RealTimeCapture* getSecondCapture()
 	{
 		return second;
 	}
@@ -75,9 +85,9 @@ namespace ImgProcUtility
 		Coordinates(float x, float y, float z) : X(x), Y(y), Z(z) {}
 		float X, Y, Z;
 	};
-	int initializeCameras(realTimeCapturePair& stereoCapture);
+	int initializeCameras(realTimeCapturePair* stereoCapture);
 	std::pair<cv::Mat, cv::Mat> readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence);
-	void readRealTimeFrames(realTimeCapturePair& stereoCapture, int width, int height);
+	void readRealTimeFrames(realTimeCapturePair* stereoCapture, int width, int height);
 	std::pair<cv::Mat, cv::Mat> resizeFrames(std::pair<cv::Mat, cv::Mat> frames, double scale);
 	StereoROISets selectMarkers(std::pair<cv::Mat, cv::Mat> frames, std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers);
 	void updateTrackers(std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames);

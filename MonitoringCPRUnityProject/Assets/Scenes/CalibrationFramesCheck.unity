@@ -156,6 +156,7 @@ MonoBehaviour:
   errorMessagePanel: {fileID: 746633429}
   messageLabel: {fileID: 640795063}
   pairNumberLabel: {fileID: 485939980}
+  errorLabel: {fileID: 910742850}
 --- !u!114 &128969541
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -777,8 +778,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -8, y: 216}
-  m_SizeDelta: {x: -569.99994, y: -669.99994}
+  m_AnchoredPosition: {x: 0, y: 102}
+  m_SizeDelta: {x: -800, y: -669.99994}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &485939980
 MonoBehaviour:
@@ -1248,8 +1249,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 309.5}
-  m_SizeDelta: {x: -400, y: -629}
+  m_AnchoredPosition: {x: 0, y: 247.5}
+  m_SizeDelta: {x: -100, y: -505}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &640795065
 CanvasRenderer:

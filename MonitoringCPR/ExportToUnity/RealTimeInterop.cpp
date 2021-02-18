@@ -15,11 +15,13 @@
 #include"RealTimeCapture.h"
 #include "ImgProcUtility.h"
 
-realTimeCapturePair stereoCapture;
+realTimeCapturePair* stereoCapture;
 const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 // real-time tracking functions
 extern "C" int __declspec(dllexport) __stdcall InitSDLCameras(int& outCameraWidth, int& outCameraHeight)
 {
+	//stereoCapture.setIsInitialized(true);
+	stereoCapture = new realTimeCapturePair();
 	return ImgProcUtility::initializeCameras(stereoCapture);
 }
 
@@ -27,8 +29,8 @@ extern "C" void __declspec(dllexport) __stdcall GetCalibrationFrame(unsigned cha
 {
 	ImgProcUtility::readRealTimeFrames(stereoCapture, width, height);	
 	cv::Mat firstFrameCopy, secondFrameCopy;
-	stereoCapture.getFirstCapture().getCurrentFrame().copyTo(firstFrameCopy);
-	stereoCapture.getSecondCapture().getCurrentFrame().copyTo(secondFrameCopy);
+	stereoCapture->getFirstCapture()->getCurrentFrame().copyTo(firstFrameCopy);
+	stereoCapture->getSecondCapture()->getCurrentFrame().copyTo(secondFrameCopy);
 
 	//wrzucic to w funkcje
 	std::vector<cv::Point2f> centers1, centers2;
@@ -57,24 +59,15 @@ extern "C" void __declspec(dllexport) __stdcall GetSDLCurrentFrame(unsigned char
 {
 	ImgProcUtility::readRealTimeFrames(stereoCapture, width, height);	
 	cv::Mat firstArgbImg, secondArgbImg;
-	cv::cvtColor(stereoCapture.getFirstCapture().getCurrentFrame(), firstArgbImg, CV_BGR2RGBA);
-	cv::cvtColor(stereoCapture.getSecondCapture().getCurrentFrame(), secondArgbImg, CV_BGR2RGBA);
+	cv::cvtColor(stereoCapture->getFirstCapture()->getCurrentFrame(), firstArgbImg, CV_BGR2RGBA);
+	cv::cvtColor(stereoCapture->getSecondCapture()->getCurrentFrame(), secondArgbImg, CV_BGR2RGBA);
 	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
 
-extern "C" bool __declspec(dllexport) __stdcall  CloseSDLCameras()
+extern "C" void __declspec(dllexport) __stdcall  CloseSDLCameras()
 {
-	if (stereoCapture.getIsInitialized())
-	{
-		stereoCapture.getFirstCapture().getCamera()->stop();
-		stereoCapture.getSecondCapture().getCamera()->stop();
-		stereoCapture.getFirstCapture().setCamera(NULL);
-		stereoCapture.getSecondCapture().setCamera(NULL);
-
-		return true;
-	}
-	return false;
+		delete stereoCapture;	
 }
 
 extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames()
@@ -90,6 +83,6 @@ extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames()
 	std::string timestamp(buffer);
 	std::replace(timestamp.begin(), timestamp.end(), ':', '_');
 	std::replace(timestamp.begin(), timestamp.end(), '/', '_');
-	cv::imwrite("../MonitoringCPR/images/Calibration/UnityFirstCam/CAM1_" + timestamp, stereoCapture.getFirstCapture().getCurrentFrame());
-	cv::imwrite("../MonitoringCPR/images/Calibration/UnitySecondCam/CAM2_" + timestamp, stereoCapture.getSecondCapture().getCurrentFrame());
+	cv::imwrite("../MonitoringCPR/images/Calibration/UnityFirstCam/" + timestamp, stereoCapture->getFirstCapture()->getCurrentFrame());
+	cv::imwrite("../MonitoringCPR/images/Calibration/UnitySecondCam/" + timestamp, stereoCapture->getSecondCapture()->getCurrentFrame());
 }

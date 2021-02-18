@@ -44,18 +44,19 @@ public class Menu : MonoBehaviour
     }
     public void SaveFrames()
     {
-        PlayerPrefs.SetInt("CalibrationValidate", 0);
+        //PlayerPrefs.SetInt("CalibrationValidate", 0);
         OpenCVInterop.saveCurrentFrames();
     }
     public void clearCalibrationFramesFolder()
     {
-        PlayerPrefs.SetInt("CalibrationValidate", 0);
+        //PlayerPrefs.SetInt("CalibrationValidate", 0);
         OpenCVInterop.clearCalibrationFramesFolder();
     }
     void OnApplicationQuit()
     {
-        if (OpenCVInterop.CloseSDLCameras())
+        if (Init.camerasInitialized)
         {
+            OpenCVInterop.CloseSDLCameras();
             Debug.Log("Closed SDL cameras in Menu manager");
         }
     }

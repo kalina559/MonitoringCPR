@@ -31,14 +31,14 @@ internal static class OpenCVInterop
     [DllImport("ExportToUnity")]
     internal static extern void GetCalibrationFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
     [DllImport("ExportToUnity")]
-    internal static extern bool CloseSDLCameras();
+    internal static extern void CloseSDLCameras();
     [DllImport("ExportToUnity")]
     internal static extern void saveCurrentFrames();
     [DllImport("ExportToUnity")]
     internal static extern void clearCalibrationFramesFolder();
 
     [DllImport("ExportToUnity")]
-    internal static extern bool checkCalibrationFrames(ref int invalidFrames, ref int totalFrames);
+    internal static extern int checkCalibrationFrames(ref int invalidFrames, ref int singleFrames, ref int totalFrames);
 
     [DllImport("ExportToUnity")]
     internal static extern bool showValidFrame(IntPtr firstFrame, IntPtr secondFrame);
@@ -48,5 +48,5 @@ internal static class OpenCVInterop
     internal static extern bool moveToNextFrames();
     [DllImport("ExportToUnity", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     [return: MarshalAs(UnmanagedType.BStr)]
-    internal static extern string getImageData();   
+    internal static extern string getFramesSetId();   
 }

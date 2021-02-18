@@ -25,14 +25,16 @@ public class CalibrationFramesCheck : MonoBehaviour
     private IntPtr secondPixelPtr;
 
     public Image errorMessagePanel;
-    int invalidFrames = 0, totalFrames = 0;
+    int invalidFrames = 0, totalFrames = 0, singleFrames = 0;
     public TextMeshProUGUI messageLabel;
     public TextMeshProUGUI pairNumberLabel;
+    public TextMeshProUGUI errorLabel;
     private int currentPairNumber = 1;
     private int validPairsCount;
     void Start()
     {
-        if (OpenCVInterop.checkCalibrationFrames(ref invalidFrames, ref totalFrames))
+        int result = OpenCVInterop.checkCalibrationFrames(ref invalidFrames, ref singleFrames, ref totalFrames);
+        if (result == 0)
         {
             validPairsCount = totalFrames - invalidFrames;
             updateLabels();
@@ -42,11 +44,15 @@ public class CalibrationFramesCheck : MonoBehaviour
             GameObject.Find("secondFrame").GetComponent<RawImage>().texture = secondTex;
             MatToTexture2D();
         }
+        else if(result == -1)
+        {
+            errorLabel.SetText("Różne liczby zdjęć w folderach");
+            errorMessagePanel.gameObject.SetActive(true);            
+        }
         else
         {
+            errorLabel.SetText("Nie znaleziono żadnej poprawnej pary zdjęć");
             errorMessagePanel.gameObject.SetActive(true);
-            //moze jakis popup "W folderze nie ma żadnych poprawnych zdjęć"
-            //SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
     }
     void InitTexture()
@@ -74,7 +80,7 @@ public class CalibrationFramesCheck : MonoBehaviour
     }
     private void updateLabels()
     {
-        messageLabel.SetText("Usunięto " + invalidFrames + " nieprawidłowych par zdjęć z całkowitej liczby " + totalFrames + " par.");
+        messageLabel.SetText("Liczba znalezionych par zdjęć: " + totalFrames +"\nLiczba usuniętych par nieprawidłowych zdjęć: " + invalidFrames + "\nLiczba usuniętych zdjęć, które nie miały pary: " + singleFrames);
         pairNumberLabel.SetText(currentPairNumber + " / " + validPairsCount);
     }
     private void OnDisable()
@@ -98,12 +104,9 @@ public class CalibrationFramesCheck : MonoBehaviour
         }
         else
         {
-            // PlayerPrefs.SetInt("CalibrationValidate", 1);
-            //StringBuilder str = new StringBuilder();
-            string s = OpenCVInterop.getImageData();
+            string s = OpenCVInterop.getFramesSetId();
             PlayerPrefs.SetString("FirstDataString", s);
             Debug.Log("zapisano firstDataString" + s);
-            //PlayerPrefs.SetString("SecondDataString", sb2.ToString());
             SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
     }
@@ -113,22 +116,7 @@ public class CalibrationFramesCheck : MonoBehaviour
         validPairsCount = totalFrames - invalidFrames;
         OpenCVInterop.deleteCurrentFrames();
 
-        if (OpenCVInterop.moveToNextFrames())
-        {
-            updateLabels();
-            MatToTexture2D();
-        }
-        else
-        {
-            if (validPairsCount != 0)
-            {
-                PlayerPrefs.SetInt("CalibrationValidate", 1);
-                //string firstDataString = " ", secondDataString = " ";
-                //OpenCVInterop.getImageData(ref firstDataString, ref secondDataString);
-                //PlayerPrefs.SetString("FirstDataString", firstDataString);
-                //PlayerPrefs.SetString("SecondDataString", secondDataString);
-            }          
-            SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
-        }
+        currentPairNumber--;
+        moveToNextFrame();
     }
 }

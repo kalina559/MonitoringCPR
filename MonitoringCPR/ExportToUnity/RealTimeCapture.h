@@ -13,9 +13,10 @@ class RealTimeCapture
 	//number of detected balls
 
 public:
-	RealTimeCapture()
+	~RealTimeCapture()
 	{
-		//multiTracker = cv::MultiTracker::create();
+		camera->stop();
+		camera = NULL;
 	}
 	ps3eye::PS3EYECam::PS3EYERef getCamera()
 	{

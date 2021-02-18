@@ -2468,8 +2468,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "PRZED KALIBRACJ\u0104 NALE\u017BY SPRAWDZI\u0106 POPRAWNO\u015A\u0106
-    PAR ZDJ\u0118\u0106"
+  m_text: "WPROWADZONO ZMIANY W FOLDERACH ZE ZDJ\u0118CIAMI"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -2538,12 +2537,12 @@ MonoBehaviour:
   m_margin: {x: 0.30650327, y: 2.2717857, z: 0.83114624, w: 0.8391904}
   m_textInfo:
     textComponent: {fileID: 1707429814}
-    characterCount: 54
+    characterCount: 43
     spriteCount: 0
-    spaceCount: 6
-    wordCount: 7
+    spaceCount: 5
+    wordCount: 6
     linkCount: 0
-    lineCount: 3
+    lineCount: 2
     pageCount: 1
     materialCount: 2
   m_isUsingLegacyAnimationComponent: 0
