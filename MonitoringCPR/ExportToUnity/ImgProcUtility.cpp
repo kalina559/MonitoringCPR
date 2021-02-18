@@ -6,16 +6,16 @@ int ImgProcUtility::initializeCameras(realTimeCapturePair* stereoCapture)
 	{
 		return -1;
 	}
-	stereoCapture->getFirstCapture()->setCamera(devices[0]);
-	stereoCapture->getSecondCapture()->setCamera(devices[1]);
-	bool success1 = stereoCapture->getFirstCapture()->getCamera()->init(640, 480, 60);
-	bool success2 = stereoCapture->getSecondCapture()->getCamera()->init(640, 480, 60);
+	stereoCapture->getFirstCapture().setCamera(devices[0]);
+	stereoCapture->getSecondCapture().setCamera(devices[1]);
+	bool success1 = stereoCapture->getFirstCapture().getCamera()->init(640, 480, 60);
+	bool success2 = stereoCapture->getSecondCapture().getCamera()->init(640, 480, 60);
 	if (!success1 || !success2)
 	{
 		return -2;
 	}
-	stereoCapture->getFirstCapture()->getCamera()->start();
-	stereoCapture->getSecondCapture()->getCamera()->start();
+	stereoCapture->getFirstCapture().getCamera()->start();
+	stereoCapture->getSecondCapture().getCamera()->start();
 	
 	stereoCapture->setIsInitialized(true);
 	return 0;
@@ -33,8 +33,8 @@ void ImgProcUtility::readRealTimeFrames(realTimeCapturePair* stereoCapture, int 
 	cv::Mat firstFrame = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
 	cv::Mat secondFrame = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
 
-	stereoCapture->getFirstCapture()->getCamera()->getFrame(firstFrame.data);
-	stereoCapture->getSecondCapture()->getCamera()->getFrame(secondFrame.data);
+	stereoCapture->getFirstCapture().getCamera()->getFrame(firstFrame.data);
+	stereoCapture->getSecondCapture().getCamera()->getFrame(secondFrame.data);
 
 	cv::Mat firstResizedMat(height, width, firstFrame.type());
 	cv::Mat secondResizedMat(height, width, secondFrame.type());
@@ -42,8 +42,8 @@ void ImgProcUtility::readRealTimeFrames(realTimeCapturePair* stereoCapture, int 
 	cv::resize(firstFrame, firstResizedMat, firstResizedMat.size(), cv::INTER_CUBIC);
 	cv::resize(secondFrame, secondResizedMat, secondResizedMat.size(), cv::INTER_CUBIC);
 
-	stereoCapture->getFirstCapture()->setCurrentFrame(firstResizedMat);
-	stereoCapture->getSecondCapture()->setCurrentFrame(secondResizedMat);
+	stereoCapture->getFirstCapture().setCurrentFrame(firstResizedMat);
+	stereoCapture->getSecondCapture().setCurrentFrame(secondResizedMat);
 }
 
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::resizeFrames(std::pair<cv::Mat, cv::Mat> frames, double scale)

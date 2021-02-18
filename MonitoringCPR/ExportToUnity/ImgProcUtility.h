@@ -40,40 +40,6 @@ struct Matrices
 	cv::Mat R2 = cv::Mat(cv::Size(3, 3), CV_64FC1);
 };
 
-class realTimeCapturePair
-{
-	RealTimeCapture* first;
-	RealTimeCapture* second;
-	bool isInitialized = false;
-public:
-	realTimeCapturePair()
-	{
-		first = new RealTimeCapture();
-		second = new RealTimeCapture();
-	}
-	~realTimeCapturePair()
-	{
-		delete first;
-		delete second;
-	}
-	RealTimeCapture* getFirstCapture()
-	{
-		return first;
-	}
-	RealTimeCapture* getSecondCapture()
-	{
-		return second;
-	}
-	void setIsInitialized(bool value)
-	{
-		isInitialized = value;
-	}
-	bool getIsInitialized()
-	{
-		return isInitialized;
-	}
-};
-
 
 // stworzyc na tej podstawie klase StereoFrames: pola Mat first, second, colorFrames, grayFrames itd.
 // potem klase pochodn¹ StereoCapture, dodaæ multitrackery, ROI itd. i w zast¹piæ niektóre parametry funkcji za pomoc¹ pól klasy

@@ -17,6 +17,8 @@ public:
 	{
 		camera->stop();
 		camera = NULL;
+		cv::imshow("~realtimecapture", cv::imread("C/Users/Kalin/Desktop/pierdoly/memes/outstanding.png"));
+		cv::waitKey(0);
 	}
 	ps3eye::PS3EYECam::PS3EYERef getCamera()
 	{
@@ -41,5 +43,49 @@ public:
 	cv::Mat getCurrentFrame()
 	{
 		return currentFrame;
+	}
+};
+
+class realTimeCapturePair
+{
+	RealTimeCapture first;
+	RealTimeCapture second;
+	bool isInitialized = false;
+	realTimeCapturePair(realTimeCapturePair const& copy);
+	void operator=(realTimeCapturePair const& copy);
+public:
+	static realTimeCapturePair* getInstance()
+	{
+		static realTimeCapturePair instance;
+		return &instance;
+	}
+	realTimeCapturePair()
+	{
+	}
+	~realTimeCapturePair()
+	{
+	}
+	RealTimeCapture& getFirstCapture()
+	{
+		return first;
+	}
+	RealTimeCapture& getSecondCapture()
+	{
+		return second;
+	}
+	void setIsInitialized(bool value)
+	{
+		isInitialized = value;
+	}
+	bool getIsInitialized()
+	{
+		return isInitialized;
+	}
+	void freeCameras()
+	{
+		getInstance()->getFirstCapture().getCamera()->stop();
+		getInstance()->getFirstCapture().setCamera(NULL);
+		getInstance()->getSecondCapture().getCamera()->stop();
+		getInstance()->getSecondCapture().setCamera(NULL);
 	}
 };
