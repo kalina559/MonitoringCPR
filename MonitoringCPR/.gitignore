@@ -364,5 +364,5 @@ FodyWeavers.xsd
 # opencv_world .dll files
 opencv_world411.dll
 opencv_world411d.dll
-ExportToUnity.dll
+MonitoringCPR.dll
 bin/

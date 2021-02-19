@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class Init : MonoBehaviour
 {
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern int InitSDLCameras(ref int outCameraWidth, ref int outCameraHeight);
     public Image errorMessagePanel;
 
@@ -36,8 +36,6 @@ public class Init : MonoBehaviour
             {
                 Debug.LogWarningFormat("Failed to initialize cameras", GetType());
             }
-
-            // return;
         }
         else
         {

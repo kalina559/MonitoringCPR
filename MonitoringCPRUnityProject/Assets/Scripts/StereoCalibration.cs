@@ -12,7 +12,7 @@ public class StereoCalibration : MonoBehaviour
     public Image messagePanel;
     public void GoToCalibration()
     {
-        if (isValidationUpToDate())
+        if (OpenCVInterop.checkId())
         {           
                 SceneManager.LoadScene((int)Menu.Scenes.Calibration);
         }
@@ -25,12 +25,5 @@ public class StereoCalibration : MonoBehaviour
     public void CloseMessagePanel()
     {
         messagePanel.gameObject.SetActive(false);
-    }
-
-    bool isValidationUpToDate()
-    {
-        string s = OpenCVInterop.getFramesSetId();
-        Debug.Log("Zapisana wartość: " + PlayerPrefs.GetString("FirstDataString") + " Obecna wartość: " + s);
-        return PlayerPrefs.GetString("FirstDataString") == s;
     }
 }

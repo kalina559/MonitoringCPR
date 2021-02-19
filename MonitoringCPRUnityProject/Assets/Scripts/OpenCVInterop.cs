@@ -7,46 +7,52 @@ using System.Text;
 
 internal static class OpenCVInterop
 {
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern int Init(ref int outCameraWidth, ref int outCameraHeight);
 
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern int Close();
 
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern int SetScale(int downscale);
 
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal unsafe static extern void Detect(CvCoordinates* outBalls, int maxOutBallsCount, ref int outDetectedBallsCount);
 
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern void GetCurrentFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
 
 
 
 
 
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern void GetSDLCurrentFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern void GetCalibrationFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern void CloseSDLCameras();
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern void saveCurrentFrames();
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern void clearCalibrationFramesFolder();
 
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern int checkCalibrationFrames(ref int invalidFrames, ref int singleFrames, ref int totalFrames);
 
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern bool showValidFrame(IntPtr firstFrame, IntPtr secondFrame);
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern bool deleteCurrentFrames();
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern bool moveToNextFrames();
-    [DllImport("ExportToUnity", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+    [DllImport("MonitoringCPR", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     [return: MarshalAs(UnmanagedType.BStr)]
-    internal static extern string getFramesSetId();   
+    internal static extern string getFramesSetId();
+
+
+    [DllImport("MonitoringCPR")]
+    internal static extern void saveId();
+    [DllImport("MonitoringCPR")]
+    internal static extern bool checkId();
 }

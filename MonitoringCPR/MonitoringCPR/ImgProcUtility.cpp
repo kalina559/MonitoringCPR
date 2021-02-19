@@ -16,8 +16,7 @@ int ImgProcUtility::initializeCameras(realTimeCapturePair* stereoCapture)
 	}
 	stereoCapture->getFirstCapture().getCamera()->start();
 	stereoCapture->getSecondCapture().getCamera()->start();
-	
-	stereoCapture->setIsInitialized(true);
+
 	return 0;
 }
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence)
@@ -268,4 +267,28 @@ void ImgProcUtility::displayDistanceBetweenMarkers(cv::Mat& displayMatrix, Coord
 {
 	cv::putText(displayMatrix, ("Distance between markers " + std::to_string(firstMarkerId) + " and " + std::to_string(secondMarkerId) + ": " + std::to_string(calculateDistanceBetweenMarkers(outBalls, firstMarkerId, secondMarkerId))),
 		cv::Point(200, 200), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 0, 255));
+}
+std::string ImgProcUtility::getId()
+{
+	std::string firstPath = "..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg";
+	std::string secondPath = "..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg";
+	std::vector<cv::String> fileNames1, fileNames2;
+
+	cv::glob(firstPath, fileNames1, false); //todo wrzucic to w imgprocutility 
+	cv::glob(secondPath, fileNames2, false);
+
+	std::string outDigitString;
+	if (fileNames1.size() == fileNames2.size() && fileNames1.size() != 0)
+	{
+		for (int i = 0; i < fileNames1.size(); ++i)
+		{
+			auto firstFileName = std::filesystem::path(fileNames1[i]).filename();
+			auto secondFileName = std::filesystem::path(fileNames2[i]).filename();
+			std::string firstFileNameStr{ firstFileName.string() };
+			std::string secondFileNameStr{ secondFileName.string() };
+
+			outDigitString += firstFileNameStr += secondFileNameStr;
+		}
+	}
+	return outDigitString;
 }

@@ -27,12 +27,18 @@
     <ClCompile Include="CalibrationInterop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CameraCalibration.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImgProcUtility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RealTimeCapture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraCalibration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

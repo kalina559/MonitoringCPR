@@ -6,7 +6,7 @@ Components
 -------------
 - Visual studio C++ solution consisting of 2 projects: 
   - CameraCalibration allowing user to calibrate single cameras, and perform stereo calibration and rectification. It builds into .exe file.
-  - ExportToUnity containing functions allowing to pass marker coordinates to Unity's C# scripts. Builds into .dll file located in Unity3D project's Assets folder.
+  - MonitoringCPR containing functions allowing to pass marker coordinates to Unity's C# scripts. Builds into .dll file located in Unity3D project's Assets folder.
 - Unity3D project
 
 Prerequisites

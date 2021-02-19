@@ -21,8 +21,8 @@ const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 
 std::vector<std::pair<std::string, std::string>> validFramesPaths;
 
-extern "C" int __declspec(dllexport) __stdcall checkCalibrationFrames(int& invalidFramesCount, int& framesWithoutPair, int& totalFramesCount)   //komunikaty - brak poprawnych zdjec / zdjecia nie do pary
-{	
+extern "C" int __declspec(dllexport) __stdcall checkCalibrationFrames(int& invalidFramesCount, int& framesWithoutPair, int& totalFramesCount) 
+{
 	validFramesPaths.clear();
 	std::string path1 = "../MonitoringCPR/images/Calibration/UnityFirstCam/";
 	std::string path2 = "../MonitoringCPR/images/Calibration/UnitySecondCam/";
@@ -152,7 +152,7 @@ extern "C" void __declspec(dllexport) __stdcall clearCalibrationFramesFolder()
 	system(command.append(path).c_str());
 
 	command = "del /Q ";
-	path = "..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg";	
+	path = "..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg";
 	system(command.append(path).c_str());
 }
 
@@ -163,7 +163,7 @@ extern "C" __declspec(dllexport) BSTR __stdcall  getFramesSetId()
 	std::string firstPath = "..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg";
 	std::string secondPath = "..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg";
 	std::vector<cv::String> fileNames1, fileNames2;
-    
+
 	cv::glob(firstPath, fileNames1, false); //todo wrzucic to w imgprocutility 
 	cv::glob(secondPath, fileNames2, false);
 
@@ -176,7 +176,7 @@ extern "C" __declspec(dllexport) BSTR __stdcall  getFramesSetId()
 			auto secondFileName = std::filesystem::path(fileNames2[i]).filename();
 			std::wstring firstFileNameStr{ firstFileName.wstring() };
 			std::wstring secondFileNameStr{ secondFileName.wstring() };
-			
+
 			outDigitString += firstFileNameStr += secondFileNameStr;
 		}
 		bs = SysAllocStringLen(outDigitString.data(), outDigitString.size());
@@ -184,4 +184,23 @@ extern "C" __declspec(dllexport) BSTR __stdcall  getFramesSetId()
 	}
 	bs = SysAllocString(L"");
 	return SysAllocString(bs);
+}
+extern "C" void __declspec(dllexport) __stdcall  saveId()
+{
+	auto currentFrameSetId = ImgProcUtility::getId();
+	std::ofstream outputFile;
+	outputFile.open("validatedFrameSetId.txt");
+	outputFile << currentFrameSetId;
+	outputFile.close();
+	
+}
+extern "C" bool __declspec(dllexport) __stdcall  checkId()
+{
+	std::string validatedFrameSetId;
+	std::ifstream inputFile;
+	inputFile.open("validatedFrameSetId.txt");
+	inputFile >> validatedFrameSetId;
+	inputFile.close();
+
+	return validatedFrameSetId == ImgProcUtility::getId();
 }

@@ -7,9 +7,12 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.Text;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Runtime.Serialization;
+using System.IO;
 public class CalibrationFramesCheck : MonoBehaviour
 {
-    [DllImport("ExportToUnity")]
+    [DllImport("MonitoringCPR")]
     internal static extern void showInvalidFrame(IntPtr firstFrame, IntPtr secondFrame);
 
     private Texture2D firstTex;
@@ -104,9 +107,7 @@ public class CalibrationFramesCheck : MonoBehaviour
         }
         else
         {
-            string s = OpenCVInterop.getFramesSetId();
-            PlayerPrefs.SetString("FirstDataString", s);
-            Debug.Log("zapisano firstDataString" + s);
+            OpenCVInterop.saveId();
             SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
     }

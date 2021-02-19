@@ -50,7 +50,6 @@ class realTimeCapturePair
 {
 	RealTimeCapture first;
 	RealTimeCapture second;
-	bool isInitialized = false;
 	realTimeCapturePair(realTimeCapturePair const& copy);
 	void operator=(realTimeCapturePair const& copy);
 public:
@@ -72,14 +71,6 @@ public:
 	RealTimeCapture& getSecondCapture()
 	{
 		return second;
-	}
-	void setIsInitialized(bool value)
-	{
-		isInitialized = value;
-	}
-	bool getIsInitialized()
-	{
-		return isInitialized;
 	}
 	void freeCameras()
 	{
