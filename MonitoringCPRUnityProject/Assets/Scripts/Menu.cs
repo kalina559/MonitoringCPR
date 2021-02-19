@@ -14,7 +14,8 @@ public class Menu : MonoBehaviour
         MarkerMovement,
         CaptureCalibrationFrames,
         CalibrationFramesCheck,
-        Calibration
+        Calibration,
+        CalibrationTest
     }
     public void GoToMarkerMovement()
     {
@@ -37,6 +38,10 @@ public class Menu : MonoBehaviour
     public void GoToCalibrationFramesCheck()
     {
         SceneManager.LoadScene((int)Scenes.CalibrationFramesCheck);
+    }
+    public void GoToCalibrationTest()
+    {
+        SceneManager.LoadScene((int)Scenes.CalibrationTest);
     }
     public void Quit()
     {

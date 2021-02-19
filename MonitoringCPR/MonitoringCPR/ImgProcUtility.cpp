@@ -16,6 +16,7 @@ int ImgProcUtility::initializeCameras(realTimeCapturePair* stereoCapture)
 	}
 	stereoCapture->getFirstCapture().getCamera()->start();
 	stereoCapture->getSecondCapture().getCamera()->start();
+	stereoCapture->setIsReady(false);
 
 	return 0;
 }
@@ -292,3 +293,19 @@ std::string ImgProcUtility::getId()
 	}
 	return outDigitString;
 }
+
+void ImgProcUtility::detectMarkers(cv::Mat& frame, std::vector<cv::Vec3f> circles)
+{
+	cv::Mat gray;
+	cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+	HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1, gray.rows / 16,	100, 30, 1, 30	);
+
+	for (int i = 0; i < circles.size(); ++i)
+	{
+		circle(frame, cv::Point(circles[i](0), circles[i](1)), circles[i](2), cv::Scalar(0, 0, 255));
+	}
+}
+
+
+
+//funkcja tworzaca ROIs na podtawie wektora vec3f z wspolrzednymi markerow

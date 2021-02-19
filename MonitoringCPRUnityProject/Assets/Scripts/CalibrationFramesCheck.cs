@@ -12,9 +12,6 @@ using System.Runtime.Serialization;
 using System.IO;
 public class CalibrationFramesCheck : MonoBehaviour
 {
-    [DllImport("MonitoringCPR")]
-    internal static extern void showInvalidFrame(IntPtr firstFrame, IntPtr secondFrame);
-
     private Texture2D firstTex;
     private Texture2D secondTex;
 
@@ -31,7 +28,7 @@ public class CalibrationFramesCheck : MonoBehaviour
     int invalidFrames = 0, totalFrames = 0, singleFrames = 0;
     public TextMeshProUGUI messageLabel;
     public TextMeshProUGUI pairNumberLabel;
-    public TextMeshProUGUI errorLabel;
+    public TextMeshProUGUI messageText;
     private int currentPairNumber = 1;
     private int validPairsCount;
     void Start()
@@ -49,12 +46,12 @@ public class CalibrationFramesCheck : MonoBehaviour
         }
         else if(result == -1)
         {
-            errorLabel.SetText("Różne liczby zdjęć w folderach");
+            messageText.SetText("Różne liczby zdjęć w folderach");
             errorMessagePanel.gameObject.SetActive(true);            
         }
         else
         {
-            errorLabel.SetText("Nie znaleziono żadnej poprawnej pary zdjęć");
+            messageText.SetText("Nie znaleziono żadnej poprawnej pary zdjęć");
             errorMessagePanel.gameObject.SetActive(true);
         }
     }

@@ -48,6 +48,7 @@ public:
 
 class realTimeCapturePair
 {
+	bool isReady = false;
 	RealTimeCapture first;
 	RealTimeCapture second;
 	realTimeCapturePair(realTimeCapturePair const& copy);
@@ -78,5 +79,13 @@ public:
 		getInstance()->getFirstCapture().setCamera(NULL);
 		getInstance()->getSecondCapture().getCamera()->stop();
 		getInstance()->getSecondCapture().setCamera(NULL);
+	}
+	void setIsReady(bool value)
+	{
+		isReady = value;
+	}
+	bool getIsReady()
+	{
+		return isReady;
 	}
 };

@@ -8,9 +8,7 @@ void CameraCalibration::loadPhotos(std::string path, std::vector<cv::Mat>& image
 	for (size_t i = 0; i < fileNames.size(); ++i)
 	{
 		std::cout << "Processing photo nr: " << i << std::endl;
-		cv::Mat resized;
-		resize(cv::imread(fileNames[i]), resized, cv::Size(), 0.5, 0.5);
-		images.push_back(resized);
+		images.push_back(cv::imread(fileNames[i]));
 	}
 }
 
@@ -26,14 +24,14 @@ std::vector<std::string> CameraCalibration::checkFramesPairs(std::string firstPa
 
 	for (const std::string& fileName : firstFileNames)
 	{
-		if (secondFileNames.find(fileName) == secondFileNames.end())  
+		if (secondFileNames.find(fileName) == secondFileNames.end())
 		{
 			framesWithoutPairPaths.push_back(firstPath + fileName);
 		}
 	}
 	for (const std::string& fileName : secondFileNames)
 	{
-		if (firstFileNames.find(fileName) == firstFileNames.end())  
+		if (firstFileNames.find(fileName) == firstFileNames.end())
 		{
 			framesWithoutPairPaths.push_back(secondPath + fileName);
 		}
@@ -48,7 +46,7 @@ std::set<std::string> CameraCalibration::getFileNames(std::vector<cv::String> fi
 	for (int i = 0; i < filePaths.size(); ++i)
 	{
 		auto fileName = std::filesystem::path(filePaths[i]).filename();
-		fileNames.insert(fileName.string());   
+		fileNames.insert(fileName.string());
 	}
 	return fileNames;
 }
@@ -59,15 +57,27 @@ void CameraCalibration::realLifeCirclePositions(cv::Size boardSize, float distan
 	{
 		for (int j = 0; j < boardSize.width; ++j)
 		{
-			circleCenters.push_back(cv::Point3f(j * distance, i * distance, 0.0f));
+			if (i % 2 == 0)
+				circleCenters.push_back(cv::Point3f(j * distance, i * distance / 2, 0.0f));
+			else
+				circleCenters.push_back(cv::Point3f((j - 0.5) * distance, i * distance / 2, 0.0f));      //przesuniete, bo assymetric grid.		BARDZO WAZNY ZNAK +/- 0.5. NajwyraŸniej górny prawy róg wzoru jest 'ob³y'
 		}
 	}
 }
 
 void CameraCalibration::getCirclePositions(std::vector<cv::Mat> images, std::vector<std::vector<cv::Point2f>>& centers, cv::Size arrayOfCirclesSize)
 {
-	for (size_t i = 0; i < images.size(); ++i) {
-		bool patternFound = findCirclesGrid(images[i], arrayOfCirclesSize, centers[i], cv::CALIB_CB_SYMMETRIC_GRID);
+	cv::SimpleBlobDetector::Params params;
+	params.minArea = 10;
+	params.minThreshold = 1;
+
+	params.filterByConvexity = 1;
+	params.minConvexity = 0.5;
+
+	cv::Ptr<cv::FeatureDetector> blobDetector = cv::SimpleBlobDetector::create(params);
+	for (size_t i = 0; i < images.size(); ++i) 
+	{
+		bool patternFound = findCirclesGrid(images[i], arrayOfCirclesSize, centers[i], cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
 		//just for debug purposes
 		//drawChessboardCorners(images[i], arrayOfCirclesSize, Mat(centers[i]), patternFound);
 	}
@@ -85,7 +95,7 @@ void CameraCalibration::singleCameraCalibration(std::vector<cv::Mat> calibration
 	std::vector<std::vector<cv::Point2f> > centers(calibrationImages.size());
 
 	getCirclePositions(calibrationImages, centers, boardSize);
-	
+
 	calibrateCamera(worldSpaceCircleCenters, centers, boardSize, cameraMatrix, distCoefficients, rVectors, tVectors);
 }
 
@@ -143,8 +153,8 @@ void CameraCalibration::stereoCalibration(std::vector<cv::Mat> images1, std::vec
 	stereoCalibrate(worldSpaceCircleCenters, centers1, centers2, firstCamMatrix, firstCamCoeffs, secondCamMatrix,
 		secondCamCoeffs, cv::Size(1224, 1024), R, T, E, F, cv::CALIB_FIX_INTRINSIC, cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-6));
 	//std::cout << "after stereo" << std::endl;
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/R", R);
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/T", T);
+	CameraCalibration::saveMatrix("matrices/stereoCalibration/R", R);
+	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/T", T);  //todo te sciezki jako const string
 	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/E", E);
 	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/F", F);
 }
@@ -155,10 +165,10 @@ void CameraCalibration::getSingleCamerasCoeffs(std::vector<cv::Mat> firstCamImgs
 	CameraCalibration::singleCameraCalibration(firstCamImgs, boardSize, distanceBetweenCircles, firstCamMatrix, firstCamCoeffs);
 	CameraCalibration::singleCameraCalibration(secondCamImgs, boardSize, distanceBetweenCircles, secondCamMatrix, secondCamCoeffs);
 	//saving matrices to Unity Project directory
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/singleCamCalibration/firstCamMatrix", firstCamMatrix);
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/singleCamCalibration/secondCamMatrix", secondCamMatrix);
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/singleCamCalibration/firstCamCoeffs", firstCamCoeffs);
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/singleCamCalibration/secondCamCoeffs", secondCamCoeffs);
+	CameraCalibration::saveMatrix("matrices/singleCamCalibration/firstCamMatrix", firstCamMatrix);
+	CameraCalibration::saveMatrix("matrices/singleCamCalibration/secondCamMatrix", secondCamMatrix);
+	CameraCalibration::saveMatrix("matrices/singleCamCalibration/firstCamCoeffs", firstCamCoeffs);
+	CameraCalibration::saveMatrix("matrices/singleCamCalibration/secondCamCoeffs", secondCamCoeffs);
 }
 
 void CameraCalibration::saveRectifiedMatrices(cv::Mat R1, cv::Mat R2, cv::Mat P1, cv::Mat P2, cv::Mat Q)

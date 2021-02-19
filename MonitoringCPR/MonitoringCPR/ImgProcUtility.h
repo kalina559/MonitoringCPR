@@ -74,4 +74,5 @@ namespace ImgProcUtility
 	double calculateDistanceBetweenMarkers(Coordinates* outBalls, int firstMarkerId, int secondMarkerId);
 	void displayDistanceBetweenMarkers(cv::Mat& displayMatrix, Coordinates* outBalls, int firstMarkerId, int secondMarkerId);
 	std::string getId();
+	void detectMarkers(cv::Mat& frame, std::vector<cv::Vec3f> circles);
 }

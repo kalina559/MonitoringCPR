@@ -204,3 +204,27 @@ extern "C" bool __declspec(dllexport) __stdcall  checkId()
 
 	return validatedFrameSetId == ImgProcUtility::getId();
 }
+
+extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount, int& time)
+{
+	Uint32 start_ticks = SDL_GetTicks();
+	std::vector<cv::Mat> images1, images2;
+	CameraCalibration::loadPhotos("..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg", images1);
+	CameraCalibration::loadPhotos("..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg", images2);
+
+	cv::Mat firstCamCoeffs, secondCamCoeffs, firstCamMatrix, secondCamMatrix;
+
+	CameraCalibration::getSingleCamerasCoeffs(images1, images2, arrayOfCirclesSize, distanceBetweenCircles, firstCamMatrix, secondCamMatrix, firstCamCoeffs, secondCamCoeffs);
+
+	cv::Mat R, T, E, F;
+
+	CameraCalibration::stereoCalibration(images1, images2,
+		firstCamMatrix, secondCamMatrix, firstCamCoeffs, secondCamCoeffs, arrayOfCirclesSize, R, T, E, F, distanceBetweenCircles);
+
+	cv::Mat R1, R2, P1, P2, Q;
+	stereoRectify(firstCamMatrix, firstCamCoeffs, secondCamMatrix, secondCamCoeffs, cv::Size(1224, 1024), R, T, R1, R2, P1, P2, Q);
+	CameraCalibration::saveRectifiedMatrices(R1, R2, P1, P2, Q);
+	Uint32 end_ticks = SDL_GetTicks();
+	pairCount = images1.size();
+	time = end_ticks - start_ticks;
+}

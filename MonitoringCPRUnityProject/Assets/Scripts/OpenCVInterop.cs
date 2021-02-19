@@ -27,7 +27,7 @@ internal static class OpenCVInterop
 
 
     [DllImport("MonitoringCPR")]
-    internal static extern void GetSDLCurrentFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
+    internal static extern void GetCurrentGrayscaleFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
     [DllImport("MonitoringCPR")]
     internal static extern void GetCalibrationFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
     [DllImport("MonitoringCPR")]
@@ -55,4 +55,10 @@ internal static class OpenCVInterop
     internal static extern void saveId();
     [DllImport("MonitoringCPR")]
     internal static extern bool checkId();
+    [DllImport("MonitoringCPR")]
+    internal static extern void stereoCalibrate(ref int pairCount, ref int time);
+    [DllImport("MonitoringCPR")]
+    internal static extern void detectMarkers(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
+    [DllImport("MonitoringCPR")]
+    internal static extern bool startTrackingMarkers();
 }
