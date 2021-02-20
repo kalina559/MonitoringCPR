@@ -1,15 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using System.Runtime.InteropServices;
 using System;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
-using System.Text;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Runtime.Serialization;
-using System.IO;
+using System.Threading;
 public class CalibrationFramesCheck : MonoBehaviour
 {
     private Texture2D firstTex;
@@ -28,31 +23,39 @@ public class CalibrationFramesCheck : MonoBehaviour
     int invalidFrames = 0, totalFrames = 0, singleFrames = 0;
     public TextMeshProUGUI messageLabel;
     public TextMeshProUGUI pairNumberLabel;
-    public TextMeshProUGUI messageText;
     private int currentPairNumber = 1;
     private int validPairsCount;
+    Thread thread;
+    bool checkFinished = true;
+    bool checkResult;
     void Start()
     {
-        int result = OpenCVInterop.checkCalibrationFrames(ref invalidFrames, ref singleFrames, ref totalFrames);
-        if (result == 0)
-        {
-            validPairsCount = totalFrames - invalidFrames;
-            updateLabels();
-            Debug.Log("CalibFramesCheck start");
-            InitTexture();
-            GameObject.Find("firstFrame").GetComponent<RawImage>().texture = firstTex;
-            GameObject.Find("secondFrame").GetComponent<RawImage>().texture = secondTex;
-            MatToTexture2D();
-        }
-        else if(result == -1)
-        {
-            messageText.SetText("Różne liczby zdjęć w folderach");
-            errorMessagePanel.gameObject.SetActive(true);            
-        }
-        else
-        {
-            messageText.SetText("Nie znaleziono żadnej poprawnej pary zdjęć");
-            errorMessagePanel.gameObject.SetActive(true);
+        errorMessagePanel.GetComponentInChildren<TextMeshProUGUI>().SetText("Trwa wstępne sprawdzanie poprawności zdjęć");
+        errorMessagePanel.gameObject.SetActive(true);
+        errorMessagePanel.GetComponentInChildren<Button>().gameObject.SetActive(false);
+        startFrameCheckThread();        
+    }
+    private void Update()
+    {
+        if (thread != null && !thread.IsAlive && checkFinished)     //when frameCheck is finished
+        {            
+            if (checkResult)
+            {
+                errorMessagePanel.gameObject.SetActive(false);
+                validPairsCount = totalFrames - invalidFrames;
+                updateLabels();
+                Debug.Log("CalibFramesCheck start");
+                InitTexture();
+                GameObject.Find("firstFrame").GetComponent<RawImage>().texture = firstTex;
+                GameObject.Find("secondFrame").GetComponent<RawImage>().texture = secondTex;
+                MatToTexture2D();
+            }
+            else
+            {
+                errorMessagePanel.GetComponentInChildren<TextMeshProUGUI>().SetText("Nie znaleziono żadnej poprawnej pary zdjęć");
+                errorMessagePanel.GetComponentInChildren<Button>().gameObject.SetActive(true);
+            }
+            checkFinished = false;
         }
     }
     void InitTexture()
@@ -92,8 +95,9 @@ public class CalibrationFramesCheck : MonoBehaviour
             secondPixelHandle.Free();
             Debug.Log("Freed textures in onDisable displayImage");
         }
+        if (thread != null)
+            thread.Abort();
     }
-
     public void moveToNextFrame()
     {
         if (OpenCVInterop.moveToNextFrames())
@@ -113,8 +117,16 @@ public class CalibrationFramesCheck : MonoBehaviour
         invalidFrames++;
         validPairsCount = totalFrames - invalidFrames;
         OpenCVInterop.deleteCurrentFrames();
-
         currentPairNumber--;
         moveToNextFrame();
+    }
+    public void startFrameCheckThread()
+    {
+        thread = new Thread(frameCheck);
+        thread.Start();
+    }
+    void frameCheck()
+    {
+        checkResult = OpenCVInterop.checkCalibrationFrames(ref invalidFrames, ref singleFrames, ref totalFrames);
     }
 }

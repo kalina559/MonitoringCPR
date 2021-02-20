@@ -156,7 +156,6 @@ MonoBehaviour:
   errorMessagePanel: {fileID: 746633429}
   messageLabel: {fileID: 640795063}
   pairNumberLabel: {fileID: 485939980}
-  errorLabel: {fileID: 910742850}
 --- !u!114 &128969541
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -373,7 +372,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: OK
+  m_text: "WR\xD3\u0106"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -442,14 +441,14 @@ MonoBehaviour:
   m_margin: {x: 0.30650327, y: -5.176673, z: 0.83114624, w: 4.622413}
   m_textInfo:
     textComponent: {fileID: 287239864}
-    characterCount: 2
+    characterCount: 4
     spriteCount: 0
     spaceCount: 0
     wordCount: 1
     linkCount: 0
     lineCount: 1
     pageCount: 1
-    materialCount: 1
+    materialCount: 2
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_spriteAnimator: {fileID: 0}
@@ -650,7 +649,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0.00008857541, y: -74}
-  m_SizeDelta: {x: 100, y: 50}
+  m_SizeDelta: {x: 140, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &467460036
 MonoBehaviour:

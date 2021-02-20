@@ -154,9 +154,9 @@ void CameraCalibration::stereoCalibration(std::vector<cv::Mat> images1, std::vec
 		secondCamCoeffs, cv::Size(1224, 1024), R, T, E, F, cv::CALIB_FIX_INTRINSIC, cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-6));
 	//std::cout << "after stereo" << std::endl;
 	CameraCalibration::saveMatrix("matrices/stereoCalibration/R", R);
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/T", T);  //todo te sciezki jako const string
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/E", E);
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoCalibration/F", F);
+	CameraCalibration::saveMatrix("matrices/stereoCalibration/T", T);  //todo te sciezki jako const string
+	CameraCalibration::saveMatrix("matrices/stereoCalibration/E", E);
+	CameraCalibration::saveMatrix("matrices/stereoCalibration/F", F);
 }
 
 void CameraCalibration::getSingleCamerasCoeffs(std::vector<cv::Mat> firstCamImgs, std::vector<cv::Mat> secondCamImgs, cv::Size boardSize, float distanceBetweenCircles,
@@ -173,9 +173,9 @@ void CameraCalibration::getSingleCamerasCoeffs(std::vector<cv::Mat> firstCamImgs
 
 void CameraCalibration::saveRectifiedMatrices(cv::Mat R1, cv::Mat R2, cv::Mat P1, cv::Mat P2, cv::Mat Q)
 {
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoRectifyResults/R1", R1);
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoRectifyResults/R2", R2);
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoRectifyResults/P1", P1);
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoRectifyResults/P2", P2);
-	CameraCalibration::saveMatrix("../../MonitoringCPRUnityProject/matrices/stereoRectifyResults/Q", Q);
+	CameraCalibration::saveMatrix("matrices/stereoRectifyResults/R1", R1);
+	CameraCalibration::saveMatrix("matrices/stereoRectifyResults/R2", R2);
+	CameraCalibration::saveMatrix("matrices/stereoRectifyResults/P1", P1);
+	CameraCalibration::saveMatrix("matrices/stereoRectifyResults/P2", P2);
+	CameraCalibration::saveMatrix("matrices/stereoRectifyResults/Q", Q);
 }

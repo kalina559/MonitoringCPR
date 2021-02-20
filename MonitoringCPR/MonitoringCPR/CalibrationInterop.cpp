@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "CameraCalibration.h"
 #include <opencv2/tracker.hpp>
 #include <opencv2/cuda.hpp>
@@ -21,7 +21,7 @@ const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 
 std::vector<std::pair<std::string, std::string>> validFramesPaths;
 
-extern "C" int __declspec(dllexport) __stdcall checkCalibrationFrames(int& invalidFramesCount, int& framesWithoutPair, int& totalFramesCount) 
+extern "C" bool __declspec(dllexport) __stdcall checkCalibrationFrames(int& invalidFramesCount, int& framesWithoutPair, int& totalFramesCount)
 {
 	validFramesPaths.clear();
 	std::string path1 = "../MonitoringCPR/images/Calibration/UnityFirstCam/";
@@ -44,10 +44,6 @@ extern "C" int __declspec(dllexport) __stdcall checkCalibrationFrames(int& inval
 	if (fileNames1.size() == fileNames2.size())
 	{
 		totalFramesCount = fileNames1.size();
-	}
-	else
-	{
-		return -1; //zdjecia nie do pary
 	}
 	for (size_t i = 0; i < fileNames1.size(); ++i)
 	{
@@ -85,10 +81,10 @@ extern "C" int __declspec(dllexport) __stdcall checkCalibrationFrames(int& inval
 	invalidFramesCount = invalid;
 	if (totalFramesCount == invalidFramesCount)
 	{
-		return -2;  //brak poprawnych zdjec
+		return false;  //brak poprawnych zdjec
 	}
 
-	return 0;     //wszystko git
+	return true;     //wszystko git
 
 }
 extern "C" bool __declspec(dllexport) __stdcall showValidFrame(unsigned char* firstFrameData, unsigned char* secondFrameData)
@@ -192,7 +188,7 @@ extern "C" void __declspec(dllexport) __stdcall  saveId()
 	outputFile.open("validatedFrameSetId.txt");
 	outputFile << currentFrameSetId;
 	outputFile.close();
-	
+
 }
 extern "C" bool __declspec(dllexport) __stdcall  checkId()
 {
@@ -205,7 +201,7 @@ extern "C" bool __declspec(dllexport) __stdcall  checkId()
 	return validatedFrameSetId == ImgProcUtility::getId();
 }
 
-extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount, int& time)
+extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount, int& time, bool& isFinished)
 {
 	Uint32 start_ticks = SDL_GetTicks();
 	std::vector<cv::Mat> images1, images2;
@@ -226,5 +222,25 @@ extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount,
 	CameraCalibration::saveRectifiedMatrices(R1, R2, P1, P2, Q);
 	Uint32 end_ticks = SDL_GetTicks();
 	pairCount = images1.size();
-	time = end_ticks - start_ticks;
+	time = (end_ticks - start_ticks) / 1000;
+	isFinished = true;
+}
+
+extern "C" int __declspec(dllexport) __stdcall  getEstimatedCalibrationTime()
+{
+	std::string firstPath = "..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg";
+	std::vector<cv::String> fileNames1;
+	cv::glob(firstPath, fileNames1, false); //todo wrzucic to w imgprocutility 
+
+	int x = fileNames1.size();            //number of pairs of frames
+
+	if (x > 10)
+	{
+		double estimatedTime = 0.0008 * pow(x, 3) - 0.0138 * pow(x, 2) + 0.393 * x - 1.2881;
+		return ceil(estimatedTime);
+	}
+
+	return 0;
+	//y=0.0008x3−0.0138x2+0.3930x−1.2881
+
 }
