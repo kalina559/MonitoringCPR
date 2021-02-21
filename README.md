@@ -4,10 +4,13 @@ C++/C# computer vision project developed to monitor the parameters of chest comp
 
 Components
 -------------
-- Visual studio C++ solution consisting of 2 projects: 
-  - CameraCalibration allowing user to calibrate single cameras, and perform stereo calibration and rectification. It builds into .exe file.
-  - MonitoringCPR containing functions allowing to pass marker coordinates to Unity's C# scripts. Builds into .dll file located in Unity3D project's Assets folder.
-- Unity3D project
+- Visual studio C++ project that uses OpenCV to analyse frames from 2 PS3Eye cameras. It builds into a .dll file located in Unity3D project's Assets folder. 
+- Unity3D project that allows user to:
+  - Take photos that can be used later for calibration. User gets instant feedback whether the calibration grid is detected on the images.
+  - Manually check the validity of pairs of calibration frames and delete them if e.g. detected grid doesn't reflect reality.
+  - Perform stereo calibration of the cameras. Estimated time of the calibration is calculated beforehand and user is shown how much time is left throughout the process.
+  - Check the validity of the calibration by putting two markers in front of the camera. The app calculates the distance between the markers and the user can compare the values.
+  - Monitor the parameters of chest compressions during CPR.
 
 Prerequisites
 -------------
