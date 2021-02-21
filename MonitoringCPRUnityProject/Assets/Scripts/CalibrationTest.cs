@@ -20,6 +20,8 @@ public class CalibrationTest : MonoBehaviour
     private IntPtr firstPixelPtr;
     private IntPtr secondPixelPtr;
     private bool _ready;
+    bool beginTracking = false;
+    double distance = 0;
 
     void Start()
     {
@@ -55,12 +57,23 @@ public class CalibrationTest : MonoBehaviour
     void MatToTexture2D()
     {
         //Convert Mat to Texture2D
-        OpenCVInterop.detectMarkers(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height);
-        //Update the Texture2D with array updated in C++
+        if (beginTracking == false)
+        {
+            OpenCVInterop.detectMarkers(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height);
+            //Update the Texture2D with array updated in C++
+            
+        }
+        else
+        {
+            OpenCVInterop.trackMarkers(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height, ref distance, ref beginTracking);
+            Debug.Log("distance = " + distance);
+        }
         firstTex.SetPixels32(firstPixel32);
         secondTex.SetPixels32(secondPixel32);
         firstTex.Apply();
         secondTex.Apply();
+
+
     }
     private void OnDisable()
     {
@@ -69,8 +82,13 @@ public class CalibrationTest : MonoBehaviour
         secondPixelHandle.Free();
         Debug.Log("Freed textures in onDisable displayImage");
     }
-    public void startTracking()
+    public void changeMode()
     {
-        Debug.Log("isReady = " + OpenCVInterop.startTrackingMarkers());
+        if (beginTracking == false)
+            beginTracking = true;
+        //else
+        //    beginTracking = false;
+
+        Debug.Log("begin tracking = " + beginTracking);
     }
 }

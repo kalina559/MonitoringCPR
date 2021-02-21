@@ -148,13 +148,16 @@
     <ClCompile Include="CalibrationInterop.cpp" />
     <ClCompile Include="CameraCalibration.cpp" />
     <ClCompile Include="ImgProcUtility.cpp" />
+    <ClCompile Include="PS3EyeCapture.cpp" />
     <ClCompile Include="RealTimeInterop.cpp" />
     <ClCompile Include="RecordedCaptureInterop.cpp" />
+    <ClCompile Include="StereoCapture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraCalibration.h" />
     <ClInclude Include="ImgProcUtility.h" />
-    <ClInclude Include="RealTimeCapture.h" />
+    <ClInclude Include="PS3EyeCapture.h" />
+    <ClInclude Include="StereoCapture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

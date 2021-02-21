@@ -11,9 +11,7 @@
 #include <opencv2/tracking.hpp>
 #include <math.h>
 #include <SDL.h>
-#include "ps3eye.h"
-#include"RealTimeCapture.h"
-#include "ImgProcUtility.h"
+#include"StereoCapture.h"
 #include<filesystem>
 
 const float distanceBetweenCircles = 0.0355f;
@@ -239,8 +237,5 @@ extern "C" int __declspec(dllexport) __stdcall  getEstimatedCalibrationTime()
 		double estimatedTime = 0.0008 * pow(x, 3) - 0.0138 * pow(x, 2) + 0.393 * x - 1.2881;
 		return ceil(estimatedTime);
 	}
-
 	return 0;
-	//y=0.0008x3−0.0138x2+0.3930x−1.2881
-
 }

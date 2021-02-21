@@ -12,26 +12,30 @@
 #include <math.h>
 #include <SDL.h>
 #include "ps3eye.h"
-#include"RealTimeCapture.h"
+#include"StereoCapture.h"
 #include "ImgProcUtility.h"
+
 
 const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 
 extern "C" int __declspec(dllexport) __stdcall InitSDLCameras(int& outCameraWidth, int& outCameraHeight)
 {
-	return ImgProcUtility::initializeCameras(realTimeCapturePair::getInstance());
+	StereoCapture::getInstance()->initializeMatrices();
+	//return ImgProcUtility::initializeCameras(StereoCapture::getInstance());
+	return StereoCapture::getInstance()->initCameras();
 }
 
 extern "C" void __declspec(dllexport) __stdcall GetCalibrationFrame(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
 {
-	ImgProcUtility::readRealTimeFrames(realTimeCapturePair::getInstance(), width, height);
+	//ImgProcUtility::readRealTimeFrames(StereoCapture::getInstance(), width, height);
+	StereoCapture::getInstance()->updateFrames(width, height);
 	cv::Mat firstFrameCopy, secondFrameCopy;
-	realTimeCapturePair::getInstance()->getFirstCapture().getCurrentFrame().copyTo(firstFrameCopy);
-	realTimeCapturePair::getInstance()->getSecondCapture().getCurrentFrame().copyTo(secondFrameCopy);
+	StereoCapture::getInstance()->getFirstCapture().getCurrentFrame().copyTo(firstFrameCopy);
+	StereoCapture::getInstance()->getSecondCapture().getCurrentFrame().copyTo(secondFrameCopy);
 
 	//wrzucic to w funkcje
 	std::vector<cv::Point2f> centers1, centers2;
-	cv::Mat gray1, gray2; 
+	cv::Mat gray1, gray2;
 	cvtColor(firstFrameCopy, gray1, cv::COLOR_BGR2GRAY);
 	cvtColor(secondFrameCopy, gray2, cv::COLOR_BGR2GRAY);
 	cv::SimpleBlobDetector::Params params;
@@ -54,13 +58,14 @@ extern "C" void __declspec(dllexport) __stdcall GetCalibrationFrame(unsigned cha
 
 extern "C" void __declspec(dllexport) __stdcall GetCurrentGrayscaleFrame(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
 {
-	ImgProcUtility::readRealTimeFrames(realTimeCapturePair::getInstance(), width, height);
+	//ImgProcUtility::readRealTimeFrames(StereoCapture::getInstance(), width, height);
+	StereoCapture::getInstance()->updateFrames(width, height);
 	//cv::Mat firstArgbImg, secondArgbImg;
-	//cv::cvtColor(realTimeCapturePair::getInstance()->getFirstCapture().getCurrentFrame(), firstArgbImg, CV_BGR2RGBA);
-	//cv::cvtColor(realTimeCapturePair::getInstance()->getSecondCapture().getCurrentFrame(), secondArgbImg, CV_BGR2RGBA);
+	//cv::cvtColor(StereoCapture::getInstance()->getFirstCapture().getCurrentFrame(), firstArgbImg, CV_BGR2RGBA);
+	//cv::cvtColor(StereoCapture::getInstance()->getSecondCapture().getCurrentFrame(), secondArgbImg, CV_BGR2RGBA);
 	cv::Mat gray1, gray2;
-	cvtColor(realTimeCapturePair::getInstance()->getFirstCapture().getCurrentFrame(), gray1, cv::COLOR_BGR2GRAY);
-	cvtColor(realTimeCapturePair::getInstance()->getSecondCapture().getCurrentFrame(), gray2, cv::COLOR_BGR2GRAY);
+	cvtColor(StereoCapture::getInstance()->getFirstCapture().getCurrentFrame(), gray1, cv::COLOR_BGR2GRAY);
+	cvtColor(StereoCapture::getInstance()->getSecondCapture().getCurrentFrame(), gray2, cv::COLOR_BGR2GRAY);
 	cv::Mat firstArgbImg, secondArgbImg;
 	cv::cvtColor(gray1, firstArgbImg, CV_BGR2RGBA);
 	cv::cvtColor(gray2, secondArgbImg, CV_BGR2RGBA);
@@ -68,28 +73,26 @@ extern "C" void __declspec(dllexport) __stdcall GetCurrentGrayscaleFrame(unsigne
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
 
-extern "C" void __declspec(dllexport) __stdcall detectMarkers(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
-{
-	std::vector<cv::Vec3f> circles1, circles2;
-
-	ImgProcUtility::readRealTimeFrames(realTimeCapturePair::getInstance(), width, height);
-	auto frame1 = realTimeCapturePair::getInstance()->getFirstCapture().getCurrentFrame();
-	auto frame2 = realTimeCapturePair::getInstance()->getSecondCapture().getCurrentFrame();
-	ImgProcUtility::detectMarkers(frame1, circles1);
-	ImgProcUtility::detectMarkers(frame2, circles2);
-
-	cv::Mat firstArgbImg, secondArgbImg;
-	cv::cvtColor(frame1, firstArgbImg, CV_BGR2RGBA);
-	cv::cvtColor(frame2, secondArgbImg, CV_BGR2RGBA);
-	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
-	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
-}
-
-
+//extern "C" void __declspec(dllexport) __stdcall detectMarkers(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
+//{
+//	std::vector<cv::Vec3f> circles1, circles2;
+//
+//	ImgProcUtility::readRealTimeFrames(StereoCapture::getInstance(), width, height);
+//	auto frame1 = StereoCapture::getInstance()->getFirstCapture().getCurrentFrame();
+//	auto frame2 = StereoCapture::getInstance()->getSecondCapture().getCurrentFrame();
+//	ImgProcUtility::detectMarkers(frame1, circles1);
+//	ImgProcUtility::detectMarkers(frame2, circles2);
+//
+//	cv::Mat firstArgbImg, secondArgbImg;
+//	cv::cvtColor(frame1, firstArgbImg, CV_BGR2RGBA);
+//	cv::cvtColor(frame2, secondArgbImg, CV_BGR2RGBA);
+//	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
+//	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
+//}
 
 extern "C" void __declspec(dllexport) __stdcall  CloseSDLCameras()
 {
-	realTimeCapturePair::getInstance()->freeCameras();
+	StereoCapture::getInstance()->freeCameras();
 }
 
 extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames()
@@ -105,13 +108,84 @@ extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames()
 	std::string timestamp(buffer);
 	std::replace(timestamp.begin(), timestamp.end(), ':', '_');
 	std::replace(timestamp.begin(), timestamp.end(), '/', '_');
-	cv::imwrite("../MonitoringCPR/images/Calibration/UnityFirstCam/" + timestamp, realTimeCapturePair::getInstance()->getFirstCapture().getCurrentFrame());
-	cv::imwrite("../MonitoringCPR/images/Calibration/UnitySecondCam/" + timestamp, realTimeCapturePair::getInstance()->getSecondCapture().getCurrentFrame());
+	cv::imwrite("../MonitoringCPR/images/Calibration/UnityFirstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
+	cv::imwrite("../MonitoringCPR/images/Calibration/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
 }
 
-//funkcja startTracking() ktora zmienia bool isReady na true, tworzy zestaw ROIs i odpala multitrackery ( po wcisnieciu odpowiedniego przycisku)
-extern "C" bool __declspec(dllexport) __stdcall startTrackingMarkers()
+extern "C" void __declspec(dllexport) __stdcall detectMarkers(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
 {
-	realTimeCapturePair::getInstance()->setIsReady(true);
-	return realTimeCapturePair::getInstance()->getIsReady();
+	std::vector<cv::Vec3f> circles1, circles2;
+
+	//ImgProcUtility::readRealTimeFrames(StereoCapture::getInstance(), width, height);
+	StereoCapture::getInstance()->updateFrames(width, height);
+	cv::Mat frame1, frame2;
+	StereoCapture::getInstance()->getFirstCapture().getCurrentFrame().copyTo(frame1);
+	StereoCapture::getInstance()->getSecondCapture().getCurrentFrame().copyTo(frame2);
+
+	ImgProcUtility::detectMarkers(frame1, circles1);
+	ImgProcUtility::detectMarkers(frame2, circles2);
+	StereoCapture::getInstance()->getFirstCapture().setROIs(circles1);
+	StereoCapture::getInstance()->getSecondCapture().setROIs(circles2);
+
+	cv::Mat firstArgbImg, secondArgbImg;
+	cv::cvtColor(frame1, firstArgbImg, CV_BGR2RGBA);
+	cv::cvtColor(frame2, secondArgbImg, CV_BGR2RGBA);
+	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
+	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
+}
+
+
+
+extern "C" void __declspec(dllexport) __stdcall trackMarkers(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height, double& distance, bool& beginTracking) // w parametrach powinno byc jeszcze frames.first i frames.second, tak zeby mozna bylo wyswietlac je w unity
+{
+	cv::Mat img = cv::imread("C:/Users/Kalin/Desktop/pierdoly/memes/ee.jpg");
+	cv::Mat firstCameraFrame, secondCameraFrame, croppedImg1, croppedImg2,
+		threshImg1, threshImg2, croppedColor1, croppedColor2;
+
+	std::vector<cv::Vec3f> v3fCircles1, v3fCircles2;
+	std::vector<cv::Vec3f> circles1, circles2;
+
+	StereoCapture::getInstance()->updateFrames(width, height);
+
+	if (!StereoCapture::getInstance()->getTrackingState())       //jesli jeszcze nie zaczeto trackowania, inicjalizacja multitrackerow
+	{
+
+		StereoCapture::getInstance()->getFirstCapture().startMultiTracker();
+		StereoCapture::getInstance()->getSecondCapture().startMultiTracker();
+		StereoCapture::getInstance()->setTrackingState(true);
+	}
+
+	StereoCapture::getInstance()->getFirstCapture().updateTracker();
+	StereoCapture::getInstance()->getSecondCapture().updateTracker();
+
+	std::pair<cv::Mat, cv::Mat> frames = { StereoCapture::getInstance()->getFirstCapture().getCurrentFrame() ,StereoCapture::getInstance()->getSecondCapture().getCurrentFrame() };
+	std::pair<cv::Mat, cv::Mat> grayFrames = ImgProcUtility::convertFramesToGray(frames);
+
+	auto outBalls = std::vector<ImgProcUtility::Coordinates>(2);
+	int outDetectedBallsCount;
+
+	bool result1 = StereoCapture::getInstance()->getFirstCapture().calculateMarkersCoordinates();
+	bool result2 = StereoCapture::getInstance()->getSecondCapture().calculateMarkersCoordinates();
+
+	if (!result1 || !result2)
+	{
+		StereoCapture::getInstance()->setTrackingState(false);
+		beginTracking = false;
+		return;
+	}
+
+	StereoCapture::getInstance()->triangulateCameras();    //chyba dziala, triangSize = 2
+
+	ImgProcUtility::getMarkersCoordinates3D(StereoCapture::getInstance()->getTriangCoordinates(), outBalls, outDetectedBallsCount);
+
+	distance = ImgProcUtility::calculateDistanceBetweenMarkers(outBalls, 0, 1);
+
+	ImgProcUtility::displayDistanceBetweenMarkers(frames.first, outBalls, 0, 1);
+
+	cv::Mat firstArgbImg, secondArgbImg;
+	cv::cvtColor(frames.first, firstArgbImg, CV_BGR2RGBA);
+	cv::cvtColor(frames.second, secondArgbImg, CV_BGR2RGBA);
+	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
+	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
+
 }

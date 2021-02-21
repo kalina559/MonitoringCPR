@@ -60,8 +60,11 @@ internal static class OpenCVInterop
     [DllImport("MonitoringCPR")]
     internal static extern void detectMarkers(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
     [DllImport("MonitoringCPR")]
-    internal static extern bool startTrackingMarkers();
+    internal static extern void trackMarkers(IntPtr firstFrame, IntPtr secondFrame, int width, int height, ref double distance, ref bool beginTracking);
+
     [DllImport("MonitoringCPR")]
     internal static extern int getEstimatedCalibrationTime();
+
+
 
 }

@@ -1,49 +1,10 @@
 #include"ImgProcUtility.h"
-int ImgProcUtility::initializeCameras(realTimeCapturePair* stereoCapture)
-{
-	auto& devices = ps3eye::PS3EYECam::getDevices(true);
-	if (devices.empty())
-	{
-		return -1;
-	}
-	stereoCapture->getFirstCapture().setCamera(devices[0]);
-	stereoCapture->getSecondCapture().setCamera(devices[1]);
-	bool success1 = stereoCapture->getFirstCapture().getCamera()->init(640, 480, 60);
-	bool success2 = stereoCapture->getSecondCapture().getCamera()->init(640, 480, 60);
-	if (!success1 || !success2)
-	{
-		return -2;
-	}
-	stereoCapture->getFirstCapture().getCamera()->start();
-	stereoCapture->getSecondCapture().getCamera()->start();
-	stereoCapture->setIsReady(false);
-
-	return 0;
-}
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence)
 {
 	std::pair<cv::Mat, cv::Mat> frames;
 	firstSequence >> frames.first;
 	secondSequence >> frames.second;
 	return frames;
-}
-
-void ImgProcUtility::readRealTimeFrames(realTimeCapturePair* stereoCapture, int width, int height)
-{
-	cv::Mat firstFrame = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
-	cv::Mat secondFrame = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
-
-	stereoCapture->getFirstCapture().getCamera()->getFrame(firstFrame.data);
-	stereoCapture->getSecondCapture().getCamera()->getFrame(secondFrame.data);
-
-	cv::Mat firstResizedMat(height, width, firstFrame.type());
-	cv::Mat secondResizedMat(height, width, secondFrame.type());
-
-	cv::resize(firstFrame, firstResizedMat, firstResizedMat.size(), cv::INTER_CUBIC);
-	cv::resize(secondFrame, secondResizedMat, secondResizedMat.size(), cv::INTER_CUBIC);
-
-	stereoCapture->getFirstCapture().setCurrentFrame(firstResizedMat);
-	stereoCapture->getSecondCapture().setCurrentFrame(secondResizedMat);
 }
 
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::resizeFrames(std::pair<cv::Mat, cv::Mat> frames, double scale)
@@ -114,6 +75,18 @@ std::pair<cv::Mat, cv::Mat> ImgProcUtility::erodeImages(std::pair<cv::Mat, cv::M
 	return erodedFrames;
 }
 
+cv::Mat ImgProcUtility::erodeImage(cv::Mat frame, int erosionSize = 1, int erosionType = cv::MORPH_RECT)
+{
+	cv::Mat erodedFrame;
+
+	cv::Mat element = getStructuringElement(erosionType,
+		cv::Size(2 * erosionSize + 1, 2 * erosionSize + 1),
+		cv::Point(erosionSize, erosionSize));
+
+	erode(frame, erodedFrame, element);
+	return erodedFrame;
+}
+
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::performCanny(std::pair<cv::Mat, cv::Mat> frames, int threshold)
 {
 	std::pair<cv::Mat, cv::Mat> cannyFrames;
@@ -131,6 +104,15 @@ void ImgProcUtility::drawCirclesAroundMarkers(std::pair<cv::Mat, cv::Mat> frames
 		cv::Point secondCenter(circleCoordinates.second[i](0), circleCoordinates.second[i](1));
 		circle(frames.first, firstCenter, radiuses[i].first, cv::Scalar(0, 0, 255));
 		circle(frames.second, secondCenter, radiuses[i].second, cv::Scalar(0, 0, 255));
+	}
+}
+
+void ImgProcUtility::drawCirclesAroundMarkers(cv::Mat frame, std::vector<cv::Vec2f> circleCoordinates, std::vector<int> radiuses)
+{
+	for (int i = 0; i < expectedNumberOfMarkers; ++i)
+	{
+		cv::Point firstCenter(circleCoordinates[i](0), circleCoordinates[i](1));
+		circle(frame, firstCenter, radiuses[i], cv::Scalar(0, 0, 255));
 	}
 }
 
@@ -164,6 +146,29 @@ std::pair<std::vector<cv::Point>, std::vector<cv::Point>> ImgProcUtility::getBig
 	return{ firstContours[firstBiggestContour], secondContours[secondBiggestContour] };
 }
 
+bool ImgProcUtility::getBiggestContours(cv::Mat frame, std::vector<cv::Point>& biggestContour)
+{
+	std::vector<std::vector<cv::Point> > contours;
+	findContours(frame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+	if (contours.size() == 0)
+	{
+		return false;
+	}
+	double maxContour = 0;
+	int biggestContourId = 0;
+	for (size_t i = 0; i < contours.size(); i++) {
+
+		if (contourArea(contours[i]) > maxContour)
+		{
+			maxContour = contourArea(contours[i]);
+			biggestContourId = i;
+		}
+	}
+	biggestContour = contours[biggestContourId];	
+	return true;
+}
+
 cv::Vec3f ImgProcUtility::getContoursCenterOfMass(std::vector<cv::Point> contour)
 {
 	auto M = moments(contour);
@@ -183,6 +188,27 @@ std::pair<cv::Vec3f, cv::Vec3f> ImgProcUtility::findCirclesInROIs(std::pair<cv::
 	auto secondCenter = getContoursCenterOfMass(circleCenters.second);
 
 	return { firstCenter, secondCenter };
+}
+
+bool ImgProcUtility::findCircleInROI(cv::Mat frame, cv::Vec3f& ROI)
+{
+	cv::Mat cannyFrame;
+	std::vector<cv::Point> circleContour;
+	cv::Canny(frame, cannyFrame, 70, 255);
+	if (!getBiggestContours(cannyFrame, circleContour))
+		return false;
+		
+	ROI = getContoursCenterOfMass(circleContour);
+	return true;
+
+}
+cv::Vec3f ImgProcUtility::findCircleInROI(cv::Mat frame)
+{
+	cv::Mat cannyFrame;
+	std::vector<cv::Point> circleContour;
+	cv::Canny(frame, cannyFrame, 70, 255);
+	getBiggestContours(cannyFrame, circleContour);
+	return getContoursCenterOfMass(circleContour);
 }
 
 StereoCoordinates2D ImgProcUtility::getMarkersCoordinates2D(std::pair<cv::Mat, cv::Mat> grayFrames, std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames)
@@ -241,6 +267,18 @@ void ImgProcUtility::getMarkersCoordinates3D(cv::Mat triangCoords, Coordinates* 
 	}
 }
 
+void ImgProcUtility::getMarkersCoordinates3D(cv::Mat triangCoords, std::vector<Coordinates>& outBalls, int& outDetectedBallsCount)
+{
+	for (int i = 0; i < triangCoords.cols; ++i) // for different balls
+	{
+		outBalls[i].X = triangCoords.at<double>(0, i) / triangCoords.at<double>(3, i);
+		outBalls[i].Y = triangCoords.at<double>(1, i) / triangCoords.at<double>(3, i);
+		outBalls[i].Z = triangCoords.at<double>(2, i) / triangCoords.at<double>(3, i);
+
+		++outDetectedBallsCount;
+	}
+}
+
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::populateMatricesFromVectors(StereoCoordinates2D coordinates2D)
 {
 	cv::Mat firstCamCoordinates = cv::Mat(cv::Size(2, coordinates2D.first.size()), CV_64FC1);
@@ -264,7 +302,18 @@ double ImgProcUtility::calculateDistanceBetweenMarkers(Coordinates* outBalls, in
 		+ pow(outBalls[firstMarkerId].Z - outBalls[secondMarkerId].Z, 2));
 }
 
+double ImgProcUtility::calculateDistanceBetweenMarkers(std::vector<Coordinates> outBalls, int firstMarkerId, int secondMarkerId)
+{
+	return sqrt(pow(outBalls[firstMarkerId].X - outBalls[secondMarkerId].X, 2) + pow(outBalls[firstMarkerId].Y - outBalls[secondMarkerId].Y, 2)
+		+ pow(outBalls[firstMarkerId].Z - outBalls[secondMarkerId].Z, 2));
+}
+
 void ImgProcUtility::displayDistanceBetweenMarkers(cv::Mat& displayMatrix, Coordinates* outBalls, int firstMarkerId, int secondMarkerId)
+{
+	cv::putText(displayMatrix, ("Distance between markers " + std::to_string(firstMarkerId) + " and " + std::to_string(secondMarkerId) + ": " + std::to_string(calculateDistanceBetweenMarkers(outBalls, firstMarkerId, secondMarkerId))),
+		cv::Point(200, 200), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 0, 255));
+}
+void ImgProcUtility::displayDistanceBetweenMarkers(cv::Mat& displayMatrix, std::vector<Coordinates> outBalls, int firstMarkerId, int secondMarkerId)
 {
 	cv::putText(displayMatrix, ("Distance between markers " + std::to_string(firstMarkerId) + " and " + std::to_string(secondMarkerId) + ": " + std::to_string(calculateDistanceBetweenMarkers(outBalls, firstMarkerId, secondMarkerId))),
 		cv::Point(200, 200), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 0, 255));
@@ -294,11 +343,11 @@ std::string ImgProcUtility::getId()
 	return outDigitString;
 }
 
-void ImgProcUtility::detectMarkers(cv::Mat& frame, std::vector<cv::Vec3f> circles)
+void ImgProcUtility::detectMarkers(cv::Mat& frame, std::vector<cv::Vec3f>& circles)
 {
 	cv::Mat gray;
 	cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-	HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1, gray.rows / 16,	100, 30, 1, 30	);
+	HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1, gray.rows / 16, 100, 30, 1, 30);
 
 	for (int i = 0; i < circles.size(); ++i)
 	{

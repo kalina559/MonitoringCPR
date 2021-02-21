@@ -16,6 +16,12 @@
     <ClCompile Include="RecordedCaptureInterop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PS3EyeCapture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StereoCapture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraCalibration.h">
@@ -24,7 +30,10 @@
     <ClInclude Include="ImgProcUtility.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RealTimeCapture.h">
+    <ClInclude Include="StereoCapture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PS3EyeCapture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
