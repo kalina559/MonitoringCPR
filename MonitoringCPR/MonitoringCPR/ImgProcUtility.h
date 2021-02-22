@@ -38,11 +38,6 @@ struct Matrices
 	cv::Mat R1 = cv::Mat(cv::Size(3, 3), CV_64FC1);
 	cv::Mat R2 = cv::Mat(cv::Size(3, 3), CV_64FC1);
 };
-
-
-// stworzyc na tej podstawie klase StereoFrames: pola Mat first, second, colorFrames, grayFrames itd.
-// potem klase pochodn¹ StereoCapture, dodaæ multitrackery, ROI itd. i w zast¹piæ niektóre parametry funkcji za pomoc¹ pól klasy
-
 namespace ImgProcUtility
 {
 	struct Coordinates
@@ -52,6 +47,7 @@ namespace ImgProcUtility
 		float X, Y, Z;
 	};
 	//int initializeCameras(realTimeCapturePair* stereoCapture);
+	std::string readFile(std::string name);
 	std::pair<cv::Mat, cv::Mat> readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence);
 	//void readRealTimeFrames(realTimeCapturePair* stereoCapture, int width, int height);
 	std::pair<cv::Mat, cv::Mat> resizeFrames(std::pair<cv::Mat, cv::Mat> frames, double scale);
@@ -71,7 +67,7 @@ namespace ImgProcUtility
 	bool getBiggestContours(cv::Mat frame, std::vector<cv::Point>& biggestContour);
 	cv::Vec3f getContoursCenterOfMass(std::vector<cv::Point> contour);
 	std::pair<cv::Vec3f, cv::Vec3f> findCirclesInROIs(std::pair<cv::Mat, cv::Mat> frames);
-	bool findCircleInROI(cv::Mat frame, cv::Vec3f& ROI);
+	bool findCircleInROI(cv::Mat frame, cv::Vec3f& ROI, int threshLevel);
 	cv::Vec3f findCircleInROI(cv::Mat frame);
 	cv::Mat process2DCoordinates(StereoCoordinates2D coordinates2D, Matrices& matrices);
 	void getMarkersCoordinates3D(cv::Mat triangCoords, ImgProcUtility::Coordinates* outBalls, int& outDetectedBallsCount);

@@ -170,6 +170,7 @@ extern "C" __declspec(dllexport) BSTR __stdcall  getFramesSetId()
 			auto secondFileName = std::filesystem::path(fileNames2[i]).filename();
 			std::wstring firstFileNameStr{ firstFileName.wstring() };
 			std::wstring secondFileNameStr{ secondFileName.wstring() };
+			std::wstring secondFileNameStr{ secondFileName.wstring() };
 
 			outDigitString += firstFileNameStr += secondFileNameStr;
 		}
@@ -179,25 +180,26 @@ extern "C" __declspec(dllexport) BSTR __stdcall  getFramesSetId()
 	bs = SysAllocString(L"");
 	return SysAllocString(bs);
 }
-extern "C" void __declspec(dllexport) __stdcall  saveId()
-{
-	auto currentFrameSetId = ImgProcUtility::getId();
-	std::ofstream outputFile;
-	outputFile.open("validatedFrameSetId.txt");
-	outputFile << currentFrameSetId;
-	outputFile.close();
 
-}
-extern "C" bool __declspec(dllexport) __stdcall  checkId()
-{
-	std::string validatedFrameSetId;
-	std::ifstream inputFile;
-	inputFile.open("validatedFrameSetId.txt");
-	inputFile >> validatedFrameSetId;
-	inputFile.close();
-
-	return validatedFrameSetId == ImgProcUtility::getId();
-}
+//extern "C" void __declspec(dllexport) __stdcall  saveId(std::string path)
+//{
+//	auto currentFrameSetId = ImgProcUtility::getId();
+//	std::ofstream outputFile;
+//	outputFile.open(path);
+//	outputFile << currentFrameSetId;
+//	outputFile.close();
+//
+//}
+//extern "C" bool __declspec(dllexport) __stdcall  checkId()
+//{
+//	std::string validatedFrameSetId;
+//	std::ifstream inputFile;
+//	inputFile.open("validatedFrameSetId.txt");
+//	inputFile >> validatedFrameSetId;
+//	inputFile.close();
+//
+//	return validatedFrameSetId == ImgProcUtility::getId();
+//}
 
 extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount, int& time, bool& isFinished)
 {
@@ -232,10 +234,8 @@ extern "C" int __declspec(dllexport) __stdcall  getEstimatedCalibrationTime()
 
 	int x = fileNames1.size();            //number of pairs of frames
 
-	if (x > 10)
-	{
-		double estimatedTime = 0.0008 * pow(x, 3) - 0.0138 * pow(x, 2) + 0.393 * x - 1.2881;
-		return ceil(estimatedTime);
-	}
-	return 0;
+	/*double estimatedTime = 0.0008 * pow(x, 3) - 0.0138 * pow(x, 2) + 0.393 * x - 1.2881;*/
+	double estimatedTime = 0.0004 * pow(x, 3) + 0.0216 * pow(x, 2) - 0.5134 * x + 2.8644;
+
+	return ceil(estimatedTime);
 }

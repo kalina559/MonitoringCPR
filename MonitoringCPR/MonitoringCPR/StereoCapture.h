@@ -33,4 +33,5 @@ public:
 	void setTrackingState(bool value);
 	void triangulateCameras();
 	cv::Mat getTriangCoordinates();
+	void setTreshLevel(int level);
 };

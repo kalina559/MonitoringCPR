@@ -1,4 +1,13 @@
 #include"ImgProcUtility.h"
+std::string ImgProcUtility::readFile(std::string name)
+{
+	std::string content;
+	std::ifstream inputFile;
+	inputFile.open(name);
+	inputFile >> content;	
+	inputFile.close();
+	return content;	
+}
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence)
 {
 	std::pair<cv::Mat, cv::Mat> frames;
@@ -190,11 +199,11 @@ std::pair<cv::Vec3f, cv::Vec3f> ImgProcUtility::findCirclesInROIs(std::pair<cv::
 	return { firstCenter, secondCenter };
 }
 
-bool ImgProcUtility::findCircleInROI(cv::Mat frame, cv::Vec3f& ROI)
+bool ImgProcUtility::findCircleInROI(cv::Mat frame, cv::Vec3f& ROI, int threshLevel)
 {
 	cv::Mat cannyFrame;
 	std::vector<cv::Point> circleContour;
-	cv::Canny(frame, cannyFrame, 70, 255);
+	cv::Canny(frame, cannyFrame, threshLevel, 255);
 	if (!getBiggestContours(cannyFrame, circleContour))
 		return false;
 		

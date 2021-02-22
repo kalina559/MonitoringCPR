@@ -1,6 +1,13 @@
 #include "StereoCapture.h"
 int StereoCapture::initCameras()
 {
+	auto threshLevelStr = ImgProcUtility::readFile("thresholdLevel.txt");
+	int threshLevel = std::stoi(threshLevelStr);
+	if (!(threshLevel >= 0) && !(threshLevel <= 255))
+		threshLevel = 70;
+	first.setThreshLevel(threshLevel);
+	first.setThreshLevel(threshLevel);
+
 	auto& devices = ps3eye::PS3EYECam::getDevices(true);
 	if (devices.empty())
 	{
@@ -83,4 +90,10 @@ void StereoCapture::triangulateCameras()
 cv::Mat StereoCapture::getTriangCoordinates()
 {
 	return triangulatedCoordinates;
+}
+
+void StereoCapture::setTreshLevel(int level)
+{
+	first.setThreshLevel(level);
+	second.setThreshLevel(level);
 }

@@ -5,24 +5,27 @@ using System.Runtime.InteropServices;
 using System;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class CalibrationTest : MonoBehaviour
 {
     private Texture2D firstTex;
     private Texture2D secondTex;
-
     private Color32[] firstPixel32;
     private Color32[] secondPixel32;
-
     private GCHandle firstPixelHandle;
     private GCHandle secondPixelHandle;
-
     private IntPtr firstPixelPtr;
     private IntPtr secondPixelPtr;
     private bool _ready;
     bool beginTracking = false;
+    bool adjustThreshLevel = false;
     double distance = 0;
-
+    public GameObject thresholdMenu;
+    public GameObject mainMenu;
+    public TextMeshProUGUI threshLevelDisplay;
+    public Button changeModeButton;
+    int threshValue;
     void Start()
     {
 
@@ -55,25 +58,31 @@ public class CalibrationTest : MonoBehaviour
     }
 
     void MatToTexture2D()
-    {
+    {        
         //Convert Mat to Texture2D
-        if (beginTracking == false)
+        if (adjustThreshLevel == true)
         {
-            OpenCVInterop.detectMarkers(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height);
-            //Update the Texture2D with array updated in C++
-            
+            threshValue = (int)thresholdMenu.GetComponentInChildren<Slider>().value;
+            threshLevelDisplay.text = threshValue.ToString();
+            Debug.Log("e" + threshValue);
+            OpenCVInterop.GetCurrentGrayscaleFrame(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height, threshValue);
         }
         else
         {
-            OpenCVInterop.trackMarkers(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height, ref distance, ref beginTracking);
-            Debug.Log("distance = " + distance);
+            if (beginTracking == false)
+            {
+                OpenCVInterop.detectMarkers(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height);
+            }
+            else
+            {
+                OpenCVInterop.trackMarkers(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height, ref distance, ref beginTracking);
+                Debug.Log("distance = " + distance);
+            }           
         }
         firstTex.SetPixels32(firstPixel32);
         secondTex.SetPixels32(secondPixel32);
         firstTex.Apply();
         secondTex.Apply();
-
-
     }
     private void OnDisable()
     {
@@ -85,10 +94,34 @@ public class CalibrationTest : MonoBehaviour
     public void changeMode()
     {
         if (beginTracking == false)
+        {
             beginTracking = true;
-        //else
-        //    beginTracking = false;
+            changeModeButton.GetComponentInChildren<TextMeshProUGUI>().text = "PRZERWIJ";
+        }
+        else
+        {
+            beginTracking = false;
+            changeModeButton.GetComponentInChildren<TextMeshProUGUI>().text = "ROZPOCZNIJ";
+        }
+    }
+    public void saveThreshLevel()
+    {
+        OpenCVInterop.saveThreshLevel(threshValue);
+    }
 
-        Debug.Log("begin tracking = " + beginTracking);
+    public void openThresholdMenu()
+    {
+        Debug.Log("openthresh");
+        thresholdMenu.GetComponentInChildren<Slider>().value = OpenCVInterop.getThreshLevel();
+        mainMenu.gameObject.SetActive(false);
+        thresholdMenu.gameObject.SetActive(true);
+        adjustThreshLevel = true;
+    }
+
+    public void closeThresholdMenu()
+    {
+        thresholdMenu.gameObject.SetActive(false);
+        mainMenu.gameObject.SetActive(true);
+        adjustThreshLevel = false;
     }
 }

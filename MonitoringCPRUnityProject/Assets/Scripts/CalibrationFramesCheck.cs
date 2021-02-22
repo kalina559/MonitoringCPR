@@ -108,7 +108,8 @@ public class CalibrationFramesCheck : MonoBehaviour
         }
         else
         {
-            OpenCVInterop.saveId();
+            //OpenCVInterop.saveId("validatedFrameSetId.txt");
+            PlayerPrefs.SetString("validationId", OpenCVInterop.getFramesSetId());
             SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
     }

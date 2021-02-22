@@ -14,20 +14,30 @@ public class CalibrationMessage : MonoBehaviour
     int frameCount = 0, seconds = 0;
     bool done = false;
     float timer;
+    string currentSetId;
     int timerSeconds = 0;
     Time calibrationStart;
     // Start is called before the first frame update
     void Start()
     {
-        if (OpenCVInterop.checkId())
+        currentSetId = OpenCVInterop.getFramesSetId();
+        Debug.Log("current set" + currentSetId + "poprz " + PlayerPrefs.GetString("calibrationId"));
+        if (PlayerPrefs.GetString("calibrationId") != currentSetId)
         {
-            estimatedTimeInSeconds = OpenCVInterop.getEstimatedCalibrationTime();
-            gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("PRZEWIDYWANY CZAS KALIBRACJI: " + formatTimeInSeconds(estimatedTimeInSeconds));
-            calibrateButton.gameObject.SetActive(true);
+            if (PlayerPrefs.GetString("validationId") == currentSetId)
+            {
+                estimatedTimeInSeconds = OpenCVInterop.getEstimatedCalibrationTime();
+                gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("PRZEWIDYWANY CZAS KALIBRACJI: " + formatTimeInSeconds(estimatedTimeInSeconds));
+                calibrateButton.gameObject.SetActive(true);
+            }
+            else
+            {
+                gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("WPROWADZONO ZMIANY W FOLDERACH ZE ZDJĘCIAMI");
+            }
         }
         else
         {
-            gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("WPROWADZONO ZMIANY W FOLDERACH ZE ZDJĘCIAMI");
+            gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("KALIBRACJA ZOSTAŁA JUŻ PRZEPROWADZONA NA TYM ZESTAWIE ZDJĘĆ");
         }
     }
 
@@ -48,7 +58,10 @@ public class CalibrationMessage : MonoBehaviour
                 }
             }
             else
+            {
                 gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("UKOŃCZONO KALIBRACJĘ NA PODSTAWIE " + frameCount + " ZDJĘĆ W " + formatTimeInSeconds(seconds));
+                PlayerPrefs.SetString("calibrationId", OpenCVInterop.getFramesSetId());
+            }
         }
     }
 
@@ -67,12 +80,10 @@ public class CalibrationMessage : MonoBehaviour
         thread.Start();
         calibrateButton.gameObject.SetActive(false);
     }
-
     void stereoCalibrate()
     {
         OpenCVInterop.stereoCalibrate(ref frameCount, ref seconds, ref done);
     }
-
     string formatTimeInSeconds(int seconds)
     {
         TimeSpan t = TimeSpan.FromSeconds(seconds);
@@ -84,7 +95,6 @@ public class CalibrationMessage : MonoBehaviour
             formattedTime += t.Minutes + " M ";
 
         formattedTime += t.Seconds + " S ";
-
         return formattedTime;
     }
     private void OnDisable()

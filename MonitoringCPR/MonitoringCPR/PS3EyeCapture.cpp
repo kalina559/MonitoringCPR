@@ -43,6 +43,10 @@ void PS3EyeCapture::startMultiTracker()
 		multiTracker->add(cv::TrackerCSRT::create(), currentFrame, ROIs[i]);
 	}
 }
+void PS3EyeCapture::stopMultiTracker()
+{
+	multiTracker.release();
+}
 
 void PS3EyeCapture::clearROIs()
 {
@@ -62,36 +66,38 @@ bool PS3EyeCapture::calculateMarkersCoordinates()
 	int detectedMarkers = 0;
 	cv::Mat grayFrame;
 	cvtColor(currentFrame, grayFrame, cv::COLOR_BGR2GRAY);
-	std::vector<int> radiuses(2);
+	std::vector<int> radiuses(expectedNumberOfMarkers);
 
 	for (unsigned int i = 0; i < ROIs.size(); ++i)
 	{
 		cv::Rect ROI(multiTracker->getObjects()[i]);
-
 		auto croppedFrame = grayFrame(ROI);
 		cv::Mat threshFrame;
-		cv::threshold(croppedFrame, threshFrame, 70, 255, cv::THRESH_BINARY);
+		cv::threshold(croppedFrame, threshFrame, threshLevel, 255, cv::THRESH_BINARY);
 		auto erodedFrame = ImgProcUtility::erodeImage(threshFrame, 1, cv::MORPH_RECT);
 		cv::Vec3f v3fCircles(1);
-		if (!ImgProcUtility::findCircleInROI(erodedFrame, v3fCircles))
+		if (!ImgProcUtility::findCircleInROI(erodedFrame, v3fCircles, threshLevel))
 		{
 			return false;
 		}
-		//ImgProcUtility::findCircleInROI(erodedFrame, v3fCircles);
 		markersCoordinates2D[i](0) = v3fCircles(0) + multiTracker->getObjects()[i].x;
 		markersCoordinates2D[i](1) = v3fCircles(1) + multiTracker->getObjects()[i].y;
-
 		radiuses[i] = v3fCircles(2);
-
 		++detectedMarkers;
-
 		rectangle(currentFrame, multiTracker->getObjects()[i], cv::Scalar(255, 0, 0), 2, 1);
-
-
 	}
 	return true;
 }
 std::vector<cv::Vec2f> PS3EyeCapture::getMarkersCoordinates()
 {
 	return markersCoordinates2D;
+}
+
+void PS3EyeCapture::setThreshLevel(int level)
+{
+	threshLevel = level;
+}
+int PS3EyeCapture::getThreshLevel()
+{
+	return threshLevel;
 }
