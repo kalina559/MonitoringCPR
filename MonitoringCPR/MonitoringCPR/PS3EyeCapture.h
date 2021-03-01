@@ -4,7 +4,7 @@
 class PS3EyeCapture
 {
 	ps3eye::PS3EYECam::PS3EYERef camera = NULL;
-	cv::Ptr<cv::MultiTracker> multiTracker;
+	cv::Ptr<cv::legacy::MultiTracker> multiTracker;
 	cv::Mat currentFrame;
 	std::vector<cv::Rect> ROIs;
 	std::vector<cv::Vec2f> markersCoordinates2D = std::vector<cv::Vec2f>(expectedNumberOfMarkers);
@@ -19,8 +19,8 @@ public:
 	}
 	ps3eye::PS3EYECam::PS3EYERef getCamera();
 	void setCamera(ps3eye::PS3EYECam::PS3EYERef cam);
-	void setMultiTracker(cv::Ptr<cv::MultiTracker> tracker);
-	cv::Ptr<cv::MultiTracker> getMultiTracker();
+	void setMultiTracker(cv::Ptr<cv::legacy::MultiTracker> tracker);
+	cv::Ptr<cv::legacy::MultiTracker> getMultiTracker();
 	void setCurrentFrame(cv::Mat frame);
 	cv::Mat getCurrentFrame();
 	void setROIs(std::vector<cv::Vec3f> detectedMarkers);

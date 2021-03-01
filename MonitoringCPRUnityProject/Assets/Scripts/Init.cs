@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class Init : MonoBehaviour
 {
-    [DllImport("MonitoringCPR")]
+    [DllImport("MonitoringCPR", EntryPoint = "InitSDLCameras")]
     internal static extern int InitSDLCameras(ref int outCameraWidth, ref int outCameraHeight);
     public Image errorMessagePanel;
 
@@ -24,7 +24,7 @@ public class Init : MonoBehaviour
         errorMessagePanel.gameObject.SetActive(false);
         int camWidth = 640, camHeight = 480;
         Debug.Log("init SDL");
-        int result = InitSDLCameras(ref camWidth, ref camHeight);
+        int result = InitSDLCameras(ref camWidth, ref camHeight);  
         if (result < 0)
         {
             errorMessagePanel.gameObject.SetActive(true);

@@ -1,7 +1,5 @@
 #pragma once
 #include "CameraCalibration.h"
-#include<opencv2/tracker.hpp>
-#include<opencv2/cuda.hpp>
 #include<cstdlib>
 #include "opencv2/objdetect.hpp"
 #include "opencv2/highgui.hpp"
@@ -16,7 +14,7 @@ Matrices matrices;
 cv::VideoCapture firstSequence("../MonitoringCPR/images/movement/seria2/camera1/video1.avi");
 cv::VideoCapture secondSequence("../MonitoringCPR/images/movement/seria2/camera2/video2.avi");
 
-std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multiTrackers;   //do schowania w stereoCapture
+std::pair<cv::Ptr<cv::legacy::MultiTracker>, cv::Ptr<cv::legacy::MultiTracker>> multiTrackers;   //do schowania w stereoCapture
 StereoROISets ROIs;    //do schowania w stereoCapture
 
 bool firstFrame;
@@ -34,8 +32,8 @@ extern "C" int __declspec(dllexport) __stdcall Init(int& outCameraWidth, int& ou
 	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/R1", 3, 3, matrices.R1);
 	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/R2", 3, 3, matrices.R2);
 
-	multiTrackers.first = cv::MultiTracker::create();
-	multiTrackers.second = cv::MultiTracker::create();
+	multiTrackers.first = cv::legacy::MultiTracker::create();
+	multiTrackers.second = cv::legacy::MultiTracker::create();
 
 	firstSequence.open("C:/Users/Kalin/Desktop/studia/in¿ynierka/kalibracja/zdjecia/zdjeciaMarkerow/seria2/camera1/video1.avi");
 	secondSequence.open("C:/Users/Kalin/Desktop/studia/in¿ynierka/kalibracja/zdjecia/zdjeciaMarkerow/seria2/camera2/video2.avi");
@@ -72,8 +70,8 @@ extern "C" void __declspec(dllexport) __stdcall GetCurrentFrame(unsigned char* f
 	cv::resize(frames.first, firstResizedMat, firstResizedMat.size(), cv::INTER_CUBIC);
 	cv::resize(frames.second, secondResizedMat, secondResizedMat.size(), cv::INTER_CUBIC);
 	cv::Mat firstArgbImg, secondArgbImg;
-	cv::cvtColor(firstResizedMat, firstArgbImg, CV_BGR2RGBA);
-	cv::cvtColor(secondResizedMat, secondArgbImg, CV_BGR2RGBA);
+	cv::cvtColor(firstResizedMat, firstArgbImg, cv::COLOR_BGR2RGBA);
+	cv::cvtColor(secondResizedMat, secondArgbImg, cv::COLOR_BGR2RGBA);
 	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }

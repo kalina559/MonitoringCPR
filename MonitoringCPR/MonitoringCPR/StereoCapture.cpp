@@ -1,28 +1,49 @@
 #include "StereoCapture.h"
 int StereoCapture::initCameras()
 {
-	auto threshLevelStr = ImgProcUtility::readFile("thresholdLevel.txt");
+	/*cv::Mat img = cv::imread("C:/Users/Kalin/Desktop/pierdoly/1615-bigsam.jpg");
+	cv::imshow("start", img);
+	cv::waitKey(0);*/
+	auto threshLevelStr = ImgProcUtility::readFile("C:/dev/MonitoringCPR/MonitoringCPRUnityProject/thresholdLevel.txt");
 	int threshLevel = std::stoi(threshLevelStr);
 	if (!(threshLevel >= 0) && !(threshLevel <= 255))
 		threshLevel = 70;
 	first.setThreshLevel(threshLevel);
 	first.setThreshLevel(threshLevel);
 
+	/*cv::imshow("thresh ustawiony", img);
+	cv::waitKey(0);*/
+	//first.setCamera(NULL);
+	//second.setCamera(NULL);
+	/*cv::imshow("wynullowane kamery", img);
+	cv::waitKey(0);*/
 	auto& devices = ps3eye::PS3EYECam::getDevices(true);
+	/*cv::imshow("devices", img);
+	cv::waitKey(0);*/
 	if (devices.empty())
 	{
 		return -1;
 	}
+	//cv::imshow("przed setem kamer", img);
+	//cv::waitKey(0);
+
 	first.setCamera(devices[0]);
 	second.setCamera(devices[1]);
+	//cv::imshow("po secie kamer", img);
+	//cv::waitKey(0);
 	bool success1 = first.getCamera()->init(640, 480, 60);
 	bool success2 = second.getCamera()->init(640, 480, 60);
+
 	if (!success1 || !success2)
 	{
 		return -2;
 	}
+	//cv::imshow("przed startem kamery", img);
+	//cv::waitKey(0);
 	first.getCamera()->start();
 	second.getCamera()->start();
+	//cv::imshow("po", img);
+	//cv::waitKey(0);
 	return 0;
 }
 

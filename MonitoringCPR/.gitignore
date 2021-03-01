@@ -362,7 +362,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # opencv_world .dll files
-opencv_world411.dll
-opencv_world411d.dll
+opencv_world451.dll
+opencv_world451d.dll
 MonitoringCPR.dll
 bin/

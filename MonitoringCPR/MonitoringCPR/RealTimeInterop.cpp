@@ -1,18 +1,5 @@
 #pragma once
-#include "CameraCalibration.h"
-#include <opencv2/tracker.hpp>
-#include <opencv2/cuda.hpp>
-#include <cstdlib>
-#include "opencv2/objdetect.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include <iostream>
-#include <stdio.h>
-#include <opencv2/tracking.hpp>
-#include <math.h>
-#include <SDL.h>
-#include "ps3eye.h"
-#include"StereoCapture.h"
+#include "StereoCapture.h"
 #include "ImgProcUtility.h"
 
 
@@ -23,6 +10,12 @@ extern "C" int __declspec(dllexport) __stdcall InitSDLCameras(int& outCameraWidt
 	StereoCapture::getInstance()->initializeMatrices();
 	//return ImgProcUtility::initializeCameras(StereoCapture::getInstance());
 	return StereoCapture::getInstance()->initCameras();
+	/*cv::Mat img1 = cv::imread("C:/Users/Kalin/Desktop/outstanding.png");
+	cv::Mat img2 = cv::imread("C:/Users/Kalin/Desktop/outstanding.png");
+	cv::imshow("eee1", img1);
+	cv::imshow("eee2", img2);
+	cv::waitKey(0);
+	return 0;*/
 }
 
 extern "C" void __declspec(dllexport) __stdcall GetCalibrationFrame(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
@@ -50,8 +43,8 @@ extern "C" void __declspec(dllexport) __stdcall GetCalibrationFrame(unsigned cha
 	drawChessboardCorners(secondFrameCopy, arrayOfCirclesSize, cv::Mat(centers2), 1);
 	//--------
 	cv::Mat firstArgbImg, secondArgbImg;
-	cv::cvtColor(firstFrameCopy, firstArgbImg, CV_BGR2RGBA);
-	cv::cvtColor(secondFrameCopy, secondArgbImg, CV_BGR2RGBA);
+	cv::cvtColor(firstFrameCopy, firstArgbImg, cv::COLOR_BGR2RGBA);
+	cv::cvtColor(secondFrameCopy, secondArgbImg, cv::COLOR_BGR2RGBA);
 	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
@@ -64,8 +57,8 @@ extern "C" void __declspec(dllexport) __stdcall GetCurrentGrayscaleFrame(unsigne
 	cvtColor(StereoCapture::getInstance()->getSecondCapture().getCurrentFrame(), gray2, cv::COLOR_BGR2GRAY);	
 	auto threshImages = ImgProcUtility::thresholdImages({ gray1, gray2 }, threshLevel);
 	cv::Mat firstArgbImg, secondArgbImg;
-	cv::cvtColor(threshImages.first, firstArgbImg, CV_BGR2RGBA);
-	cv::cvtColor(threshImages.second, secondArgbImg, CV_BGR2RGBA);	
+	cv::cvtColor(threshImages.first, firstArgbImg, cv::COLOR_BGR2RGBA);
+	cv::cvtColor(threshImages.second, secondArgbImg, cv::COLOR_BGR2RGBA);
 	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
@@ -108,8 +101,8 @@ extern "C" void __declspec(dllexport) __stdcall detectMarkers(unsigned char* fir
 	StereoCapture::getInstance()->getSecondCapture().setROIs(circles2);
 
 	cv::Mat firstArgbImg, secondArgbImg;
-	cv::cvtColor(frame1, firstArgbImg, CV_BGR2RGBA);
-	cv::cvtColor(frame2, secondArgbImg, CV_BGR2RGBA);
+	cv::cvtColor(frame1, firstArgbImg, cv::COLOR_BGR2RGBA);
+	cv::cvtColor(frame2, secondArgbImg, cv::COLOR_BGR2RGBA);
 	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
@@ -134,11 +127,13 @@ extern "C" void __declspec(dllexport) __stdcall trackMarkers(unsigned char* firs
 		StereoCapture::getInstance()->setTrackingState(true);
 	}
 
-	StereoCapture::getInstance()->getFirstCapture().updateTracker();
-	StereoCapture::getInstance()->getSecondCapture().updateTracker();
+	
 
 	std::pair<cv::Mat, cv::Mat> frames = { StereoCapture::getInstance()->getFirstCapture().getCurrentFrame() ,StereoCapture::getInstance()->getSecondCapture().getCurrentFrame() };
-	std::pair<cv::Mat, cv::Mat> grayFrames = ImgProcUtility::convertFramesToGray(frames);
+	//std::pair<cv::Mat, cv::Mat> grayFrames = ImgProcUtility::convertFramesToGray(frames);
+
+	StereoCapture::getInstance()->getFirstCapture().updateTracker();
+	StereoCapture::getInstance()->getSecondCapture().updateTracker();
 
 	auto outBalls = std::vector<ImgProcUtility::Coordinates>(expectedNumberOfMarkers);
 	int outDetectedBallsCount;
@@ -161,11 +156,11 @@ extern "C" void __declspec(dllexport) __stdcall trackMarkers(unsigned char* firs
 
 	distance = ImgProcUtility::calculateDistanceBetweenMarkers(outBalls, 0, 1);
 
-	ImgProcUtility::displayDistanceBetweenMarkers(frames.first, outBalls, 0, 1);
+	//ImgProcUtility::displayDistanceBetweenMarkers(frames.first, outBalls, 0, 1);
 
 	cv::Mat firstArgbImg, secondArgbImg;
-	cv::cvtColor(frames.first, firstArgbImg, CV_BGR2RGBA);
-	cv::cvtColor(frames.second, secondArgbImg, CV_BGR2RGBA);
+	cv::cvtColor(frames.first, firstArgbImg, cv::COLOR_BGR2RGBA);
+	cv::cvtColor(frames.second, secondArgbImg, cv::COLOR_BGR2RGBA);
 	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 

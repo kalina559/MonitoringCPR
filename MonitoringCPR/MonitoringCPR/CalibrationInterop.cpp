@@ -1,12 +1,7 @@
 ﻿#pragma once
 #include "CameraCalibration.h"
-#include <opencv2/tracker.hpp>
-#include <opencv2/cuda.hpp>
 #include <cstdlib>
 #include "opencv2/objdetect.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include <iostream>
 #include <stdio.h>
 #include <opencv2/tracking.hpp>
 #include <math.h>
@@ -85,7 +80,7 @@ extern "C" bool __declspec(dllexport) __stdcall checkCalibrationFrames(int& inva
 	return true;     //wszystko git
 
 }
-extern "C" bool __declspec(dllexport) __stdcall showValidFrame(unsigned char* firstFrameData, unsigned char* secondFrameData)
+extern "C" void __declspec(dllexport) __stdcall showValidFrame(unsigned char* firstFrameData, unsigned char* secondFrameData)
 {
 	auto firstFrame = cv::imread(validFramesPaths.back().first);
 	auto secondFrame = cv::imread(validFramesPaths.back().second);
@@ -115,8 +110,8 @@ extern "C" bool __declspec(dllexport) __stdcall showValidFrame(unsigned char* fi
 	drawChessboardCorners(secondFrame, arrayOfCirclesSize, cv::Mat(centers2), patternFound2);
 
 	cv::Mat firstArgbImg, secondArgbImg;
-	cv::cvtColor(firstFrame, firstArgbImg, CV_BGR2RGBA);
-	cv::cvtColor(secondFrame, secondArgbImg, CV_BGR2RGBA);
+	cv::cvtColor(firstFrame, firstArgbImg, cv::COLOR_BGR2RGBA);
+	cv::cvtColor(secondFrame, secondArgbImg, cv::COLOR_BGR2RGBA);
 	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
@@ -169,7 +164,6 @@ extern "C" __declspec(dllexport) BSTR __stdcall  getFramesSetId()
 			auto firstFileName = std::filesystem::path(fileNames1[i]).filename();
 			auto secondFileName = std::filesystem::path(fileNames2[i]).filename();
 			std::wstring firstFileNameStr{ firstFileName.wstring() };
-			std::wstring secondFileNameStr{ secondFileName.wstring() };
 			std::wstring secondFileNameStr{ secondFileName.wstring() };
 
 			outDigitString += firstFileNameStr += secondFileNameStr;
@@ -224,6 +218,7 @@ extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount,
 	pairCount = images1.size();
 	time = (end_ticks - start_ticks) / 1000;
 	isFinished = true;
+	StereoCapture::getInstance()->initializeMatrices();
 }
 
 extern "C" int __declspec(dllexport) __stdcall  getEstimatedCalibrationTime()

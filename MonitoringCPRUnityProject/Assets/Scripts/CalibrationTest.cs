@@ -22,10 +22,16 @@ public class CalibrationTest : MonoBehaviour
     bool adjustThreshLevel = false;
     double distance = 0;
     public GameObject thresholdMenu;
+    public GameObject expectedLengthMenu;
     public GameObject mainMenu;
     public TextMeshProUGUI threshLevelDisplay;
+    public TextMeshProUGUI detectedDistance;
+    public TextMeshProUGUI detectedError;
     public Button changeModeButton;
     int threshValue;
+    public TMP_InputField expectedLength;
+    int frameCount = 0;
+    float lastTimeStamp;
     void Start()
     {
 
@@ -34,6 +40,7 @@ public class CalibrationTest : MonoBehaviour
         GameObject.Find("firstFrame").GetComponent<RawImage>().texture = firstTex;
         GameObject.Find("secondFrame").GetComponent<RawImage>().texture = secondTex;
         _ready = true;
+
     }
     void Update()
     {
@@ -42,6 +49,16 @@ public class CalibrationTest : MonoBehaviour
             return;
         }
         MatToTexture2D();
+        if (beginTracking == false)
+        {
+            changeModeButton.GetComponentInChildren<TextMeshProUGUI>().text = "ROZPOCZNIJ";
+        }
+        else
+        {
+            changeModeButton.GetComponentInChildren<TextMeshProUGUI>().text = "PRZERWIJ";
+        }
+
+        checkFPS();
     }
     void InitTexture()
     {
@@ -76,7 +93,8 @@ public class CalibrationTest : MonoBehaviour
             else
             {
                 OpenCVInterop.trackMarkers(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height, ref distance, ref beginTracking);
-                Debug.Log("distance = " + distance);
+                detectedDistance.SetText("Odległość: " + Math.Round(distance * 1000, 2).ToString());
+                detectedError.SetText("Błąd: " + Math.Round(Math.Abs(PlayerPrefs.GetInt("expectedLength") - distance * 1000), 2).ToString());
             }           
         }
         firstTex.SetPixels32(firstPixel32);
@@ -96,12 +114,13 @@ public class CalibrationTest : MonoBehaviour
         if (beginTracking == false)
         {
             beginTracking = true;
-            changeModeButton.GetComponentInChildren<TextMeshProUGUI>().text = "PRZERWIJ";
+            frameCount = 0;
+            //changeModeButton.GetComponentInChildren<TextMeshProUGUI>().text = "PRZERWIJ";
         }
         else
         {
             beginTracking = false;
-            changeModeButton.GetComponentInChildren<TextMeshProUGUI>().text = "ROZPOCZNIJ";
+            //changeModeButton.GetComponentInChildren<TextMeshProUGUI>().text = "ROZPOCZNIJ";
         }
     }
     public void saveThreshLevel()
@@ -123,5 +142,34 @@ public class CalibrationTest : MonoBehaviour
         thresholdMenu.gameObject.SetActive(false);
         mainMenu.gameObject.SetActive(true);
         adjustThreshLevel = false;
+    }
+    public void openExpectedLengthMenu()
+    {
+        mainMenu.gameObject.SetActive(false);
+        expectedLengthMenu.gameObject.SetActive(true);
+    }
+    public void closeExpectedLengthMenu()
+    {
+        expectedLengthMenu.gameObject.SetActive(false);
+        mainMenu.gameObject.SetActive(true);
+    }
+    public void saveExpectedLength()
+    {
+        string expectedLengthStr = expectedLength.text;
+        int expectedLengthValue;
+        if(Int32.TryParse(expectedLengthStr, out expectedLengthValue))
+        PlayerPrefs.SetInt("expectedLength", expectedLengthValue);
+    }
+
+    void checkFPS()
+    {
+        ++frameCount;
+        if (frameCount % 10 == 0)
+        {
+            float now = Time.time;
+            Debug.Log("fps: " + frameCount / (now - lastTimeStamp));
+            lastTimeStamp = now;
+            frameCount = 0;
+        }
     }
 }

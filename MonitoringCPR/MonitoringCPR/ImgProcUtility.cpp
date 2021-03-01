@@ -24,23 +24,23 @@ std::pair<cv::Mat, cv::Mat> ImgProcUtility::resizeFrames(std::pair<cv::Mat, cv::
 	return resizedFrames;
 }
 
-StereoROISets ImgProcUtility::selectMarkers(std::pair<cv::Mat, cv::Mat> frames, std::pair< cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers)
+StereoROISets ImgProcUtility::selectMarkers(std::pair<cv::Mat, cv::Mat> frames, std::pair< cv::Ptr<cv::legacy::MultiTracker>, cv::Ptr<cv::legacy::MultiTracker>> multitrackers)
 {
 	StereoROISets ROISets;
 	selectROIs("firstMultiTracker", frames.first, ROISets.first);
 	for (int i = 0; i < ROISets.first.size(); i++)
 	{
-		multitrackers.first->add(cv::TrackerCSRT::create(), frames.first, cv::Rect2d(ROISets.first[i]));
+		multitrackers.first->add(cv::legacy::TrackerMOSSE::create(), frames.first, cv::Rect2d(ROISets.first[i]));
 	}
 	selectROIs("secondMultiTracker", frames.second, ROISets.second);
 	for (int i = 0; i < ROISets.second.size(); i++)
 	{
-		multitrackers.second->add(cv::TrackerCSRT::create(), frames.second, cv::Rect2d(ROISets.second[i]));
+		multitrackers.second->add(cv::legacy::TrackerMOSSE::create(), frames.second, cv::Rect2d(ROISets.second[i]));
 	}
 	return ROISets;
 }
 
-void ImgProcUtility::updateTrackers(std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames)
+void ImgProcUtility::updateTrackers(std::pair<cv::Ptr<cv::legacy::MultiTracker>, cv::Ptr<cv::legacy::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames)
 {
 	multitrackers.first->update(frames.first);
 	multitrackers.second->update(frames.second);
@@ -220,7 +220,7 @@ cv::Vec3f ImgProcUtility::findCircleInROI(cv::Mat frame)
 	return getContoursCenterOfMass(circleContour);
 }
 
-StereoCoordinates2D ImgProcUtility::getMarkersCoordinates2D(std::pair<cv::Mat, cv::Mat> grayFrames, std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames)
+StereoCoordinates2D ImgProcUtility::getMarkersCoordinates2D(std::pair<cv::Mat, cv::Mat> grayFrames, std::pair<cv::Ptr<cv::legacy::MultiTracker>, cv::Ptr<cv::legacy::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames)
 {
 	std::vector<std::pair<int, int>> radiuses = std::vector<std::pair<int, int>>(expectedNumberOfMarkers);
 	StereoCoordinates2D coordinates2D;
@@ -362,6 +362,12 @@ void ImgProcUtility::detectMarkers(cv::Mat& frame, std::vector<cv::Vec3f>& circl
 	{
 		circle(frame, cv::Point(circles[i](0), circles[i](1)), circles[i](2), cv::Scalar(0, 0, 255));
 	}
+}
+
+bool ImgProcUtility::isROIinFrame(cv::Rect ROI, cv::Mat frame)
+{
+	bool isInsideFrame = (ROI.x > 0 && ROI.x < (frame.cols + ROI.width) && ROI.y > 0 && ROI.y < (frame.rows + ROI.height));
+	return isInsideFrame;
 }
 
 

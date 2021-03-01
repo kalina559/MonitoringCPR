@@ -30,7 +30,7 @@ internal static class OpenCVInterop
     [DllImport("MonitoringCPR")]
     internal static extern bool checkCalibrationFrames(ref int invalidFrames, ref int singleFrames, ref int totalFrames);
     [DllImport("MonitoringCPR")]
-    internal static extern bool showValidFrame(IntPtr firstFrame, IntPtr secondFrame);
+    internal static extern void showValidFrame(IntPtr firstFrame, IntPtr secondFrame);
     [DllImport("MonitoringCPR")]
     internal static extern bool deleteCurrentFrames();
     [DllImport("MonitoringCPR")]

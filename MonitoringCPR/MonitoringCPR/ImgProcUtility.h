@@ -1,17 +1,16 @@
 #pragma once
 #include "CameraCalibration.h"
-#include <opencv2/tracker.hpp>
-#include <opencv2/cuda.hpp>
 #include <cstdlib>
 #include "opencv2/objdetect.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include <iostream>
 #include <stdio.h>
-#include <opencv2/tracking.hpp>
 #include <math.h>
 #include <SDL.h>
 #include "ps3eye.h"
+#include <opencv2/tracking.hpp>
+#include<opencv2/tracking/tracking_legacy.hpp>
 
 const int expectedNumberOfMarkers = 2;
 
@@ -51,15 +50,15 @@ namespace ImgProcUtility
 	std::pair<cv::Mat, cv::Mat> readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence);
 	//void readRealTimeFrames(realTimeCapturePair* stereoCapture, int width, int height);
 	std::pair<cv::Mat, cv::Mat> resizeFrames(std::pair<cv::Mat, cv::Mat> frames, double scale);
-	StereoROISets selectMarkers(std::pair<cv::Mat, cv::Mat> frames, std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers);
-	void updateTrackers(std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames);
+	StereoROISets selectMarkers(std::pair<cv::Mat, cv::Mat> frames, std::pair<cv::Ptr<cv::legacy::MultiTracker>, cv::Ptr<cv::legacy::MultiTracker>> multitrackers);
+	void updateTrackers(std::pair<cv::Ptr<cv::legacy::MultiTracker>, cv::Ptr<cv::legacy::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames);
 	std::pair<cv::Mat, cv::Mat> convertFramesToGray(std::pair<cv::Mat, cv::Mat> colorFrames);
 	std::pair<cv::Mat, cv::Mat> cutROIsFromFrames(std::pair<cv::Mat, cv::Mat> grayFrames, std::pair<cv::Rect, cv::Rect> ROI);
 	std::pair<cv::Mat, cv::Mat> thresholdImages(std::pair<cv::Mat, cv::Mat> frames, int thresh);
 	std::pair<cv::Mat, cv::Mat> erodeImages(std::pair<cv::Mat, cv::Mat> frames, int erosionSize, int erosionType);
 	cv::Mat erodeImage(cv::Mat frame, int erosionSize, int erosionType);
 	std::pair<cv::Mat, cv::Mat> performCanny(std::pair<cv::Mat, cv::Mat> frames, int threshold);
-	StereoCoordinates2D getMarkersCoordinates2D(std::pair<cv::Mat, cv::Mat> grayFrames, std::pair<cv::Ptr<cv::MultiTracker>, cv::Ptr<cv::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames);
+	StereoCoordinates2D getMarkersCoordinates2D(std::pair<cv::Mat, cv::Mat> grayFrames, std::pair<cv::Ptr<cv::legacy::MultiTracker>, cv::Ptr<cv::legacy::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames);
 	void drawCirclesAroundMarkers(std::pair<cv::Mat, cv::Mat> frames, StereoCoordinates2D circleCoordinates, std::vector<std::pair<int, int>> radiuses);
 	void drawCirclesAroundMarkers(cv::Mat frame, std::vector<cv::Vec2f> circleCoordinates, std::vector<int> radiuses);
 	void drawRectAroundROI(std::pair<cv::Mat, cv::Mat> frames, std::pair<cv::Rect, cv::Rect> trackedAreas);
@@ -79,4 +78,5 @@ namespace ImgProcUtility
 	void displayDistanceBetweenMarkers(cv::Mat& displayMatrix, Coordinates* outBalls, int firstMarkerId, int secondMarkerId);
 	std::string getId();
 	void detectMarkers(cv::Mat& frame, std::vector<cv::Vec3f>& circles);
+	bool isROIinFrame(cv::Rect ROI, cv::Mat frame);
 }

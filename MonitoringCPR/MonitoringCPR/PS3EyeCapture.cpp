@@ -7,11 +7,11 @@ void PS3EyeCapture::setCamera(ps3eye::PS3EYECam::PS3EYERef cam)
 {
 	camera = cam;
 }
-void PS3EyeCapture::setMultiTracker(cv::Ptr<cv::MultiTracker> tracker)
+void PS3EyeCapture::setMultiTracker(cv::Ptr<cv::legacy::MultiTracker> tracker)
 {
 	multiTracker = tracker;
 }
-cv::Ptr<cv::MultiTracker> PS3EyeCapture::getMultiTracker()
+cv::Ptr<cv::legacy::MultiTracker> PS3EyeCapture::getMultiTracker()
 {
 	return multiTracker;
 }
@@ -25,7 +25,7 @@ cv::Mat PS3EyeCapture::getCurrentFrame()
 }
 void PS3EyeCapture::setROIs(std::vector<cv::Vec3f> detectedMarkers)
 {
-	if (detectedMarkers.size() == 2)
+	if (detectedMarkers.size() == expectedNumberOfMarkers)
 	{
 		clearROIs();
 		for (int i = 0; i < detectedMarkers.size(); i++)
@@ -37,14 +37,15 @@ void PS3EyeCapture::setROIs(std::vector<cv::Vec3f> detectedMarkers)
 }
 void PS3EyeCapture::startMultiTracker()
 {
-	multiTracker = cv::MultiTracker::create();
+	multiTracker = cv::legacy::MultiTracker::create();
 	for (int i = 0; i < ROIs.size(); i++)
 	{
-		multiTracker->add(cv::TrackerCSRT::create(), currentFrame, ROIs[i]);
+		multiTracker->add(cv::legacy::TrackerMOSSE::create(), currentFrame, ROIs[i]);
 	}
 }
 void PS3EyeCapture::stopMultiTracker()
 {
+	ROIs.clear();
 	multiTracker.release();
 }
 
@@ -60,6 +61,10 @@ std::vector<cv::Rect> PS3EyeCapture::getROIs()
 void PS3EyeCapture::updateTracker()
 {
 	multiTracker->update(currentFrame);
+	for (int i = 0; i < ROIs.size(); ++i)
+	{
+		ROIs[i] = multiTracker->getObjects()[i];
+	}
 }
 bool PS3EyeCapture::calculateMarkersCoordinates()
 {
@@ -70,8 +75,12 @@ bool PS3EyeCapture::calculateMarkersCoordinates()
 
 	for (unsigned int i = 0; i < ROIs.size(); ++i)
 	{
-		cv::Rect ROI(multiTracker->getObjects()[i]);
-		auto croppedFrame = grayFrame(ROI);
+		if(!ImgProcUtility::isROIinFrame(ROIs[i], grayFrame))
+		{
+			return false;
+		}
+		//cv::Rect ROI(multiTracker->getObjects()[i]);
+		auto croppedFrame = grayFrame(ROIs[i]);
 		cv::Mat threshFrame;
 		cv::threshold(croppedFrame, threshFrame, threshLevel, 255, cv::THRESH_BINARY);
 		auto erodedFrame = ImgProcUtility::erodeImage(threshFrame, 1, cv::MORPH_RECT);
@@ -80,11 +89,11 @@ bool PS3EyeCapture::calculateMarkersCoordinates()
 		{
 			return false;
 		}
-		markersCoordinates2D[i](0) = v3fCircles(0) + multiTracker->getObjects()[i].x;
-		markersCoordinates2D[i](1) = v3fCircles(1) + multiTracker->getObjects()[i].y;
+		markersCoordinates2D[i](0) = v3fCircles(0) + ROIs[i].x;
+		markersCoordinates2D[i](1) = v3fCircles(1) + ROIs[i].y;
 		radiuses[i] = v3fCircles(2);
 		++detectedMarkers;
-		rectangle(currentFrame, multiTracker->getObjects()[i], cv::Scalar(255, 0, 0), 2, 1);
+		rectangle(currentFrame, ROIs[i], cv::Scalar(255, 0, 0), 2, 1);
 	}
 	return true;
 }
