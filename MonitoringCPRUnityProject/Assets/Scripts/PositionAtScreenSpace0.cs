@@ -6,10 +6,11 @@ public class PositionAtScreenSpace0 : MonoBehaviour
 {
     private float _camDistance;
     float scale;
+    public Camera camera;
     void Start()
     {
         _camDistance = Vector3.Distance(Camera.main.transform.position, transform.position);
-        scale = 4;
+        scale = 1;
     }
 
     void Update()
@@ -19,7 +20,13 @@ public class PositionAtScreenSpace0 : MonoBehaviour
 
         //Debug.Log("pozycja kulki 0: " + OpenCVMarkerLocation.NormalizedBallsPositions[0].x.ToString());
         // skaluje położenie punktu na scenie tak, żeby odpowiadała kadrowi z kamery
-        transform.position = (new Vector3(OpenCVMarkerLocation.NormalizedBallsPositions[0].x * scale, 
-            - OpenCVMarkerLocation.NormalizedBallsPositions[0].y * scale, OpenCVMarkerLocation.NormalizedBallsPositions[0].z * scale));
+       // transform.position = (new Vector3(OpenCVMarkerLocation.NormalizedBallsPositions[0].x * scale, 
+            //- OpenCVMarkerLocation.NormalizedBallsPositions[0].y * scale, OpenCVMarkerLocation.NormalizedBallsPositions[0].z * scale));
+
+        var adjustedPos = (new Vector3(OpenCVMarkerLocation.NormalizedBallsPositions[0].x * scale,
+            -OpenCVMarkerLocation.NormalizedBallsPositions[0].y * scale, OpenCVMarkerLocation.NormalizedBallsPositions[0].z * scale));
+
+
+        transform.position = camera.WorldToScreenPoint(adjustedPos);
     }
 }

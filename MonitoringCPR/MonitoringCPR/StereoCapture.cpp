@@ -118,3 +118,10 @@ void StereoCapture::setTreshLevel(int level)
 	first.setThreshLevel(level);
 	second.setThreshLevel(level);
 }
+
+void StereoCapture::setExpectedNumberOfMarkerPairs(int number)
+{
+	expectedNumberOfMarkerPairs = number;
+	first.setExpectedNumberOfMarkers(number);
+	second.setExpectedNumberOfMarkers(number);
+}

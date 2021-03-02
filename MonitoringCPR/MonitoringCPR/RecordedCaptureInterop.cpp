@@ -76,7 +76,41 @@ extern "C" void __declspec(dllexport) __stdcall GetCurrentFrame(unsigned char* f
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
 
-extern "C" void __declspec(dllexport) __stdcall Detect(ImgProcUtility::Coordinates * outBalls, int maxOutBallsCount, int& outDetectedBallsCount) // w parametrach powinno byc jeszcze frames.first i frames.second, tak zeby mozna bylo wyswietlac je w unity
+extern "C" bool __declspec(dllexport) __stdcall recordedDetectMarkers(int width, int height)
+{
+	std::vector<cv::Vec3f> circles1, circles2;
+
+	std::pair<cv::Mat, cv::Mat> frames = ImgProcUtility::readFrames(firstSequence, secondSequence);
+	std::pair<cv::Mat, cv::Mat> resizedFrames = ImgProcUtility::resizeFrames(frames, 0.5);
+
+
+	ImgProcUtility::detectMarkers(resizedFrames.first, circles1);
+	ImgProcUtility::detectMarkers(resizedFrames.second, circles2);
+
+	imshow("frame camera 1", resizedFrames.first);
+	imshow("frame camera 2", resizedFrames.second);
+	cv::waitKey(1);
+	if (circles1.size() == circles2.size())
+	{
+		ROIs.first.clear();
+		ROIs.second.clear();
+		if (circles1.size() == 10)
+		{
+			for (int i = 0; i < 10; i++)
+			{
+				cv::Rect trackedArea1(circles1[i](0) - 4 * circles1[i](2), circles1[i](1) - 4 * circles1[i](2), 8 * circles1[i](2), 8 * circles1[i](2));
+				cv::Rect trackedArea2(circles2[i](0) - 4 * circles2[i](2), circles2[i](1) - 4 * circles2[i](2), 8 * circles2[i](2), 8 * circles2[i](2));
+				ROIs.first.push_back(trackedArea1);
+				ROIs.second.push_back(trackedArea2);
+			}
+			return true;
+		}		
+	}
+	return false;
+}
+
+
+extern "C" void __declspec(dllexport) __stdcall recordedTrackMarkers(ImgProcUtility::Coordinates * outBalls, int maxOutBallsCount, int& outDetectedBallsCount) // w parametrach powinno byc jeszcze frames.first i frames.second, tak zeby mozna bylo wyswietlac je w unity
 {
 	cv::Mat firstCameraFrame, secondCameraFrame, croppedImg1, croppedImg2,
 		threshImg1, threshImg2, croppedColor1, croppedColor2;
@@ -95,9 +129,15 @@ extern "C" void __declspec(dllexport) __stdcall Detect(ImgProcUtility::Coordinat
 		return;
 	}
 	std::pair<cv::Mat, cv::Mat> resizedFrames = ImgProcUtility::resizeFrames(frames, 0.5);
+
 	if (firstFrame == true)
 	{
-		ROIs = ImgProcUtility::selectMarkers(resizedFrames, multiTrackers);
+		//ROIs = ImgProcUtility::selectMarkers(resizedFrames, multiTrackers);
+		for (int i = 0; i < ROIs.first.size(); i++)
+		{
+			multiTrackers.first->add(cv::legacy::TrackerMOSSE::create(), resizedFrames.first, ROIs.first[i]);
+			multiTrackers.second->add(cv::legacy::TrackerMOSSE::create(), resizedFrames.second, ROIs.second[i]);
+		}
 		firstFrame = false;
 	}
 	ImgProcUtility::updateTrackers(multiTrackers, resizedFrames);

@@ -34,7 +34,7 @@ public class CalibrationTest : MonoBehaviour
     float lastTimeStamp;
     void Start()
     {
-
+        OpenCVInterop.setExpectedNumberOfMarkerPairs(2);
         Debug.Log("displayImage start");
         InitTexture();
         GameObject.Find("firstFrame").GetComponent<RawImage>().texture = firstTex;

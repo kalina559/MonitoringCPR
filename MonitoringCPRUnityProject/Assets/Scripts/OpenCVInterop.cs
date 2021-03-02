@@ -14,7 +14,9 @@ internal static class OpenCVInterop
     [DllImport("MonitoringCPR")]
     internal static extern int SetScale(int downscale);
     [DllImport("MonitoringCPR")]
-    internal unsafe static extern void Detect(CvCoordinates* outBalls, int maxOutBallsCount, ref int outDetectedBallsCount);
+    internal unsafe static extern void recordedTrackMarkers(CvCoordinates* outBalls, int maxOutBallsCount, ref int outDetectedBallsCount);
+    [DllImport("MonitoringCPR")]
+    internal unsafe static extern bool recordedDetectMarkers(int width, int height);
     [DllImport("MonitoringCPR")]
     internal static extern void GetCurrentFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
     [DllImport("MonitoringCPR")]
@@ -52,4 +54,6 @@ internal static class OpenCVInterop
     internal static extern void updateThreshLevel(int threshLevel);
     [DllImport("MonitoringCPR")]
     internal static extern int getThreshLevel();
+    [DllImport("MonitoringCPR")]
+    internal static extern int setExpectedNumberOfMarkerPairs(int number);
 }

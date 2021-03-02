@@ -107,7 +107,7 @@ std::pair<cv::Mat, cv::Mat> ImgProcUtility::performCanny(std::pair<cv::Mat, cv::
 
 void ImgProcUtility::drawCirclesAroundMarkers(std::pair<cv::Mat, cv::Mat> frames, StereoCoordinates2D circleCoordinates, std::vector<std::pair<int, int>> radiuses)
 {
-	for (int i = 0; i < expectedNumberOfMarkers; ++i)
+	for (int i = 0; i < circleCoordinates.first.size() ; ++i)
 	{
 		cv::Point firstCenter(circleCoordinates.first[i](0), circleCoordinates.first[i](1));
 		cv::Point secondCenter(circleCoordinates.second[i](0), circleCoordinates.second[i](1));
@@ -118,7 +118,7 @@ void ImgProcUtility::drawCirclesAroundMarkers(std::pair<cv::Mat, cv::Mat> frames
 
 void ImgProcUtility::drawCirclesAroundMarkers(cv::Mat frame, std::vector<cv::Vec2f> circleCoordinates, std::vector<int> radiuses)
 {
-	for (int i = 0; i < expectedNumberOfMarkers; ++i)
+	for (int i = 0; i < circleCoordinates.size(); ++i)
 	{
 		cv::Point firstCenter(circleCoordinates[i](0), circleCoordinates[i](1));
 		circle(frame, firstCenter, radiuses[i], cv::Scalar(0, 0, 255));
@@ -222,11 +222,11 @@ cv::Vec3f ImgProcUtility::findCircleInROI(cv::Mat frame)
 
 StereoCoordinates2D ImgProcUtility::getMarkersCoordinates2D(std::pair<cv::Mat, cv::Mat> grayFrames, std::pair<cv::Ptr<cv::legacy::MultiTracker>, cv::Ptr<cv::legacy::MultiTracker>> multitrackers, std::pair<cv::Mat, cv::Mat> frames)
 {
-	std::vector<std::pair<int, int>> radiuses = std::vector<std::pair<int, int>>(expectedNumberOfMarkers);
+	std::vector<std::pair<int, int>> radiuses;// = std::vector<std::pair<int, int>>(expectedNumberOfMarkers);
 	StereoCoordinates2D coordinates2D;
 	int detectedMarkers = 0;
 
-	for (unsigned int i = 0; i < expectedNumberOfMarkers; ++i)
+	for (unsigned int i = 0; i < multitrackers.first->getObjects().size(); ++i)
 	{
 		std::pair<cv::Rect, cv::Rect> ROI(multitrackers.first->getObjects()[i], multitrackers.second->getObjects()[i]);
 		std::pair<cv::Mat, cv::Mat> croppedFrames = ImgProcUtility::cutROIsFromFrames(grayFrames, ROI);
@@ -236,12 +236,23 @@ StereoCoordinates2D ImgProcUtility::getMarkersCoordinates2D(std::pair<cv::Mat, c
 		//stuff above has the biggest effect on fps
 		std::pair<cv::Vec3f, cv::Vec3f> v3fCircles = findCirclesInROIs(erodeFrames);
 
-		coordinates2D.first[i](0) = v3fCircles.first(0) + multitrackers.first->getObjects()[i].x;
-		coordinates2D.first[i](1) = v3fCircles.first(1) + multitrackers.first->getObjects()[i].y;
-		coordinates2D.second[i](0) = v3fCircles.second(0) + multitrackers.second->getObjects()[i].x;
-		coordinates2D.second[i](1) = v3fCircles.second(1) + multitrackers.second->getObjects()[i].y;
-		radiuses[i].first = v3fCircles.first(2);
-		radiuses[i].second = v3fCircles.second(2);
+		//coordinates2D.first[i](0) = v3fCircles.first(0) + multitrackers.first->getObjects()[i].x;
+		//coordinates2D.first[i](1) = v3fCircles.first(1) + multitrackers.first->getObjects()[i].y;
+		//coordinates2D.second[i](0) = v3fCircles.second(0) + multitrackers.second->getObjects()[i].x;
+		//coordinates2D.second[i](1) = v3fCircles.second(1) + multitrackers.second->getObjects()[i].y;
+		//radiuses[i].first = v3fCircles.first(2);
+		//radiuses[i].second = v3fCircles.second(2);
+
+		cv::Vec2f firstCoordinates, secondCoordinates;
+		firstCoordinates(0) = v3fCircles.first(0) + multitrackers.first->getObjects()[i].x;
+		firstCoordinates(1) = v3fCircles.first(1) + multitrackers.first->getObjects()[i].y;
+		secondCoordinates(0) = v3fCircles.second(0) + multitrackers.second->getObjects()[i].x;
+		secondCoordinates(1) = v3fCircles.second(1) + multitrackers.second->getObjects()[i].y;
+
+		coordinates2D.first.push_back(firstCoordinates);
+		coordinates2D.second.push_back(secondCoordinates);
+
+		radiuses.push_back({ v3fCircles.first(2), v3fCircles.second(2) });
 
 		++detectedMarkers;
 
@@ -278,12 +289,19 @@ void ImgProcUtility::getMarkersCoordinates3D(cv::Mat triangCoords, Coordinates* 
 
 void ImgProcUtility::getMarkersCoordinates3D(cv::Mat triangCoords, std::vector<Coordinates>& outBalls, int& outDetectedBallsCount)
 {
+	outBalls.clear();
 	for (int i = 0; i < triangCoords.cols; ++i) // for different balls
 	{
-		outBalls[i].X = triangCoords.at<double>(0, i) / triangCoords.at<double>(3, i);
+		/*outBalls[i].X = triangCoords.at<double>(0, i) / triangCoords.at<double>(3, i);
 		outBalls[i].Y = triangCoords.at<double>(1, i) / triangCoords.at<double>(3, i);
-		outBalls[i].Z = triangCoords.at<double>(2, i) / triangCoords.at<double>(3, i);
+		outBalls[i].Z = triangCoords.at<double>(2, i) / triangCoords.at<double>(3, i);*/
 
+		Coordinates coords;
+		coords.X = triangCoords.at<double>(0, i) / triangCoords.at<double>(3, i);
+		coords.Y = triangCoords.at<double>(1, i) / triangCoords.at<double>(3, i);
+		coords.Z = triangCoords.at<double>(2, i) / triangCoords.at<double>(3, i);
+
+		outBalls.push_back(coords);
 		++outDetectedBallsCount;
 	}
 }
@@ -352,18 +370,32 @@ std::string ImgProcUtility::getId()
 	return outDigitString;
 }
 
+struct contour_sorter // 'less' for contours
+{
+	bool operator ()(cv::Vec3f a, cv::Vec3f b)
+	{
+		// scale factor for y should be larger than img.width
+		return ((a[0] + 100 * a[1]) < (b[0] + 100 * b[1]));
+	}
+};
+
 void ImgProcUtility::detectMarkers(cv::Mat& frame, std::vector<cv::Vec3f>& circles)
 {
 	cv::Mat gray;
 	cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-	HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1, gray.rows / 16, 100, 30, 1, 30);
+	HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1, gray.rows / 30, 255, 10, 1, 30);
+
+
+	std::sort(circles.begin(), circles.end(), contour_sorter());
+
 
 	for (int i = 0; i < circles.size(); ++i)
 	{
+		cv::putText(frame, std::to_string(i),
+			cv::Point(circles[i](0) - 10, circles[i](1)), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 0, 255));
 		circle(frame, cv::Point(circles[i](0), circles[i](1)), circles[i](2), cv::Scalar(0, 0, 255));
 	}
 }
-
 bool ImgProcUtility::isROIinFrame(cv::Rect ROI, cv::Mat frame)
 {
 	bool isInsideFrame = (ROI.x > 0 && ROI.x < (frame.cols + ROI.width) && ROI.y > 0 && ROI.y < (frame.rows + ROI.height));

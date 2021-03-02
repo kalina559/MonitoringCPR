@@ -7,8 +7,9 @@ class PS3EyeCapture
 	cv::Ptr<cv::legacy::MultiTracker> multiTracker;
 	cv::Mat currentFrame;
 	std::vector<cv::Rect> ROIs;
-	std::vector<cv::Vec2f> markersCoordinates2D = std::vector<cv::Vec2f>(expectedNumberOfMarkers);
+	std::vector<cv::Vec2f> markersCoordinates2D;// = std::vector<cv::Vec2f>(expectedNumberOfMarkers);
 	int threshLevel = 70;
+	int expectedNumberOfMarkers;
 public:
 	~PS3EyeCapture()
 	{
@@ -33,4 +34,5 @@ public:
 	std::vector<cv::Vec2f> getMarkersCoordinates();
 	void setThreshLevel(int level);
 	int getThreshLevel();
+	void setExpectedNumberOfMarkers(int number);
 };

@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.InteropServices;
 using System;
+using UnityEngine.UI;
 
 public class OpenCVMarkerLocation : MonoBehaviour
 {
 
     public static List<Vector3> NormalizedBallsPositions { get; private set; }
     public static Vector2 CameraResolution;
+    public Image firstFrame;
 
     /// <summary>
     /// Downscale factor to speed up detection.
@@ -18,9 +20,13 @@ public class OpenCVMarkerLocation : MonoBehaviour
     private int _maxBallsDetectCount = 10;
     private CvCoordinates[] _balls;
 
+    public GameObject firstMarker;
+    public GameObject secondMarker;
+    public List<GameObject> markers;
+    bool detectMarkers = true;
     void Start()
     {
-
+        //firstFrame = 
         int camWidth = 0, camHeight = 0;
         int result = OpenCVInterop.Init(ref camWidth, ref camHeight);
         if (result < 0)
@@ -54,32 +60,47 @@ public class OpenCVMarkerLocation : MonoBehaviour
 
     void Update()
     {
-        if (!_ready)
-            return;
-
-        int detectedBallsCount = 0;
-        unsafe
+        Debug.Log("detectMarkers " + detectMarkers);
+        if (detectMarkers == true)
         {
-            fixed (CvCoordinates* outBalls = _balls)
+            if (OpenCVInterop.recordedDetectMarkers(640, 480))
             {
-                OpenCVInterop.Detect(outBalls, _maxBallsDetectCount, ref detectedBallsCount);
+                detectMarkers = false;
             }
         }
-        NormalizedBallsPositions.Clear();
-        for (int i = 0; i < detectedBallsCount; i++)
+        else
         {
-            NormalizedBallsPositions.Add(new Vector3((_balls[i].X * DetectionDownScale), 
-                (_balls[i].Y * DetectionDownScale), _balls[i].Z * DetectionDownScale));
+            if (!_ready)
+                return;
 
-
-        }
-
-        Debug.Log("update");
-        if (Input.GetKey(KeyCode.K) == true)        // jeśli wciśniemy k to wychodzimy z apki     TODO ZMIENIC NA ESC
-        {
-            Debug.Log("wcisnieto escape");
+            int detectedBallsCount = 0;
+            unsafe
+            {
+                fixed (CvCoordinates* outBalls = _balls)
+                {
+                    OpenCVInterop.recordedTrackMarkers(outBalls, _maxBallsDetectCount, ref detectedBallsCount);
+                }
+            }
             NormalizedBallsPositions.Clear();
-            Application.Quit();
+            for (int i = 0; i < markers.Count; i++)
+            {
+                NormalizedBallsPositions.Add(new Vector3((_balls[i].X * DetectionDownScale),
+                    (_balls[i].Y * DetectionDownScale), _balls[i].Z * DetectionDownScale));
+
+                markers[i].transform.position = (new Vector3(OpenCVMarkerLocation.NormalizedBallsPositions[i].x * 1,
+            - OpenCVMarkerLocation.NormalizedBallsPositions[i].y * 1, OpenCVMarkerLocation.NormalizedBallsPositions[i].z * 1));
+
+            }
+
+
+
+            Debug.Log("update");
+            if (Input.GetKey(KeyCode.K) == true)        // jeśli wciśniemy k to wychodzimy z apki     TODO ZMIENIC NA ESC
+            {
+                Debug.Log("wcisnieto escape");
+                NormalizedBallsPositions.Clear();
+                Application.Quit();
+            }
         }
     }
 }

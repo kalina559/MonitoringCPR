@@ -10,7 +10,7 @@ public class PositionAtScreenSpace1 : MonoBehaviour
     void Start()
     {
         _camDistance = Vector3.Distance(Camera.main.transform.position, transform.position);
-        scale = 4;
+        scale = 1;
     }
 
     void Update()

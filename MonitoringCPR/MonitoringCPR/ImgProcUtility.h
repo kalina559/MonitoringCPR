@@ -12,18 +12,18 @@
 #include <opencv2/tracking.hpp>
 #include<opencv2/tracking/tracking_legacy.hpp>
 
-const int expectedNumberOfMarkers = 2;
+//const int expectedNumberOfMarkers = 2;
 
 struct StereoROISets
 {
-	std::vector<cv::Rect> first = std::vector<cv::Rect>(expectedNumberOfMarkers);
-	std::vector<cv::Rect> second = std::vector<cv::Rect>(expectedNumberOfMarkers);
+	std::vector<cv::Rect> first;// = std::vector<cv::Rect>(expectedNumberOfMarkers);
+	std::vector<cv::Rect> second;// = std::vector<cv::Rect>(expectedNumberOfMarkers);
 };
 
 struct StereoCoordinates2D
 {
-	std::vector<cv::Vec2f> first = std::vector<cv::Vec2f>(expectedNumberOfMarkers);
-	std::vector<cv::Vec2f> second = std::vector<cv::Vec2f>(expectedNumberOfMarkers);
+	std::vector<cv::Vec2f> first;// = std::vector<cv::Vec2f>(expectedNumberOfMarkers);
+	std::vector<cv::Vec2f> second;// = std::vector<cv::Vec2f>(expectedNumberOfMarkers);
 };
 
 struct Matrices

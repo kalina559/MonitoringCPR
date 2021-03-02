@@ -27,19 +27,20 @@ void PS3EyeCapture::setROIs(std::vector<cv::Vec3f> detectedMarkers)
 {
 	if (detectedMarkers.size() == expectedNumberOfMarkers)
 	{
-		clearROIs();
+		clearROIs();		
 		for (int i = 0; i < detectedMarkers.size(); i++)
 		{
-			cv::Rect trackedArea(detectedMarkers[i](0) - 2 * detectedMarkers[i](2), detectedMarkers[i](1) - 2 * detectedMarkers[i](2), 4 * detectedMarkers[i](2), 4 * detectedMarkers[i](2));
+			cv::Rect trackedArea(detectedMarkers[i](0) - 3 * detectedMarkers[i](2), detectedMarkers[i](1) - 3 * detectedMarkers[i](2), 6 * detectedMarkers[i](2), 6 * detectedMarkers[i](2));
 			ROIs.push_back(trackedArea);
 		}
+
 	}
 }
 void PS3EyeCapture::startMultiTracker()
 {
 	multiTracker = cv::legacy::MultiTracker::create();
 	for (int i = 0; i < ROIs.size(); i++)
-	{
+	{		
 		multiTracker->add(cv::legacy::TrackerMOSSE::create(), currentFrame, ROIs[i]);
 	}
 }
@@ -71,8 +72,8 @@ bool PS3EyeCapture::calculateMarkersCoordinates()
 	int detectedMarkers = 0;
 	cv::Mat grayFrame;
 	cvtColor(currentFrame, grayFrame, cv::COLOR_BGR2GRAY);
-	std::vector<int> radiuses(expectedNumberOfMarkers);
 
+	markersCoordinates2D.clear();
 	for (unsigned int i = 0; i < ROIs.size(); ++i)
 	{
 		if(!ImgProcUtility::isROIinFrame(ROIs[i], grayFrame))
@@ -84,14 +85,15 @@ bool PS3EyeCapture::calculateMarkersCoordinates()
 		cv::Mat threshFrame;
 		cv::threshold(croppedFrame, threshFrame, threshLevel, 255, cv::THRESH_BINARY);
 		auto erodedFrame = ImgProcUtility::erodeImage(threshFrame, 1, cv::MORPH_RECT);
-		cv::Vec3f v3fCircles(1);
+		cv::Vec3f v3fCircles;
 		if (!ImgProcUtility::findCircleInROI(erodedFrame, v3fCircles, threshLevel))
 		{
 			return false;
-		}
-		markersCoordinates2D[i](0) = v3fCircles(0) + ROIs[i].x;
-		markersCoordinates2D[i](1) = v3fCircles(1) + ROIs[i].y;
-		radiuses[i] = v3fCircles(2);
+		}		
+		//markersCoordinates2D[i](0) = v3fCircles(0) + ROIs[i].x;
+		//markersCoordinates2D[i](1) = v3fCircles(1) + ROIs[i].y;
+
+		markersCoordinates2D.push_back({ v3fCircles(0) + ROIs[i].x , v3fCircles(1) + ROIs[i].y });
 		++detectedMarkers;
 		rectangle(currentFrame, ROIs[i], cv::Scalar(255, 0, 0), 2, 1);
 	}
@@ -110,3 +112,9 @@ int PS3EyeCapture::getThreshLevel()
 {
 	return threshLevel;
 }
+
+void PS3EyeCapture::setExpectedNumberOfMarkers(int number)
+{
+	expectedNumberOfMarkers = number;
+}
+

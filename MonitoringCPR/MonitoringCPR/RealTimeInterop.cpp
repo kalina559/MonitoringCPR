@@ -107,10 +107,14 @@ extern "C" void __declspec(dllexport) __stdcall detectMarkers(unsigned char* fir
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
 
-
+extern "C" void __declspec(dllexport) __stdcall setExpectedNumberOfMarkerPairs(int number)
+{
+	StereoCapture::getInstance()->setExpectedNumberOfMarkerPairs(number);
+}
 
 extern "C" void __declspec(dllexport) __stdcall trackMarkers(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height, double& distance, bool& beginTracking)
 {
+
 	//cv::Mat img = cv::imread("C:/Users/Kalin/Desktop/pierdoly/memes/ee.jpg");
 	cv::Mat firstCameraFrame, secondCameraFrame, croppedImg1, croppedImg2,
 		threshImg1, threshImg2, croppedColor1, croppedColor2;
@@ -125,9 +129,7 @@ extern "C" void __declspec(dllexport) __stdcall trackMarkers(unsigned char* firs
 		StereoCapture::getInstance()->getFirstCapture().startMultiTracker();
 		StereoCapture::getInstance()->getSecondCapture().startMultiTracker();
 		StereoCapture::getInstance()->setTrackingState(true);
-	}
-
-	
+	}	
 
 	std::pair<cv::Mat, cv::Mat> frames = { StereoCapture::getInstance()->getFirstCapture().getCurrentFrame() ,StereoCapture::getInstance()->getSecondCapture().getCurrentFrame() };
 	//std::pair<cv::Mat, cv::Mat> grayFrames = ImgProcUtility::convertFramesToGray(frames);
@@ -135,7 +137,8 @@ extern "C" void __declspec(dllexport) __stdcall trackMarkers(unsigned char* firs
 	StereoCapture::getInstance()->getFirstCapture().updateTracker();
 	StereoCapture::getInstance()->getSecondCapture().updateTracker();
 
-	auto outBalls = std::vector<ImgProcUtility::Coordinates>(expectedNumberOfMarkers);
+	//auto outBalls = std::vector<ImgProcUtility::Coordinates>(expectedNumberOfMarkers);
+	std::vector<ImgProcUtility::Coordinates> outBalls;
 	int outDetectedBallsCount;
 
 	bool result1 = StereoCapture::getInstance()->getFirstCapture().calculateMarkersCoordinates();
@@ -155,8 +158,6 @@ extern "C" void __declspec(dllexport) __stdcall trackMarkers(unsigned char* firs
 	ImgProcUtility::getMarkersCoordinates3D(StereoCapture::getInstance()->getTriangCoordinates(), outBalls, outDetectedBallsCount);
 
 	distance = ImgProcUtility::calculateDistanceBetweenMarkers(outBalls, 0, 1);
-
-	//ImgProcUtility::displayDistanceBetweenMarkers(frames.first, outBalls, 0, 1);
 
 	cv::Mat firstArgbImg, secondArgbImg;
 	cv::cvtColor(frames.first, firstArgbImg, cv::COLOR_BGR2RGBA);
