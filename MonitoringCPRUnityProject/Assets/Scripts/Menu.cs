@@ -15,13 +15,17 @@ public class Menu : MonoBehaviour
         CaptureCalibrationFrames,
         CalibrationFramesCheck,
         Calibration,
-        CalibrationTest
+        CalibrationTest,
+        Monitoring
     }
     public void GoToMarkerMovement()
     {
         SceneManager.LoadScene((int)Scenes.MarkerMovement);
     }
-
+    public void GoToMonitoring()
+    {
+        SceneManager.LoadScene((int)Scenes.Monitoring);
+    }
     public void GoToCalibrationMenu()
     {
         SceneManager.LoadScene((int)Scenes.CalibrationMenu);

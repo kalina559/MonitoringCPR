@@ -118,3 +118,7 @@ void PS3EyeCapture::setExpectedNumberOfMarkers(int number)
 	expectedNumberOfMarkers = number;
 }
 
+void PS3EyeCapture::detectMarkers()
+{
+}
+

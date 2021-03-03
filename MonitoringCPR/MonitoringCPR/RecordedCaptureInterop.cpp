@@ -84,8 +84,8 @@ extern "C" bool __declspec(dllexport) __stdcall recordedDetectMarkers(int width,
 	std::pair<cv::Mat, cv::Mat> resizedFrames = ImgProcUtility::resizeFrames(frames, 0.5);
 
 
-	ImgProcUtility::detectMarkers(resizedFrames.first, circles1);
-	ImgProcUtility::detectMarkers(resizedFrames.second, circles2);
+	ImgProcUtility::detectMarkers(resizedFrames.first, resizedFrames.first, circles1);
+	ImgProcUtility::detectMarkers(resizedFrames.second, resizedFrames.second, circles2);
 
 	imshow("frame camera 1", resizedFrames.first);
 	imshow("frame camera 2", resizedFrames.second);
@@ -104,7 +104,7 @@ extern "C" bool __declspec(dllexport) __stdcall recordedDetectMarkers(int width,
 				ROIs.second.push_back(trackedArea2);
 			}
 			return true;
-		}		
+		}
 	}
 	return false;
 }

@@ -125,3 +125,8 @@ void StereoCapture::setExpectedNumberOfMarkerPairs(int number)
 	first.setExpectedNumberOfMarkers(number);
 	second.setExpectedNumberOfMarkers(number);
 }
+
+bool StereoCapture::checkIfAllMarkersDetected(std::vector<cv::Vec3f> firstCircles, std::vector<cv::Vec3f> secondCircles)
+{
+	return (firstCircles.size() == expectedNumberOfMarkerPairs && secondCircles.size() == expectedNumberOfMarkerPairs);
+}

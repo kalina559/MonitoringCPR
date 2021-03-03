@@ -35,4 +35,5 @@ public:
 	void setThreshLevel(int level);
 	int getThreshLevel();
 	void setExpectedNumberOfMarkers(int number);
+	void detectMarkers();
 };

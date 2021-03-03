@@ -375,25 +375,25 @@ struct contour_sorter // 'less' for contours
 	bool operator ()(cv::Vec3f a, cv::Vec3f b)
 	{
 		// scale factor for y should be larger than img.width
-		return ((a[0] + 100 * a[1]) < (b[0] + 100 * b[1]));
+		return ((a[0] /*+ 100 * a[1]*/) < (b[0]/* + 100 * b[1]*/));
 	}
 };
 
-void ImgProcUtility::detectMarkers(cv::Mat& frame, std::vector<cv::Vec3f>& circles)
+void ImgProcUtility::detectMarkers(cv::Mat& frame, cv::Mat& displayFrame, std::vector<cv::Vec3f>& circles)
 {
 	cv::Mat gray;
-	cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-	HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1, gray.rows / 30, 255, 10, 1, 30);
-
+	//cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+	HoughCircles(frame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 10, 100, 10, 1, 30);
 
 	std::sort(circles.begin(), circles.end(), contour_sorter());
 
-
+	/*cv::imshow("circles size: " + std::to_string(circles.size()), img);
+	cv::waitKey(0);*/
 	for (int i = 0; i < circles.size(); ++i)
 	{
-		cv::putText(frame, std::to_string(i),
+		cv::putText(displayFrame, std::to_string(i),
 			cv::Point(circles[i](0) - 10, circles[i](1)), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 0, 255));
-		circle(frame, cv::Point(circles[i](0), circles[i](1)), circles[i](2), cv::Scalar(0, 0, 255));
+		circle(displayFrame, cv::Point(circles[i](0), circles[i](1)), circles[i](2), cv::Scalar(0, 0, 255));
 	}
 }
 bool ImgProcUtility::isROIinFrame(cv::Rect ROI, cv::Mat frame)

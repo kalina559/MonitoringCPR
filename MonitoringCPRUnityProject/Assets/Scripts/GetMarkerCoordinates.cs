@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.InteropServices;
@@ -6,9 +6,11 @@ using System;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
-
-public class CalibrationTest : MonoBehaviour
+public class GetMarkerCoordinates : MonoBehaviour
 {
+
+    public static List<Vector3> NormalizedBallsPositions { get; private set; }
+    public static Vector2 CameraResolution;
     private Texture2D firstTex;
     private Texture2D secondTex;
     private Color32[] firstPixel32;
@@ -32,24 +34,67 @@ public class CalibrationTest : MonoBehaviour
     public TMP_InputField expectedLength;
     int frameCount = 0;
     float lastTimeStamp;
+
+    /// <summary>
+    /// Downscale factor to speed up detection.
+    /// </summary>
+    private const int DetectionDownScale = 1;
+    private int _maxBallsDetectCount = 5;
+    private CvCoordinates[] _balls;
+
+    public List<GameObject> markers;
+    bool detectMarkers = true;
     bool allMarkersDetected = false;
     void Start()
     {
-        OpenCVInterop.setExpectedNumberOfMarkerPairs(2);
+        OpenCVInterop.setExpectedNumberOfMarkerPairs(5);
         Debug.Log("displayImage start");
         InitTexture();
         GameObject.Find("firstFrame").GetComponent<RawImage>().texture = firstTex;
         GameObject.Find("secondFrame").GetComponent<RawImage>().texture = secondTex;
         _ready = true;
 
+        int camWidth = 0, camHeight = 0;
+        int result = OpenCVInterop.Init(ref camWidth, ref camHeight);
+        if (result < 0)
+        {
+            if (result == -1)
+            {
+                Debug.LogWarningFormat("[{0}] Failed to find cascades definition.", GetType());
+            }
+            else if (result == -2)
+            {
+                Debug.LogWarningFormat("[{0}] Failed to open camera stream.", GetType());
+            }
+
+            return;
+        }
+
+        CameraResolution = new Vector2(camWidth, camHeight);
+        _balls = new CvCoordinates[_maxBallsDetectCount]; //tworzymy bufor o podanej wielko�ci
+        NormalizedBallsPositions = new List<Vector3>();
+        OpenCVInterop.SetScale(DetectionDownScale);
+        _ready = true;
     }
+
+    void OnApplicationQuit()
+    {
+        if (_ready)
+        {
+            OpenCVInterop.Close();
+        }
+    }
+
     void Update()
     {
+
         if (!_ready)
         {
             return;
         }
+        Debug.Log("starttracking " + beginTracking);
         MatToTexture2D();
+
         if (beginTracking == false)
         {
             changeModeButton.GetComponentInChildren<TextMeshProUGUI>().text = "ROZPOCZNIJ";
@@ -61,6 +106,7 @@ public class CalibrationTest : MonoBehaviour
 
         checkFPS();
     }
+
     void InitTexture()
     {
         firstTex = new Texture2D(640, 480, TextureFormat.ARGB32, false);
@@ -76,7 +122,7 @@ public class CalibrationTest : MonoBehaviour
     }
 
     void MatToTexture2D()
-    {        
+    {
         //Convert Mat to Texture2D
         if (adjustThreshLevel == true)
         {
@@ -87,22 +133,38 @@ public class CalibrationTest : MonoBehaviour
         }
         else
         {
+
             if (beginTracking == false)
             {
                 allMarkersDetected = OpenCVInterop.detectMarkers(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height);
             }
             else
             {
-                OpenCVInterop.trackMarkers(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height, ref distance, ref beginTracking);
-                detectedDistance.SetText("Odległość: " + Math.Round(distance * 1000, 2).ToString());
-                detectedError.SetText("Błąd: " + Math.Round(Math.Abs(PlayerPrefs.GetInt("expectedLength") - distance * 1000), 2).ToString());
-            }           
+                int detectedBallsCount = 0;
+                unsafe
+                {
+                    fixed (CvCoordinates* outBalls = _balls)
+                    {
+                        OpenCVInterop.realTimeMonitoring(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height, outBalls, ref detectedBallsCount);
+                    }
+                }
+
+                for (int i = 0; i < _balls.Length; i++)
+                {
+                    markers[i].transform.position = (new Vector3(_balls[i].X * 1,
+                -_balls[i].Y * 1, _balls[i].Z * 1));
+
+                }
+                Debug.Log("length " + _balls.Length);
+
+            }
         }
         firstTex.SetPixels32(firstPixel32);
         secondTex.SetPixels32(secondPixel32);
         firstTex.Apply();
         secondTex.Apply();
     }
+
     private void OnDisable()
     {
         //Free handle
@@ -124,11 +186,11 @@ public class CalibrationTest : MonoBehaviour
             //changeModeButton.GetComponentInChildren<TextMeshProUGUI>().text = "ROZPOCZNIJ";
         }
     }
+
     public void saveThreshLevel()
     {
         OpenCVInterop.saveThreshLevel(threshValue);
     }
-
     public void openThresholdMenu()
     {
         Debug.Log("openthresh");
@@ -144,24 +206,6 @@ public class CalibrationTest : MonoBehaviour
         mainMenu.gameObject.SetActive(true);
         adjustThreshLevel = false;
     }
-    public void openExpectedLengthMenu()
-    {
-        mainMenu.gameObject.SetActive(false);
-        expectedLengthMenu.gameObject.SetActive(true);
-    }
-    public void closeExpectedLengthMenu()
-    {
-        expectedLengthMenu.gameObject.SetActive(false);
-        mainMenu.gameObject.SetActive(true);
-    }
-    public void saveExpectedLength()
-    {
-        string expectedLengthStr = expectedLength.text;
-        int expectedLengthValue;
-        if(Int32.TryParse(expectedLengthStr, out expectedLengthValue))
-        PlayerPrefs.SetInt("expectedLength", expectedLengthValue);
-    }
-
     void checkFPS()
     {
         ++frameCount;
@@ -174,3 +218,4 @@ public class CalibrationTest : MonoBehaviour
         }
     }
 }
+

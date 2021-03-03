@@ -85,7 +85,7 @@ extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames()
 	cv::imwrite("../MonitoringCPR/images/Calibration/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
 }
 
-extern "C" void __declspec(dllexport) __stdcall detectMarkers(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
+extern "C" bool __declspec(dllexport) __stdcall detectMarkers(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
 {
 	std::vector<cv::Vec3f> circles1, circles2;
 
@@ -95,8 +95,18 @@ extern "C" void __declspec(dllexport) __stdcall detectMarkers(unsigned char* fir
 	StereoCapture::getInstance()->getFirstCapture().getCurrentFrame().copyTo(frame1);
 	StereoCapture::getInstance()->getSecondCapture().getCurrentFrame().copyTo(frame2);
 
-	ImgProcUtility::detectMarkers(frame1, circles1);
-	ImgProcUtility::detectMarkers(frame2, circles2);
+	cv::Mat gray1, gray2;
+	cv::cvtColor(frame1, gray1, cv::COLOR_BGR2GRAY);
+	cv::cvtColor(frame2, gray2, cv::COLOR_BGR2GRAY);
+	cv::Mat threshFrame1, threshFrame2;
+	int threshLevel = StereoCapture::getInstance()->getFirstCapture().getThreshLevel();
+	cv::threshold(gray1, threshFrame1, threshLevel, 255, cv::THRESH_BINARY);
+	cv::threshold(gray2, threshFrame2, threshLevel, 255, cv::THRESH_BINARY);
+	auto erodedFrame1 = ImgProcUtility::erodeImage(threshFrame1, 1, cv::MORPH_RECT);
+	auto erodedFrame2 = ImgProcUtility::erodeImage(threshFrame2, 1, cv::MORPH_RECT);
+
+	ImgProcUtility::detectMarkers(erodedFrame1, frame1, circles1);
+	ImgProcUtility::detectMarkers(erodedFrame2, frame2, circles2);
 	StereoCapture::getInstance()->getFirstCapture().setROIs(circles1);
 	StereoCapture::getInstance()->getSecondCapture().setROIs(circles2);
 
@@ -105,6 +115,8 @@ extern "C" void __declspec(dllexport) __stdcall detectMarkers(unsigned char* fir
 	cv::cvtColor(frame2, secondArgbImg, cv::COLOR_BGR2RGBA);
 	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
+
+	return StereoCapture::getInstance()->checkIfAllMarkersDetected(circles1, circles2); 
 }
 
 extern "C" void __declspec(dllexport) __stdcall setExpectedNumberOfMarkerPairs(int number)
@@ -165,6 +177,45 @@ extern "C" void __declspec(dllexport) __stdcall trackMarkers(unsigned char* firs
 	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 
+}
+
+extern "C" void __declspec(dllexport) __stdcall realTimeMonitoring(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height, ImgProcUtility::Coordinates * outBalls, int& outDetectedBallsCount) // w parametrach powinno byc jeszcze frames.first i frames.second, tak zeby mozna bylo wyswietlac je w unity
+{
+	cv::Mat firstCameraFrame, secondCameraFrame, croppedImg1, croppedImg2,
+		threshImg1, threshImg2, croppedColor1, croppedColor2;
+
+	std::vector<cv::Vec3f> v3fCircles1, v3fCircles2;
+	std::vector<cv::Vec3f> circles1, circles2;
+
+	StereoCapture::getInstance()->updateFrames(width, height);
+
+	if (!StereoCapture::getInstance()->getTrackingState())       //jesli jeszcze nie zaczeto trackowania, inicjalizacja multitrackerow
+	{
+		StereoCapture::getInstance()->getFirstCapture().startMultiTracker();
+		StereoCapture::getInstance()->getSecondCapture().startMultiTracker();
+		StereoCapture::getInstance()->setTrackingState(true);
+	}
+
+	std::pair<cv::Mat, cv::Mat> frames = { StereoCapture::getInstance()->getFirstCapture().getCurrentFrame() ,StereoCapture::getInstance()->getSecondCapture().getCurrentFrame() };
+	//std::pair<cv::Mat, cv::Mat> grayFrames = ImgProcUtility::convertFramesToGray(frames);
+
+	StereoCapture::getInstance()->getFirstCapture().updateTracker();
+	StereoCapture::getInstance()->getSecondCapture().updateTracker();
+
+	//auto outBalls = std::vector<ImgProcUtility::Coordinates>(expectedNumberOfMarkers)
+
+	bool result1 = StereoCapture::getInstance()->getFirstCapture().calculateMarkersCoordinates();
+	bool result2 = StereoCapture::getInstance()->getSecondCapture().calculateMarkersCoordinates();
+
+	StereoCapture::getInstance()->triangulateCameras();    //chyba dziala, triangSize = 2
+	ImgProcUtility::getMarkersCoordinates3D(StereoCapture::getInstance()->getTriangCoordinates(), outBalls, outDetectedBallsCount);
+
+
+	cv::Mat firstArgbImg, secondArgbImg;
+	cv::cvtColor(frames.first, firstArgbImg, cv::COLOR_BGR2RGBA);
+	cv::cvtColor(frames.second, secondArgbImg, cv::COLOR_BGR2RGBA);
+	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
+	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
 
 extern "C" void __declspec(dllexport) __stdcall saveThreshLevel(int threshLevel)

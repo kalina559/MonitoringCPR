@@ -77,6 +77,6 @@ namespace ImgProcUtility
 	void displayDistanceBetweenMarkers(cv::Mat& displayMatrix, std::vector<Coordinates> outBalls, int firstMarkerId, int secondMarkerId);
 	void displayDistanceBetweenMarkers(cv::Mat& displayMatrix, Coordinates* outBalls, int firstMarkerId, int secondMarkerId);
 	std::string getId();
-	void detectMarkers(cv::Mat& frame, std::vector<cv::Vec3f>& circles);
+	void detectMarkers(cv::Mat& frame, cv::Mat& displayFrame, std::vector<cv::Vec3f>& circles);
 	bool isROIinFrame(cv::Rect ROI, cv::Mat frame);
 }
