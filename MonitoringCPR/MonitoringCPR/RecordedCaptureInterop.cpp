@@ -110,7 +110,7 @@ extern "C" bool __declspec(dllexport) __stdcall recordedDetectMarkers(int width,
 }
 
 
-extern "C" void __declspec(dllexport) __stdcall recordedTrackMarkers(ImgProcUtility::Coordinates * outBalls, int maxOutBallsCount, int& outDetectedBallsCount) // w parametrach powinno byc jeszcze frames.first i frames.second, tak zeby mozna bylo wyswietlac je w unity
+extern "C" void __declspec(dllexport) __stdcall recordedTrackMarkers(ImgProcUtility::Coordinates * outBalls, int maxOutBallsCount) // w parametrach powinno byc jeszcze frames.first i frames.second, tak zeby mozna bylo wyswietlac je w unity
 {
 	cv::Mat firstCameraFrame, secondCameraFrame, croppedImg1, croppedImg2,
 		threshImg1, threshImg2, croppedColor1, croppedColor2;
@@ -145,7 +145,7 @@ extern "C" void __declspec(dllexport) __stdcall recordedTrackMarkers(ImgProcUtil
 
 	StereoCoordinates2D coordinates2D = ImgProcUtility::getMarkersCoordinates2D(grayFrames, multiTrackers, resizedFrames);
 	cv::Mat triangCoords = ImgProcUtility::process2DCoordinates(coordinates2D, matrices);
-	getMarkersCoordinates3D(triangCoords, outBalls, outDetectedBallsCount);
+	getMarkersCoordinates3D(triangCoords, outBalls);
 	displayDistanceBetweenMarkers(resizedFrames.first, outBalls, 0, 1);
 
 	imshow("frame camera 1", resizedFrames.first);

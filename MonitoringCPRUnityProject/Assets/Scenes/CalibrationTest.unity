@@ -1305,12 +1305,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   thresholdMenu: {fileID: 664819716}
-  expectedLengthMenu: {fileID: 1197168857}
   mainMenu: {fileID: 1645120002}
   threshLevelDisplay: {fileID: 385456689}
+  changeModeButton: {fileID: 908959588}
+  markers: []
+  firstFrame: {fileID: 255679584}
+  secondFrame: {fileID: 311777046}
+  expectedLengthMenu: {fileID: 1197168857}
   detectedDistance: {fileID: 951430190}
   detectedError: {fileID: 1730033576}
-  changeModeButton: {fileID: 908959590}
   expectedLength: {fileID: 2003390978}
 --- !u!114 &506571071
 MonoBehaviour:
@@ -3224,7 +3227,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 991166479}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}

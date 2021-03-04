@@ -275,15 +275,13 @@ cv::Mat ImgProcUtility::process2DCoordinates(StereoCoordinates2D coordinates2D, 
 	return triangCoords;
 }
 
-void ImgProcUtility::getMarkersCoordinates3D(cv::Mat triangCoords, Coordinates* outBalls, int& outDetectedBallsCount)
+void ImgProcUtility::getMarkersCoordinates3D(cv::Mat triangCoords, Coordinates* outBalls)
 {
 	for (int i = 0; i < triangCoords.cols; ++i) // for different balls
 	{
 		outBalls[i].X = triangCoords.at<double>(0, i) / triangCoords.at<double>(3, i);
 		outBalls[i].Y = triangCoords.at<double>(1, i) / triangCoords.at<double>(3, i);
 		outBalls[i].Z = triangCoords.at<double>(2, i) / triangCoords.at<double>(3, i);
-
-		++outDetectedBallsCount;
 	}
 }
 

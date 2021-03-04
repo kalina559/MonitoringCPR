@@ -69,7 +69,7 @@ namespace ImgProcUtility
 	bool findCircleInROI(cv::Mat frame, cv::Vec3f& ROI, int threshLevel);
 	cv::Vec3f findCircleInROI(cv::Mat frame);
 	cv::Mat process2DCoordinates(StereoCoordinates2D coordinates2D, Matrices& matrices);
-	void getMarkersCoordinates3D(cv::Mat triangCoords, ImgProcUtility::Coordinates* outBalls, int& outDetectedBallsCount);
+	void getMarkersCoordinates3D(cv::Mat triangCoords, ImgProcUtility::Coordinates* outBalls);
 	void getMarkersCoordinates3D(cv::Mat triangCoords, std::vector<Coordinates>& outBalls, int& outDetectedBallsCount);
 	std::pair<cv::Mat, cv::Mat> populateMatricesFromVectors(StereoCoordinates2D coordinates2D);
 	double calculateDistanceBetweenMarkers(Coordinates* outBalls, int firstMarkerId, int secondMarkerId);
