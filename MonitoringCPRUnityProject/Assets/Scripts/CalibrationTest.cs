@@ -27,6 +27,11 @@ public class CalibrationTest : MarkerTracking
         distance = calculateDistanceBetweenMarkers(0, 1);
         detectedDistance.SetText("Odległość: " + Math.Round(distance * 1000, 2).ToString());
         detectedError.SetText("Błąd: " + Math.Round(Math.Abs(PlayerPrefs.GetInt("expectedLength") - distance * 1000), 2).ToString());
+    }   
+    public void openExpectedLengthMenu()
+    {
+        expectedLengthMenu.gameObject.SetActive(true);
+        mainMenu.gameObject.SetActive(false);
     }
     public void closeExpectedLengthMenu()
     {

@@ -16,12 +16,12 @@ public class MarkerTracking : MonoBehaviour
     public List<GameObject> markers;
     public RawImage firstFrame, secondFrame;
     //used to count fps
-    int frameCount = 0;
+    protected int frameCount = 0;
     float lastTimeStamp;
     //scene logic
-    bool allMarkersDetected = false;
-    bool beginTracking = false;
-    bool adjustThreshLevel = false;
+    protected bool allMarkersDetected = false;
+    protected bool beginTracking = false;
+    protected bool adjustThreshLevel = false;
     //marker tracking variables
     protected CvCoordinates[] _balls;
     int threshValue;
@@ -50,7 +50,7 @@ public class MarkerTracking : MonoBehaviour
         {
             if (beginTracking == false)
             {
-                allMarkersDetected = OpenCVInterop.detectMarkers(pixelPtrs.Item1, pixelPtrs.Item2, textures.Item1.width, textures.Item2.height);
+                allMarkersDetected = OpenCVInterop.detectMarkers(pixelPtrs.Item1, pixelPtrs.Item2, 640, 480);
             }
             else
             {
@@ -60,7 +60,7 @@ public class MarkerTracking : MonoBehaviour
         }
         display.updateTextures();
     }
-    public void changeMode()
+    public virtual void changeMode()
     {
         if (beginTracking == false && allMarkersDetected == true)
         {
@@ -95,7 +95,7 @@ public class MarkerTracking : MonoBehaviour
         if (frameCount % 10 == 0)
         {
             float now = Time.time;
-            Debug.Log("fps: " + frameCount / (now - lastTimeStamp));
+            //Debug.Log("fps: " + frameCount / (now - lastTimeStamp));
             lastTimeStamp = now;
             frameCount = 0;
         }

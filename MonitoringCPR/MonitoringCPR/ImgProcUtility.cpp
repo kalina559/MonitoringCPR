@@ -209,6 +209,13 @@ bool ImgProcUtility::findCircleInROI(cv::Mat frame, cv::Vec3f& ROI, int threshLe
 		
 	ROI = getContoursCenterOfMass(circleContour);
 	return true;
+	/*std::vector<cv::Vec3f> circles;
+	HoughCircles(frame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 10, 100, 20, 1, 30);
+	if (circles.size() == 0)
+		return false;
+	else
+		ROI = circles[0];
+	return true;*/
 
 }
 cv::Vec3f ImgProcUtility::findCircleInROI(cv::Mat frame)
@@ -373,15 +380,20 @@ struct contour_sorter // 'less' for contours
 	bool operator ()(cv::Vec3f a, cv::Vec3f b)
 	{
 		// scale factor for y should be larger than img.width
-		return ((a[0] /*+ 100 * a[1]*/) < (b[0]/* + 100 * b[1]*/));
+		return ((a[0] +  10 * a[1]) < (b[0] + 10 * b[1]));
 	}
 };
 
 void ImgProcUtility::detectMarkers(cv::Mat& frame, cv::Mat& displayFrame, std::vector<cv::Vec3f>& circles)
 {
-	cv::Mat gray;
+	//cv::Mat gray;
+	cv::Mat cannyFrame;
+	std::vector<cv::Point> circleContour;
+	cv::Canny(frame, cannyFrame, 200, 255);
+
+
 	//cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-	HoughCircles(frame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 10, 100, 10, 1, 30);
+	cv::HoughCircles(cannyFrame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 10, 255, 20, 0, 30);
 
 	std::sort(circles.begin(), circles.end(), contour_sorter());
 
@@ -396,7 +408,7 @@ void ImgProcUtility::detectMarkers(cv::Mat& frame, cv::Mat& displayFrame, std::v
 }
 bool ImgProcUtility::isROIinFrame(cv::Rect ROI, cv::Mat frame)
 {
-	bool isInsideFrame = (ROI.x > 0 && ROI.x < (frame.cols + ROI.width) && ROI.y > 0 && ROI.y < (frame.rows + ROI.height));
+	bool isInsideFrame = (ROI.x > 0 && ROI.x < (frame.cols - ROI.width) && ROI.y > 0 && ROI.y < (frame.rows - ROI.height));
 	return isInsideFrame;
 }
 

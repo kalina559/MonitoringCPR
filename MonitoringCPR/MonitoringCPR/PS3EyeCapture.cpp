@@ -82,11 +82,11 @@ bool PS3EyeCapture::calculateMarkersCoordinates()
 		}
 		//cv::Rect ROI(multiTracker->getObjects()[i]);
 		auto croppedFrame = grayFrame(ROIs[i]);
-		cv::Mat threshFrame;
+		/*cv::Mat threshFrame;
 		cv::threshold(croppedFrame, threshFrame, threshLevel, 255, cv::THRESH_BINARY);
-		auto erodedFrame = ImgProcUtility::erodeImage(threshFrame, 1, cv::MORPH_RECT);
+		auto erodedFrame = ImgProcUtility::erodeImage(threshFrame, 1, cv::MORPH_RECT);*/
 		cv::Vec3f v3fCircles;
-		if (!ImgProcUtility::findCircleInROI(erodedFrame, v3fCircles, threshLevel))
+		if (!ImgProcUtility::findCircleInROI(croppedFrame, v3fCircles, threshLevel))
 		{
 			return false;
 		}		

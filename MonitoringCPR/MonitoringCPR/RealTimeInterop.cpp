@@ -102,11 +102,11 @@ extern "C" bool __declspec(dllexport) __stdcall detectMarkers(unsigned char* fir
 	int threshLevel = StereoCapture::getInstance()->getFirstCapture().getThreshLevel();
 	cv::threshold(gray1, threshFrame1, threshLevel, 255, cv::THRESH_BINARY);
 	cv::threshold(gray2, threshFrame2, threshLevel, 255, cv::THRESH_BINARY);
-	auto erodedFrame1 = ImgProcUtility::erodeImage(threshFrame1, 1, cv::MORPH_RECT);
-	auto erodedFrame2 = ImgProcUtility::erodeImage(threshFrame2, 1, cv::MORPH_RECT);
+	//auto erodedFrame1 = ImgProcUtility::erodeImage(threshFrame1, 1, cv::MORPH_RECT);
+	//auto erodedFrame2 = ImgProcUtility::erodeImage(threshFrame2, 1, cv::MORPH_RECT);
 
-	ImgProcUtility::detectMarkers(erodedFrame1, frame1, circles1);
-	ImgProcUtility::detectMarkers(erodedFrame2, frame2, circles2);
+	ImgProcUtility::detectMarkers(threshFrame1, frame1, circles1);
+	ImgProcUtility::detectMarkers(threshFrame2, frame2, circles2);
 	StereoCapture::getInstance()->getFirstCapture().setROIs(circles1);
 	StereoCapture::getInstance()->getSecondCapture().setROIs(circles2);
 
