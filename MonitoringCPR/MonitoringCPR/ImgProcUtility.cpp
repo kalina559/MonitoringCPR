@@ -393,7 +393,7 @@ void ImgProcUtility::detectMarkers(cv::Mat& frame, cv::Mat& displayFrame, std::v
 
 
 	//cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-	cv::HoughCircles(cannyFrame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 10, 255, 20, 0, 30);
+	cv::HoughCircles(cannyFrame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 30, 255, 15, 1, 30);
 
 	std::sort(circles.begin(), circles.end(), contour_sorter());
 
