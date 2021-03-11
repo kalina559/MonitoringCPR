@@ -64,6 +64,7 @@ public class GetMarkerCoordinates : MarkerTracking
             checkCompressionParameters();
             lastYCoordinate = markers[4].transform.position.y;
         }
+
     }
     public override void changeMode()
     {
