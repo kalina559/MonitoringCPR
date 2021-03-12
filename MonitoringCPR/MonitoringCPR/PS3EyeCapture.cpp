@@ -67,6 +67,7 @@ void PS3EyeCapture::updateTracker()
 		ROIs[i] = multiTracker->getObjects()[i];
 	}
 }
+
 bool PS3EyeCapture::calculateMarkersCoordinates()
 {
 	int detectedMarkers = 0;
@@ -95,6 +96,7 @@ bool PS3EyeCapture::calculateMarkersCoordinates()
 
 		markersCoordinates2D.push_back({ v3fCircles(0) + ROIs[i].x , v3fCircles(1) + ROIs[i].y });
 		++detectedMarkers;
+		circle(currentFrame, cv::Point(v3fCircles[0] + ROIs[i].x, v3fCircles[1] + ROIs[i].y), v3fCircles[2], cv::Scalar(0, 0, 255));
 		rectangle(currentFrame, ROIs[i], cv::Scalar(255, 0, 0), 2, 1);
 	}
 	return true;

@@ -4,9 +4,9 @@ std::string ImgProcUtility::readFile(std::string name)
 	std::string content;
 	std::ifstream inputFile;
 	inputFile.open(name);
-	inputFile >> content;	
+	inputFile >> content;
 	inputFile.close();
-	return content;	
+	return content;
 }
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence)
 {
@@ -107,7 +107,7 @@ std::pair<cv::Mat, cv::Mat> ImgProcUtility::performCanny(std::pair<cv::Mat, cv::
 
 void ImgProcUtility::drawCirclesAroundMarkers(std::pair<cv::Mat, cv::Mat> frames, StereoCoordinates2D circleCoordinates, std::vector<std::pair<int, int>> radiuses)
 {
-	for (int i = 0; i < circleCoordinates.first.size() ; ++i)
+	for (int i = 0; i < circleCoordinates.first.size(); ++i)
 	{
 		cv::Point firstCenter(circleCoordinates.first[i](0), circleCoordinates.first[i](1));
 		cv::Point secondCenter(circleCoordinates.second[i](0), circleCoordinates.second[i](1));
@@ -155,7 +155,7 @@ std::pair<std::vector<cv::Point>, std::vector<cv::Point>> ImgProcUtility::getBig
 	return{ firstContours[firstBiggestContour], secondContours[secondBiggestContour] };
 }
 
-bool ImgProcUtility::getBiggestContours(cv::Mat frame, std::vector<cv::Point>& biggestContour)
+bool ImgProcUtility::getBiggestContours(cv::Mat frame, std::vector<cv::Point>& biggestContour)  //dodac opisywanie okregu na konturze
 {
 	std::vector<std::vector<cv::Point> > contours;
 	findContours(frame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
@@ -174,18 +174,23 @@ bool ImgProcUtility::getBiggestContours(cv::Mat frame, std::vector<cv::Point>& b
 			biggestContourId = i;
 		}
 	}
-	biggestContour = contours[biggestContourId];	
+	biggestContour = contours[biggestContourId];
 	return true;
 }
 
 cv::Vec3f ImgProcUtility::getContoursCenterOfMass(std::vector<cv::Point> contour)
 {
-	auto M = moments(contour);
+	/*auto M = moments(contour);
 	float CX = M.m10 / M.m00;
 	float CY = M.m01 / M.m00;
-	float R = sqrt(contourArea(contour) / M_PI);
+	float R = sqrt(contourArea(contour) / M_PI);*/
+	cv::Point2f center;
+	float radius;
 
-	return { CX, CY, R };
+	cv::minEnclosingCircle(contour, center, radius);
+
+	//return { CX, CY, R };
+	return { center.x, center.y, radius };
 }
 
 
@@ -199,15 +204,17 @@ std::pair<cv::Vec3f, cv::Vec3f> ImgProcUtility::findCirclesInROIs(std::pair<cv::
 	return { firstCenter, secondCenter };
 }
 
-bool ImgProcUtility::findCircleInROI(cv::Mat frame, cv::Vec3f& ROI, int threshLevel)
+bool ImgProcUtility::findCircleInROI(cv::Mat frame, cv::Vec3f& circleCoordinates, int threshLevel)
 {
 	cv::Mat cannyFrame;
 	std::vector<cv::Point> circleContour;
 	cv::Canny(frame, cannyFrame, threshLevel, 255);
 	if (!getBiggestContours(cannyFrame, circleContour))
 		return false;
-		
-	ROI = getContoursCenterOfMass(circleContour);
+
+	circleCoordinates = getContoursCenterOfMass(circleContour);
+
+	
 	return true;
 	/*std::vector<cv::Vec3f> circles;
 	HoughCircles(frame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 10, 100, 20, 1, 30);
@@ -380,7 +387,7 @@ struct contour_sorter // 'less' for contours
 	bool operator ()(cv::Vec3f a, cv::Vec3f b)
 	{
 		// scale factor for y should be larger than img.width
-		return ((a[0] +  10 * a[1]) < (b[0] + 10 * b[1]));
+		return ((a[0] + 10 * a[1]) < (b[0] + 10 * b[1]));
 	}
 };
 

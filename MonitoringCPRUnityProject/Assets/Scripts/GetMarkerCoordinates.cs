@@ -86,6 +86,7 @@ public class GetMarkerCoordinates : MarkerTracking
             maxDistanceToFloor = distanceToFloor;
             minDistanceToFloor = distanceToFloor;
             lastDistanceToFloor = distanceToFloor;
+            downwardMovement = false;
             firstMeasurement = false;
         }
         else
@@ -99,14 +100,14 @@ public class GetMarkerCoordinates : MarkerTracking
                 minDistanceToFloor = distanceToFloor;
             }
 
-            if (Math.Abs(distanceToFloor - lastDistanceToFloor) > 0.005)
+            if (Math.Abs(distanceToFloor - lastDistanceToFloor) > 0.001)
             {
                 if (distanceToFloor < lastDistanceToFloor)
                 {
                     if (downwardMovement == false)
                     {
                         ++downwardMovementFrameCount;
-                        if (downwardMovementFrameCount == 2)
+                        if (downwardMovementFrameCount == 5)
                         {
                             downwardMovement = true;
                             minDistanceToFloor = distanceToFloor;

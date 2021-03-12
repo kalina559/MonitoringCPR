@@ -67,6 +67,12 @@ void CameraCalibration::realLifeCirclePositions(cv::Size boardSize, float distan
 
 void CameraCalibration::getCirclePositions(std::vector<cv::Mat> images, std::vector<std::vector<cv::Point2f>>& centers, cv::Size arrayOfCirclesSize)
 {
+	//subpix
+	cv::Size winSize = cv::Size(5, 5);
+	cv::Size zeroZone = cv::Size(-1, -1);
+	cv::Mat grayImg;
+	cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 40, 0.001);
+
 	cv::SimpleBlobDetector::Params params;
 	params.minArea = 10;
 	params.minThreshold = 1;
@@ -77,7 +83,11 @@ void CameraCalibration::getCirclePositions(std::vector<cv::Mat> images, std::vec
 	cv::Ptr<cv::FeatureDetector> blobDetector = cv::SimpleBlobDetector::create(params);
 	for (size_t i = 0; i < images.size(); ++i) 
 	{
-		bool patternFound = findCirclesGrid(images[i], arrayOfCirclesSize, centers[i], cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
+		cv::cvtColor(images[i], grayImg, cv::COLOR_BGR2GRAY);   //findCirclesGrid moze byc na RGB, ale cornerSubPix potrzebuje Grayscale
+		bool patternFound = findCirclesGrid(grayImg, arrayOfCirclesSize, centers[i], cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
+		//subpix
+		cv::cornerSubPix(grayImg, centers[i], winSize, zeroZone, criteria);
+
 		//just for debug purposes
 		//drawChessboardCorners(images[i], arrayOfCirclesSize, Mat(centers[i]), patternFound);
 	}
