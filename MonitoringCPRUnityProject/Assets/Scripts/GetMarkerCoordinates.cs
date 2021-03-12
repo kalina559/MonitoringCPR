@@ -11,19 +11,18 @@ public class GetMarkerCoordinates : MarkerTracking
     public List<GameObject> cylinders;
     Plane floorPlane;
     Plane armsPlane;
-    public GameObject plane;
-    public TextMeshProUGUI firstElbowAngle;
-    public TextMeshProUGUI secondElbowAngle;
-    public TextMeshProUGUI armAngle;
-    public TextMeshProUGUI compressionsRate;
-    public TextMeshProUGUI compressionsCount;
+    public GameObject gameFloorPlane;
+    public TextMeshProUGUI firstElbowAngle, secondElbowAngle, armAngle, compressionsRate, compressionsCount, compressionDepth;
+    Vector3 rightElbowFirstVec, rightElbowSecondVec, leftElbowFirstVec, leftElbowSecondVec;
 
-    bool DownwardMovement = false;
+    bool downwardMovement = false;
     int downwardMovementFrameCount = 0;
-    bool firstMeasurement = true;
     int compressionCount = 0;
-    float lastYCoordinate = 0;
+    float lastDistanceToFloor = 0;
     float trackingStartTime;
+
+    float maxDistanceToFloor, minDistanceToFloor, lastCompressionDepth;
+    bool firstMeasurement = true;
 
     private void Start()
     {
@@ -39,38 +38,14 @@ public class GetMarkerCoordinates : MarkerTracking
                 new Vector3(_balls[i].X,
                 -_balls[i].Y,
                _balls[i].Z);
-        }
+        }        
+        setGameFloorPlane();
 
-
-
-
-        floorPlane.Set3Points(
-            markers[7].transform.position,
-            markers[6].transform.position,
-            markers[5].transform.position);
-
-        plane.transform.position = new Vector3(markers[6].transform.position.x, markers[6].transform.position.y, markers[6].transform.position.z);
-        if (Vector3.Dot(floorPlane.normal, Vector3.down) > 0)
-        {
-            plane.transform.rotation = Quaternion.FromToRotation(Vector3.up, -floorPlane.normal);
-        }
-        else
-        {
-            plane.transform.rotation = Quaternion.FromToRotation(Vector3.up, floorPlane.normal);
-        }
         Camera.main.transform.LookAt(markers[7].transform.position);
 
         calculateAngles();
-
-        if (firstMeasurement == true)
-        {
-            firstMeasurement = false;
-        }
-        else
-        {
-            checkCompressionParameters();
-            lastYCoordinate = markers[4].transform.position.y;
-        }
+        checkCompressionParameters();
+        updateMeasurementMessages();
     }
     public override void changeMode()
     {
@@ -80,6 +55,8 @@ public class GetMarkerCoordinates : MarkerTracking
             frameCount = 0;
             compressionCount = 0;
             trackingStartTime = Time.time;
+            firstMeasurement = true;
+            lastCompressionDepth = 0;
         }
         else
         {
@@ -89,52 +66,98 @@ public class GetMarkerCoordinates : MarkerTracking
 
     void calculateAngles()
     {
-        var rightElbowFirstVec = markers[0].transform.position - markers[2].transform.position;
-        var rightElbowSecondVec = markers[2].transform.position - markers[4].transform.position;
-        firstElbowAngle.SetText("Kąt w prawym łokciu: " + Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec));
+        rightElbowFirstVec = markers[0].transform.position - markers[2].transform.position;
+        rightElbowSecondVec = markers[2].transform.position - markers[4].transform.position;        
 
-        var leftElbowFirstVec = markers[1].transform.position - markers[3].transform.position;
-        var leftElbowSecondVec = markers[3].transform.position - markers[4].transform.position;
-        secondElbowAngle.SetText("Kąt w lewym łokciu: " + Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec));
+        leftElbowFirstVec = markers[1].transform.position - markers[3].transform.position;
+        leftElbowSecondVec = markers[3].transform.position - markers[4].transform.position;        
 
         armsPlane.Set3Points(
            markers[0].transform.position,
            markers[1].transform.position,
-           markers[4].transform.position);
-
-        armAngle.SetText("Kąt miêdzy rêkami, a podłogą: " + Vector3.Angle(floorPlane.normal, armsPlane.normal));
+           markers[4].transform.position);        
     }
 
     void checkCompressionParameters()
     {
-        if (Math.Abs(markers[4].transform.position.y - lastYCoordinate) > 0.001)
+        var distanceToFloor = floorPlane.GetDistanceToPoint(markers[4].transform.position);
+        if(firstMeasurement == true)
         {
-            if (markers[4].transform.position.y < lastYCoordinate)
+            maxDistanceToFloor = distanceToFloor;
+            minDistanceToFloor = distanceToFloor;
+            lastDistanceToFloor = distanceToFloor;
+            firstMeasurement = false;
+        }
+        else
+        {
+            if (distanceToFloor > maxDistanceToFloor)
             {
-                if (DownwardMovement == false)
+                maxDistanceToFloor = distanceToFloor;
+            }
+            if (distanceToFloor < minDistanceToFloor)
+            {
+                minDistanceToFloor = distanceToFloor;
+            }
+
+            if (Math.Abs(distanceToFloor - lastDistanceToFloor) > 0.005)
+            {
+                if (distanceToFloor < lastDistanceToFloor)
                 {
-                    ++downwardMovementFrameCount;
-                    if (downwardMovementFrameCount == 2)
+                    if (downwardMovement == false)
                     {
-                        DownwardMovement = true;
+                        ++downwardMovementFrameCount;
+                        if (downwardMovementFrameCount == 2)
+                        {
+                            downwardMovement = true;
+                            minDistanceToFloor = distanceToFloor;
+                        }
+                    }
+                }
+                else if (distanceToFloor > lastDistanceToFloor)
+                {
+                    downwardMovementFrameCount = 0;
+
+                    if (downwardMovement == true)
+                    {
+                        downwardMovementFrameCount = 0;
+                        downwardMovement = false;
+                        ++compressionCount;
+                        lastCompressionDepth = (maxDistanceToFloor - minDistanceToFloor) * 1000;
+                        maxDistanceToFloor = distanceToFloor;
                     }
                 }
             }
-            else if (markers[4].transform.position.y > lastYCoordinate)
-            {
-                downwardMovementFrameCount = 0;
+            lastDistanceToFloor = distanceToFloor;
+        }        
+    }
 
-                if (DownwardMovement == true)
-                {
-                    downwardMovementFrameCount = 0;
-                    DownwardMovement = false;
-                    ++compressionCount;
-                    Debug.Log("Liczba uciśnięć: " + compressionCount);
-                    compressionsCount.SetText("Liczba uciśnięć: " + compressionCount);
-                    compressionsRate.SetText("Częstotliwość: " + compressionCount * 60 / (Time.time - trackingStartTime) + " uciśnięć/minutę");
-                }
-            }
+    void setGameFloorPlane()
+    {
+        floorPlane.Set3Points(
+            markers[7].transform.position,
+            markers[6].transform.position,
+            markers[5].transform.position);
+
+        gameFloorPlane.transform.position = new Vector3(markers[6].transform.position.x, markers[6].transform.position.y, markers[6].transform.position.z);
+
+        if (Vector3.Dot(floorPlane.normal, Vector3.down) > 0)    //making plane's normal vector is facing up
+        {
+            gameFloorPlane.transform.rotation = Quaternion.FromToRotation(Vector3.up, -floorPlane.normal);
         }
+        else
+        {
+            gameFloorPlane.transform.rotation = Quaternion.FromToRotation(Vector3.up, floorPlane.normal);
+        }
+    }
+
+    void updateMeasurementMessages()
+    {
+        compressionsCount.SetText("Liczba uciśnięć: " + compressionCount);
+        compressionsRate.SetText("Częstotliwość: " + compressionCount * 60 / (Time.time - trackingStartTime) + " uciśnięć/minutę");
+        firstElbowAngle.SetText("Kąt w prawym łokciu: " + Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec));
+        secondElbowAngle.SetText("Kąt w lewym łokciu: " + Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec));
+        armAngle.SetText("Kąt miêdzy rękami, a podłogą: " + Vector3.Angle(floorPlane.normal, armsPlane.normal));
+        compressionDepth.SetText("Głębokość ostatniego uciśnięcia: " + Math.Round(lastCompressionDepth, 1) + "mm");
     }
 }
 
