@@ -8,9 +8,23 @@ using TMPro;
 public class GetMarkerCoordinates : MarkerTracking
 {
     public List<CvCoordinates> initialCoordinates;
-    CvCoordinates offset;
-    bool offsetSet = false;
-    //Vector3 startingPosition;
+    public List<GameObject> cylinders;
+    Plane floorPlane;
+    Plane armsPlane;
+    public GameObject plane;
+    public TextMeshProUGUI firstElbowAngle;
+    public TextMeshProUGUI secondElbowAngle;
+    public TextMeshProUGUI armAngle;
+    public TextMeshProUGUI compressionsRate;
+    public TextMeshProUGUI compressionsCount;
+
+    bool DownwardMovement = false;
+    int downwardMovementFrameCount = 0;
+    bool firstMeasurement = true;
+    int compressionCount = 0;
+    float lastYCoordinate = 0;
+    float trackingStartTime;
+
     private void Start()
     {
         expectedNumberOfMarkerPairs = 8;
@@ -19,25 +33,44 @@ public class GetMarkerCoordinates : MarkerTracking
     }
     protected override void useMarkerCoordinates()
     {
-        if(offsetSet == false)
-        {
-            offset = new CvCoordinates();
-            saveOffset();
-            offsetSet = true;
-        }
         for (int i = 0; i < _balls.Length; i++)
-        {  
-            markers[i].transform.position = 
-                new Vector3(_balls[i].X - offset.X,
-                -_balls[i].Y - offset.Y,
-                _balls[i].Z - offset.Z);
+        {
+            markers[i].transform.position =
+                new Vector3(_balls[i].X,
+                -_balls[i].Y,
+               _balls[i].Z);
         }
-    }
-    public void saveOffset()
-    {
-        offset.X = _balls[4].X - 1f;
-        offset.Y = -_balls[4].Y + 0.2f;
-        offset.Z = _balls[4].Z + 10.3f;
+
+
+
+
+        floorPlane.Set3Points(
+            markers[7].transform.position,
+            markers[6].transform.position,
+            markers[5].transform.position);
+
+        plane.transform.position = new Vector3(markers[6].transform.position.x, markers[6].transform.position.y, markers[6].transform.position.z);
+        if (Vector3.Dot(floorPlane.normal, Vector3.down) > 0)
+        {
+            plane.transform.rotation = Quaternion.FromToRotation(Vector3.up, -floorPlane.normal);
+        }
+        else
+        {
+            plane.transform.rotation = Quaternion.FromToRotation(Vector3.up, floorPlane.normal);
+        }
+        Camera.main.transform.LookAt(markers[7].transform.position);
+
+        calculateAngles();
+
+        if (firstMeasurement == true)
+        {
+            firstMeasurement = false;
+        }
+        else
+        {
+            checkCompressionParameters();
+            lastYCoordinate = markers[4].transform.position.y;
+        }
     }
     public override void changeMode()
     {
@@ -46,7 +79,7 @@ public class GetMarkerCoordinates : MarkerTracking
             beginTracking = true;
             frameCount = 0;
             compressionCount = 0;
-            trackingStartTime = Time.time; 
+            trackingStartTime = Time.time;
         }
         else
         {
@@ -58,18 +91,18 @@ public class GetMarkerCoordinates : MarkerTracking
     {
         var rightElbowFirstVec = markers[0].transform.position - markers[2].transform.position;
         var rightElbowSecondVec = markers[2].transform.position - markers[4].transform.position;
-        firstElbowAngle.SetText("K�t w prawym �okciu: " + Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec));
+        firstElbowAngle.SetText("Kąt w prawym łokciu: " + Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec));
 
         var leftElbowFirstVec = markers[1].transform.position - markers[3].transform.position;
         var leftElbowSecondVec = markers[3].transform.position - markers[4].transform.position;
-        secondElbowAngle.SetText("K�t w lewym �okciu: " + Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec));
+        secondElbowAngle.SetText("Kąt w lewym łokciu: " + Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec));
 
         armsPlane.Set3Points(
            markers[0].transform.position,
            markers[1].transform.position,
            markers[4].transform.position);
 
-        armAngle.SetText("K�t mi�dzy r�kami, a pod�og�: " + Vector3.Angle(floorPlane.normal, armsPlane.normal));
+        armAngle.SetText("Kąt miêdzy rêkami, a podłogą: " + Vector3.Angle(floorPlane.normal, armsPlane.normal));
     }
 
     void checkCompressionParameters()
@@ -81,7 +114,7 @@ public class GetMarkerCoordinates : MarkerTracking
                 if (DownwardMovement == false)
                 {
                     ++downwardMovementFrameCount;
-                    if (downwardMovementFrameCount == 10)
+                    if (downwardMovementFrameCount == 2)
                     {
                         DownwardMovement = true;
                     }
@@ -96,15 +129,14 @@ public class GetMarkerCoordinates : MarkerTracking
                     downwardMovementFrameCount = 0;
                     DownwardMovement = false;
                     ++compressionCount;
-                    Debug.Log("liczba uci�ni��: " + compressionCount);
-                    compressionsCount.SetText("Liczba uci�ni��: " + compressionCount);
-                    compressionsRate.SetText("Cz�stotliwo��: " + compressionCount * 60 / (Time.time - trackingStartTime) + " uci�ni��/minut�");
+                    Debug.Log("Liczba uciśnięć: " + compressionCount);
+                    compressionsCount.SetText("Liczba uciśnięć: " + compressionCount);
+                    compressionsRate.SetText("Częstotliwość: " + compressionCount * 60 / (Time.time - trackingStartTime) + " uciśnięć/minutę");
                 }
             }
-        }        
+        }
     }
 }
-
 
 
 
