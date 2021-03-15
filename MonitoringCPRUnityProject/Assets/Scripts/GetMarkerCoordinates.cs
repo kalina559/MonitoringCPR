@@ -11,6 +11,7 @@ public class GetMarkerCoordinates : MarkerTracking
     public List<GameObject> cylinders;
     Plane floorPlane;
     Plane armsPlane;
+    Plane armsPlane1;
     public GameObject gameFloorPlane;
     public TextMeshProUGUI firstElbowAngle, secondElbowAngle, armAngle, compressionsRate, compressionsCount, compressionDepth;
     Vector3 rightElbowFirstVec, rightElbowSecondVec, leftElbowFirstVec, leftElbowSecondVec;
@@ -32,16 +33,24 @@ public class GetMarkerCoordinates : MarkerTracking
     }
     protected override void useMarkerCoordinates()
     {
+        getGameFloorPlane();
         for (int i = 0; i < _balls.Length; i++)
         {
-            markers[i].transform.position =
-                new Vector3(_balls[i].X,
-                -_balls[i].Y,
-               _balls[i].Z);
-        }        
-        setGameFloorPlane();
+            //markers[i].transform.position =
+            //    new Vector3(_balls[i].X,
+            //    -_balls[i].Y,
+            //   _balls[i].Z);
 
-        Camera.main.transform.LookAt(markers[7].transform.position);
+            markers[i].transform.position =
+                new Vector3(Vector3.ProjectOnPlane(new Vector3(_balls[i].X, 0, 0), floorPlane.normal).magnitude,
+                 Math.Abs(floorPlane.GetDistanceToPoint(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z))),
+               Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z), floorPlane.normal), Vector3.forward).magnitude);
+           
+        }
+        //setGameFloorPlane();
+
+
+        //Camera.main.transform.LookAt(markers[7].transform.position);
 
         calculateAngles();
         checkCompressionParameters();
@@ -75,7 +84,11 @@ public class GetMarkerCoordinates : MarkerTracking
         armsPlane.Set3Points(
            markers[0].transform.position,
            markers[1].transform.position,
-           markers[4].transform.position);        
+           markers[4].transform.position);
+        armsPlane1.Set3Points(
+            new Vector3(_balls[0].X, -_balls[0].Y, _balls[0].Z),
+            new Vector3(_balls[1].X, -_balls[1].Y, _balls[1].Z),
+            new Vector3(_balls[4].X, -_balls[4].Y, _balls[4].Z));
     }
 
     void checkCompressionParameters()
@@ -132,6 +145,13 @@ public class GetMarkerCoordinates : MarkerTracking
         }        
     }
 
+    void getGameFloorPlane()
+    {
+        floorPlane.Set3Points(
+           new Vector3(_balls[7].X, -_balls[7].Y, _balls[7].Z),
+            new Vector3(_balls[6].X, -_balls[6].Y, _balls[6].Z),
+            new Vector3(_balls[5].X, -_balls[5].Y, _balls[5].Z));
+    }
     void setGameFloorPlane()
     {
         floorPlane.Set3Points(
@@ -157,7 +177,8 @@ public class GetMarkerCoordinates : MarkerTracking
         compressionsRate.SetText("Częstotliwość: " + compressionCount * 60 / (Time.time - trackingStartTime) + " uciśnięć/minutę");
         firstElbowAngle.SetText("Kąt w prawym łokciu: " + Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec));
         secondElbowAngle.SetText("Kąt w lewym łokciu: " + Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec));
-        armAngle.SetText("Kąt miêdzy rękami, a podłogą: " + Vector3.Angle(floorPlane.normal, armsPlane.normal));
+        armAngle.SetText("Kąt miêdzy rękami, a podłogą: " + Vector3.Angle(floorPlane.normal, armsPlane1.normal));
+        Debug.Log("armsPlane : " + Vector3.Angle(floorPlane.normal, armsPlane.normal));
         compressionDepth.SetText("Głębokość ostatniego uciśnięcia: " + Math.Round(lastCompressionDepth, 1) + "mm");
     }
 }
