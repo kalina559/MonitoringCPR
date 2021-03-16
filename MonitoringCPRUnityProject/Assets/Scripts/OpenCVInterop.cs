@@ -16,6 +16,8 @@ internal static class OpenCVInterop
     [DllImport("MonitoringCPR")]
     internal unsafe static extern void recordedTrackMarkers(CvCoordinates* outBalls, int maxOutBallsCount);
     [DllImport("MonitoringCPR")]
+    internal unsafe static extern void realTimeMonitoring(IntPtr firstFrame, IntPtr secondFrame, int width, int height, CvCoordinates* outBalls, ref bool beginTracking, ref Int64 first, ref Int64 second);
+    [DllImport("MonitoringCPR")]
     internal unsafe static extern void realTimeMonitoring(IntPtr firstFrame, IntPtr secondFrame, int width, int height, CvCoordinates* outBalls, ref bool beginTracking);
     [DllImport("MonitoringCPR")]
     internal unsafe static extern bool recordedDetectMarkers(int width, int height);

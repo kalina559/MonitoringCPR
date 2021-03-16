@@ -25,6 +25,7 @@ public:
 	void operator=(StereoCapture const&) = delete;
 	int initCameras();
 	void updateFrames(int width, int height);
+	void updateFrames(int width, int height, int64& firstTimeStamp, int64& secondTimeStamp);
 	PS3EyeCapture& getFirstCapture();
 	PS3EyeCapture& getSecondCapture();
 	void freeCameras();

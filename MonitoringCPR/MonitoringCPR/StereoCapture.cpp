@@ -64,6 +64,27 @@ void StereoCapture::updateFrames(int width, int height)
 	first.setCurrentFrame(firstResizedMat);
 	second.setCurrentFrame(secondResizedMat);
 }
+void StereoCapture::updateFrames(int width, int height, int64& firstTimeStamp, int64& secondTimeStamp)
+{
+	cv::Mat firstFrame = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
+	cv::Mat secondFrame = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
+
+	first.getCamera()->getFrame(firstFrame.data);
+	firstTimeStamp = GetTickCount64();
+	second.getCamera()->getFrame(secondFrame.data);
+	secondTimeStamp = GetTickCount64();
+
+	cv::Mat firstResizedMat(height, width, firstFrame.type());
+	cv::Mat secondResizedMat(height, width, secondFrame.type());
+
+	cv::resize(firstFrame, firstResizedMat, firstResizedMat.size(), cv::INTER_CUBIC);
+	cv::resize(secondFrame, secondResizedMat, secondResizedMat.size(), cv::INTER_CUBIC);
+
+	first.setCurrentFrame(firstResizedMat);
+	second.setCurrentFrame(secondResizedMat);
+
+
+}
 PS3EyeCapture& StereoCapture::getFirstCapture()
 {
 	return first;

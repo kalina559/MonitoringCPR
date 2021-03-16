@@ -60,7 +60,7 @@ void CameraCalibration::realLifeCirclePositions(cv::Size boardSize, float distan
 			if (i % 2 == 0)
 				circleCenters.push_back(cv::Point3f(j * distance, i * distance / 2, 0.0f));
 			else
-				circleCenters.push_back(cv::Point3f((j - 0.5) * distance, i * distance / 2, 0.0f));      //przesuniete, bo assymetric grid.		BARDZO WAZNY ZNAK +/- 0.5. NajwyraŸniej górny prawy róg wzoru jest 'ob³y'
+				circleCenters.push_back(cv::Point3f((j + 0.5) * distance, i * distance / 2, 0.0f));      //przesuniete, bo assymetric grid.		BARDZO WAZNY ZNAK +/- 0.5. NajwyraŸniej górny prawy róg wzoru jest 'ob³y'
 		}
 	}
 }
@@ -84,12 +84,11 @@ void CameraCalibration::getCirclePositions(std::vector<cv::Mat> images, std::vec
 	for (size_t i = 0; i < images.size(); ++i) 
 	{
 		cv::cvtColor(images[i], grayImg, cv::COLOR_BGR2GRAY);   //findCirclesGrid moze byc na RGB, ale cornerSubPix potrzebuje Grayscale
-		bool patternFound = findCirclesGrid(grayImg, arrayOfCirclesSize, centers[i], cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
+		bool patternFound = cv::findCirclesGrid(grayImg, arrayOfCirclesSize, centers[i], cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
 		//subpix
-		cv::cornerSubPix(grayImg, centers[i], winSize, zeroZone, criteria);
+		//cv::cornerSubPix(grayImg, centers[i], winSize, zeroZone, criteria);
 
 		//just for debug purposes
-		//drawChessboardCorners(images[i], arrayOfCirclesSize, Mat(centers[i]), patternFound);
 	}
 }
 

@@ -36,22 +36,16 @@ public class GetMarkerCoordinates : MarkerTracking
         getGameFloorPlane();
         for (int i = 0; i < _balls.Length; i++)
         {
-            //markers[i].transform.position =
-            //    new Vector3(_balls[i].X,
-            //    -_balls[i].Y,
-            //   _balls[i].Z);
-
             markers[i].transform.position =
-                new Vector3(Vector3.ProjectOnPlane(new Vector3(_balls[i].X, 0, 0), floorPlane.normal).magnitude,
+                new Vector3(Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z), floorPlane.normal), Vector3.right).magnitude, // sprobowac zrobic to samo co z Z, tzn project na vector3.right
                  Math.Abs(floorPlane.GetDistanceToPoint(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z))),
                Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z), floorPlane.normal), Vector3.forward).magnitude);
-           
+            //markers[i].transform.position =
+            //    new Vector3(_balls[i].X, // sprobowac zrobic to samo co z Z, tzn project na vector3.right
+            //     -_balls[i].Y,
+            //   _balls[i].Z);
+
         }
-        //setGameFloorPlane();
-
-
-        //Camera.main.transform.LookAt(markers[7].transform.position);
-
         calculateAngles();
         checkCompressionParameters();
         updateMeasurementMessages();
@@ -151,24 +145,6 @@ public class GetMarkerCoordinates : MarkerTracking
            new Vector3(_balls[7].X, -_balls[7].Y, _balls[7].Z),
             new Vector3(_balls[6].X, -_balls[6].Y, _balls[6].Z),
             new Vector3(_balls[5].X, -_balls[5].Y, _balls[5].Z));
-    }
-    void setGameFloorPlane()
-    {
-        floorPlane.Set3Points(
-            markers[7].transform.position,
-            markers[6].transform.position,
-            markers[5].transform.position);
-
-        gameFloorPlane.transform.position = new Vector3(markers[6].transform.position.x, markers[6].transform.position.y, markers[6].transform.position.z);
-
-        if (Vector3.Dot(floorPlane.normal, Vector3.down) > 0)    //making plane's normal vector is facing up
-        {
-            gameFloorPlane.transform.rotation = Quaternion.FromToRotation(Vector3.up, -floorPlane.normal);
-        }
-        else
-        {
-            gameFloorPlane.transform.rotation = Quaternion.FromToRotation(Vector3.up, floorPlane.normal);
-        }
     }
 
     void updateMeasurementMessages()

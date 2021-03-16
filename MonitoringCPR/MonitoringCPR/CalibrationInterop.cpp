@@ -9,7 +9,7 @@
 #include"StereoCapture.h"
 #include<filesystem>
 
-const float distanceBetweenCircles = 0.0355f;
+const float distanceBetweenCircles = 0.036f;
 const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 
 std::vector<std::pair<std::string, std::string>> validFramesPaths;

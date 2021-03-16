@@ -208,13 +208,13 @@ bool ImgProcUtility::findCircleInROI(cv::Mat frame, cv::Vec3f& circleCoordinates
 {
 	cv::Mat cannyFrame;
 	std::vector<cv::Point> circleContour;
+
 	cv::Canny(frame, cannyFrame, threshLevel, 255);
 	if (!getBiggestContours(cannyFrame, circleContour))
 		return false;
 
 	circleCoordinates = getContoursCenterOfMass(circleContour);
 
-	
 	return true;
 	/*std::vector<cv::Vec3f> circles;
 	HoughCircles(frame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 10, 100, 20, 1, 30);

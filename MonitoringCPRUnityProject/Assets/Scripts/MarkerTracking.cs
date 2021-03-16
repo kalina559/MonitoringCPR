@@ -26,6 +26,7 @@ public class MarkerTracking : MonoBehaviour
     protected CvCoordinates[] _balls;
     int threshValue;
     protected int expectedNumberOfMarkerPairs;
+    Int64 f, s;
     protected void Update()
     {
         Debug.Log("e" + expectedNumberOfMarkerPairs);
@@ -107,7 +108,8 @@ public class MarkerTracking : MonoBehaviour
         {
             fixed (CvCoordinates* outBalls = _balls)
             {
-                OpenCVInterop.realTimeMonitoring(pixelPtrs.Item1, pixelPtrs.Item2, textures.Item1.width, textures.Item2.height, outBalls, ref beginTracking);
+                OpenCVInterop.realTimeMonitoring(pixelPtrs.Item1, pixelPtrs.Item2, textures.Item1.width, textures.Item2.height, outBalls, ref beginTracking, ref f, ref s) ;
+                Debug.Log("first timestamp: " + f + " second timestamp: " + s);
             }
         }
     }
