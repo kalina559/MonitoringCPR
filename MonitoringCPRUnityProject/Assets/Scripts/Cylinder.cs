@@ -17,7 +17,7 @@ public class Cylinder : MonoBehaviour
         transform.position = (firstMarker.transform.position - secondMarker.transform.position) / 2.0f + secondMarker.transform.position;
 
         var v3T = transform.localScale;      // Scale it
-        v3T.y = (firstMarker.transform.position - secondMarker.transform.position).magnitude/2;
+        v3T.y = (firstMarker.transform.position - secondMarker.transform.position).magnitude/4;
         transform.localScale = v3T;
 
 

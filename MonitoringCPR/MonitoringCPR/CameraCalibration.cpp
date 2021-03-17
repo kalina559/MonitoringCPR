@@ -92,7 +92,7 @@ void CameraCalibration::getCirclePositions(std::vector<cv::Mat> images, std::vec
 	}
 }
 
-void CameraCalibration::singleCameraCalibration(std::vector<cv::Mat> calibrationImages, cv::Size boardSize, float distanceBetweenCircles, cv::Mat& cameraMatrix, cv::Mat& distCoefficients)
+double CameraCalibration::singleCameraCalibration(std::vector<cv::Mat> calibrationImages, cv::Size boardSize, float distanceBetweenCircles, cv::Mat& cameraMatrix, cv::Mat& distCoefficients)
 {
 	std::vector<std::vector<cv::Point3f>> worldSpaceCircleCenters(1);
 	realLifeCirclePositions(boardSize, distanceBetweenCircles, worldSpaceCircleCenters[0]);
@@ -105,7 +105,7 @@ void CameraCalibration::singleCameraCalibration(std::vector<cv::Mat> calibration
 
 	getCirclePositions(calibrationImages, centers, boardSize);
 
-	calibrateCamera(worldSpaceCircleCenters, centers, boardSize, cameraMatrix, distCoefficients, rVectors, tVectors);
+	return calibrateCamera(worldSpaceCircleCenters, centers, boardSize, cameraMatrix, distCoefficients, rVectors, tVectors);
 }
 
 bool CameraCalibration::saveMatrix(std::string name, cv::Mat mat)
@@ -148,7 +148,7 @@ bool CameraCalibration::loadMatrix(std::string name, int cols, int rows, cv::Mat
 	return false;
 }
 
-void CameraCalibration::stereoCalibration(std::vector<cv::Mat> images1, std::vector<cv::Mat> images2, cv::Mat firstCamMatrix, cv::Mat secondCamMatrix, cv::Mat firstCamCoeffs,
+double CameraCalibration::stereoCalibration(std::vector<cv::Mat> images1, std::vector<cv::Mat> images2, cv::Mat firstCamMatrix, cv::Mat secondCamMatrix, cv::Mat firstCamCoeffs,
 	cv::Mat secondCamCoeffs, cv::Size boardSize, cv::Mat& R, cv::Mat& T, cv::Mat& E, cv::Mat& F, float distanceBetweenCircles)
 {
 	std::vector<std::vector<cv::Point2f> > centers1(images1.size());
@@ -159,20 +159,29 @@ void CameraCalibration::stereoCalibration(std::vector<cv::Mat> images1, std::vec
 	CameraCalibration::realLifeCirclePositions(boardSize, distanceBetweenCircles, worldSpaceCircleCenters[0]);
 	worldSpaceCircleCenters.resize(images1.size(), worldSpaceCircleCenters[0]);
 
-	stereoCalibrate(worldSpaceCircleCenters, centers1, centers2, firstCamMatrix, firstCamCoeffs, secondCamMatrix,
+	double rms = stereoCalibrate(worldSpaceCircleCenters, centers1, centers2, firstCamMatrix, firstCamCoeffs, secondCamMatrix,
 		secondCamCoeffs, cv::Size(1224, 1024), R, T, E, F, cv::CALIB_FIX_INTRINSIC, cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-6));
 	//std::cout << "after stereo" << std::endl;
 	CameraCalibration::saveMatrix("matrices/stereoCalibration/R", R);
 	CameraCalibration::saveMatrix("matrices/stereoCalibration/T", T);  //todo te sciezki jako const string
 	CameraCalibration::saveMatrix("matrices/stereoCalibration/E", E);
 	CameraCalibration::saveMatrix("matrices/stereoCalibration/F", F);
+	return rms;
 }
 
 void CameraCalibration::getSingleCamerasCoeffs(std::vector<cv::Mat> firstCamImgs, std::vector<cv::Mat> secondCamImgs, cv::Size boardSize, float distanceBetweenCircles,
 	cv::Mat& firstCamMatrix, cv::Mat& secondCamMatrix, cv::Mat& firstCamCoeffs, cv::Mat& secondCamCoeffs)
 {
-	CameraCalibration::singleCameraCalibration(firstCamImgs, boardSize, distanceBetweenCircles, firstCamMatrix, firstCamCoeffs);
-	CameraCalibration::singleCameraCalibration(secondCamImgs, boardSize, distanceBetweenCircles, secondCamMatrix, secondCamCoeffs);
+	double firstRMS = CameraCalibration::singleCameraCalibration(firstCamImgs, boardSize, distanceBetweenCircles, firstCamMatrix, firstCamCoeffs);
+	double secondRMS = CameraCalibration::singleCameraCalibration(secondCamImgs, boardSize, distanceBetweenCircles, secondCamMatrix, secondCamCoeffs);
+
+	std::ofstream outStream("RMS.txt");
+	if (outStream)
+	{
+		outStream << "first camera RMS: " + std::to_string(firstRMS) + "\nsecond camera RMS: " +  std::to_string(secondRMS) + "\n";
+	}
+	outStream.close();
+
 	//saving matrices to Unity Project directory
 	CameraCalibration::saveMatrix("matrices/singleCamCalibration/firstCamMatrix", firstCamMatrix);
 	CameraCalibration::saveMatrix("matrices/singleCamCalibration/secondCamMatrix", secondCamMatrix);

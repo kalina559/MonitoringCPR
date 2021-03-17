@@ -9,6 +9,7 @@ public class GetMarkerCoordinates : MarkerTracking
 {
     public List<CvCoordinates> initialCoordinates;
     public List<GameObject> cylinders;
+    public GameObject head, neck, hips;
     Plane floorPlane;
     Plane armsPlane;
     Plane armsPlane1;
@@ -46,6 +47,17 @@ public class GetMarkerCoordinates : MarkerTracking
             //   _balls[i].Z);
 
         }
+
+        neck.transform.position = (markers[1].transform.position - markers[0].transform.position) / 2.0f + markers[0].transform.position;
+        if(firstMeasurement == true)
+        {
+            Vector3 hipsVector = neck.transform.position - markers[4].transform.position;
+            hips.transform.position = new Vector3(markers[4].transform.position.x + hipsVector.x * 2, 0.2f, markers[4].transform.position.z + hipsVector.z * 2);
+           
+        }
+        Vector3 spineVector = neck.transform.position - hips.transform.position;
+        neck.transform.up = spineVector;
+
         calculateAngles();
         checkCompressionParameters();
         updateMeasurementMessages();

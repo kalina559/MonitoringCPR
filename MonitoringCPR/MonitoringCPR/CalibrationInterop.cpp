@@ -208,8 +208,15 @@ extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount,
 
 	cv::Mat R, T, E, F;
 
-	CameraCalibration::stereoCalibration(images1, images2,
+	double rms = CameraCalibration::stereoCalibration(images1, images2,
 		firstCamMatrix, secondCamMatrix, firstCamCoeffs, secondCamCoeffs, arrayOfCirclesSize, R, T, E, F, distanceBetweenCircles);
+
+	std::ofstream outStream("RMS.txt", std::ofstream::app);
+	if (outStream)
+	{
+		outStream << "stereo RMS: " << rms << "\n";
+	}
+	outStream.close();
 
 	cv::Mat R1, R2, P1, P2, Q;
 	stereoRectify(firstCamMatrix, firstCamCoeffs, secondCamMatrix, secondCamCoeffs, cv::Size(1224, 1024), R, T, R1, R2, P1, P2, Q);
