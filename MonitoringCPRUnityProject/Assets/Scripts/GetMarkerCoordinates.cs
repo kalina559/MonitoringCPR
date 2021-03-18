@@ -26,6 +26,7 @@ public class GetMarkerCoordinates : MarkerTracking
     float maxDistanceToFloor, minDistanceToFloor, lastCompressionDepth;
     bool firstMeasurement = true;
 
+    public GraphRendering armFloorAngleGraph, leftElbowAngleGraph, rightElbowAngleGraph, compressionDepthGraph, compressionRateGraph;
     private void Start()
     {
         expectedNumberOfMarkerPairs = 8;
@@ -49,11 +50,11 @@ public class GetMarkerCoordinates : MarkerTracking
         }
 
         neck.transform.position = (markers[1].transform.position - markers[0].transform.position) / 2.0f + markers[0].transform.position;
-        if(firstMeasurement == true)
+        if (firstMeasurement == true)
         {
             Vector3 hipsVector = neck.transform.position - markers[4].transform.position;
             hips.transform.position = new Vector3(markers[4].transform.position.x + hipsVector.x * 2, 0.2f, markers[4].transform.position.z + hipsVector.z * 2);
-           
+
         }
         Vector3 spineVector = neck.transform.position - hips.transform.position;
         neck.transform.up = spineVector;
@@ -82,10 +83,10 @@ public class GetMarkerCoordinates : MarkerTracking
     void calculateAngles()
     {
         rightElbowFirstVec = markers[0].transform.position - markers[2].transform.position;
-        rightElbowSecondVec = markers[2].transform.position - markers[4].transform.position;        
+        rightElbowSecondVec = markers[2].transform.position - markers[4].transform.position;
 
         leftElbowFirstVec = markers[1].transform.position - markers[3].transform.position;
-        leftElbowSecondVec = markers[3].transform.position - markers[4].transform.position;        
+        leftElbowSecondVec = markers[3].transform.position - markers[4].transform.position;
 
         armsPlane.Set3Points(
            markers[0].transform.position,
@@ -100,7 +101,7 @@ public class GetMarkerCoordinates : MarkerTracking
     void checkCompressionParameters()
     {
         var distanceToFloor = floorPlane.GetDistanceToPoint(markers[4].transform.position);
-        if(firstMeasurement == true)
+        if (firstMeasurement == true)
         {
             maxDistanceToFloor = distanceToFloor;
             minDistanceToFloor = distanceToFloor;
@@ -143,12 +144,13 @@ public class GetMarkerCoordinates : MarkerTracking
                         downwardMovement = false;
                         ++compressionCount;
                         lastCompressionDepth = (maxDistanceToFloor - minDistanceToFloor) * 1000;
+                        compressionDepthGraph.addValue(lastCompressionDepth);
                         maxDistanceToFloor = distanceToFloor;
                     }
                 }
             }
             lastDistanceToFloor = distanceToFloor;
-        }        
+        }
     }
 
     void getGameFloorPlane()
@@ -162,10 +164,18 @@ public class GetMarkerCoordinates : MarkerTracking
     void updateMeasurementMessages()
     {
         compressionsCount.SetText("Liczba uciśnięć: " + compressionCount);
-        compressionsRate.SetText("Częstotliwość: " + compressionCount * 60 / (Time.time - trackingStartTime) + " uciśnięć/minutę");
-        firstElbowAngle.SetText("Kąt w prawym łokciu: " + Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec));
-        secondElbowAngle.SetText("Kąt w lewym łokciu: " + Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec));
-        armAngle.SetText("Kąt miêdzy rękami, a podłogą: " + Vector3.Angle(floorPlane.normal, armsPlane1.normal));
+        compressionsRate.SetText("Częstotliwość: " + Math.Round(compressionCount * 60 / (Time.time - trackingStartTime), 2) + " uciśnięć/minutę");
+        if(compressionCount > 0)
+        {
+            compressionRateGraph.addValue(compressionCount * 60 / (Time.time - trackingStartTime));
+        }
+        
+        firstElbowAngle.SetText("Kąt w prawym łokciu: " + Math.Round(Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec), 2));
+        rightElbowAngleGraph.addValue(Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec));
+        secondElbowAngle.SetText("Kąt w lewym łokciu: " + Math.Round(Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec), 2));
+        leftElbowAngleGraph.addValue(Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec));
+        armAngle.SetText("Kąt między rękami, a podłogą: " + Math.Round(Vector3.Angle(floorPlane.normal, armsPlane1.normal), 2));
+        armFloorAngleGraph.addValue((Vector3.Angle(floorPlane.normal, armsPlane1.normal)));
         Debug.Log("armsPlane : " + Vector3.Angle(floorPlane.normal, armsPlane.normal));
         compressionDepth.SetText("Głębokość ostatniego uciśnięcia: " + Math.Round(lastCompressionDepth, 1) + "mm");
     }
