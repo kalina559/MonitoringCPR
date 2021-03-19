@@ -89,7 +89,7 @@ public class GraphRendering : MonoBehaviour
         lowLimitText.text = lowLimit.ToString();
         highLimitText.text = highLimit.ToString();
 
-        unitsText.transform.position = new Vector3(maxValueText.transform.position.x, yAxis.transform.position.y + (maxValue - minValue) * yUnit + 0.3f, maxValueText.transform.position.z);
+        unitsText.transform.position = new Vector3(maxValueText.transform.position.x, yAxis.transform.position.y + (maxValue - minValue) * yUnit + 0.2f, maxValueText.transform.position.z);
         maxValueText.transform.position = new Vector3(maxValueText.transform.position.x, yAxis.transform.position.y + (maxValue - minValue) * yUnit + 0.1f, maxValueText.transform.position.z);
         minValueText.transform.position = new Vector3(maxValueText.transform.position.x, yAxis.transform.position.y + 0.1f, maxValueText.transform.position.z);
         lowLimitText.transform.position = new Vector3(maxValueText.transform.position.x, yAxis.transform.position.y + (lowLimit - minValue) * yUnit + 0.1f, maxValueText.transform.position.z);
