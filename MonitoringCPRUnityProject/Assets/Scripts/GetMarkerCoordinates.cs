@@ -21,12 +21,14 @@ public class GetMarkerCoordinates : MarkerTracking
     int downwardMovementFrameCount = 0;
     int compressionCount = 0;
     float lastDistanceToFloor = 0;
-    float trackingStartTime;
+    float lastTimeStamp;
 
-    float maxDistanceToFloor, minDistanceToFloor, lastCompressionDepth;
+    float /*maxDistanceToFloor,*/ maxChestCompression, lastCompressionDepth;
     bool firstMeasurement = true;
 
-    public GraphRendering armFloorAngleGraph, leftElbowAngleGraph, rightElbowAngleGraph, compressionDepthGraph, compressionRateGraph;
+    float dummyHeight = 0;
+
+    public GraphRendering armFloorAngleGraph, leftElbowAngleGraph, rightElbowAngleGraph, compressionDepthGraph, compressionRateGraph, handsYPosition;
     private void Start()
     {
         expectedNumberOfMarkerPairs = 8;
@@ -54,6 +56,7 @@ public class GetMarkerCoordinates : MarkerTracking
         {
             Vector3 hipsVector = neck.transform.position - markers[4].transform.position;
             hips.transform.position = new Vector3(markers[4].transform.position.x + hipsVector.x * 2, 0.2f, markers[4].transform.position.z + hipsVector.z * 2);
+            dummyHeight = markers[4].transform.position.y;
 
         }
         Vector3 spineVector = neck.transform.position - hips.transform.position;
@@ -70,9 +73,10 @@ public class GetMarkerCoordinates : MarkerTracking
             beginTracking = true;
             frameCount = 0;
             compressionCount = 0;
-            trackingStartTime = Time.time;
+            lastTimeStamp = Time.time;
             firstMeasurement = true;
             lastCompressionDepth = 0;
+            initGraphs();            
         }
         else
         {
@@ -100,29 +104,29 @@ public class GetMarkerCoordinates : MarkerTracking
 
     void checkCompressionParameters()
     {
-        var distanceToFloor = floorPlane.GetDistanceToPoint(markers[4].transform.position);
+        var chestCompression = dummyHeight - markers[4].transform.position.y;
         if (firstMeasurement == true)
         {
-            maxDistanceToFloor = distanceToFloor;
-            minDistanceToFloor = distanceToFloor;
-            lastDistanceToFloor = distanceToFloor;
+            //maxDistanceToFloor = distanceToFloor;
+            maxChestCompression = chestCompression;
+            lastDistanceToFloor = chestCompression;
             downwardMovement = false;
             firstMeasurement = false;
         }
         else
         {
-            if (distanceToFloor > maxDistanceToFloor)
+            //if (distanceToFloor > maxDistanceToFloor)
+            //{
+            //    maxDistanceToFloor = distanceToFloor;
+            //}
+            if (chestCompression > maxChestCompression)
             {
-                maxDistanceToFloor = distanceToFloor;
-            }
-            if (distanceToFloor < minDistanceToFloor)
-            {
-                minDistanceToFloor = distanceToFloor;
+                maxChestCompression = chestCompression;
             }
 
-            if (Math.Abs(distanceToFloor - lastDistanceToFloor) > 0.001)
+            if (Math.Abs(chestCompression - lastDistanceToFloor) > 0.001)
             {
-                if (distanceToFloor < lastDistanceToFloor)
+                if (chestCompression > lastDistanceToFloor)
                 {
                     if (downwardMovement == false)
                     {
@@ -130,11 +134,11 @@ public class GetMarkerCoordinates : MarkerTracking
                         if (downwardMovementFrameCount == 5)
                         {
                             downwardMovement = true;
-                            minDistanceToFloor = distanceToFloor;
+                            maxChestCompression = chestCompression;
                         }
                     }
                 }
-                else if (distanceToFloor > lastDistanceToFloor)
+                else if (chestCompression < lastDistanceToFloor)
                 {
                     downwardMovementFrameCount = 0;
 
@@ -143,13 +147,14 @@ public class GetMarkerCoordinates : MarkerTracking
                         downwardMovementFrameCount = 0;
                         downwardMovement = false;
                         ++compressionCount;
-                        lastCompressionDepth = (maxDistanceToFloor - minDistanceToFloor) * 1000;
+                        lastCompressionDepth = (maxChestCompression) * 1000;
                         compressionDepthGraph.addValue(lastCompressionDepth);
-                        maxDistanceToFloor = distanceToFloor;
+                        maxChestCompression = 0;
+                        //maxDistanceToFloor = distanceToFloor;
                     }
                 }
             }
-            lastDistanceToFloor = distanceToFloor;
+            lastDistanceToFloor = chestCompression;
         }
     }
 
@@ -164,10 +169,12 @@ public class GetMarkerCoordinates : MarkerTracking
     void updateMeasurementMessages()
     {
         compressionsCount.SetText("Liczba uciśnięć: " + compressionCount);
-        compressionsRate.SetText("Częstotliwość: " + Math.Round(compressionCount * 60 / (Time.time - trackingStartTime), 2) + " uciśnięć/minutę");
-        if(compressionCount > 0)
+        compressionsRate.SetText("Częstotliwość ostatnich 5 uciśnięć: " + Math.Round(compressionCount * 60 / (Time.time - lastTimeStamp), 2) + " uciśnięć/minutę");
+        if(compressionCount > 0 && compressionCount % 5 == 0)
         {
-            compressionRateGraph.addValue(compressionCount * 60 / (Time.time - trackingStartTime));
+            compressionRateGraph.addValue(compressionCount * 60 / (Time.time - lastTimeStamp));
+            lastTimeStamp = Time.time;
+            compressionCount = 1;
         }
         
         firstElbowAngle.SetText("Kąt w prawym łokciu: " + Math.Round(Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec), 2));
@@ -178,6 +185,18 @@ public class GetMarkerCoordinates : MarkerTracking
         armFloorAngleGraph.addValue((Vector3.Angle(floorPlane.normal, armsPlane1.normal)));
         Debug.Log("armsPlane : " + Vector3.Angle(floorPlane.normal, armsPlane.normal));
         compressionDepth.SetText("Głębokość ostatniego uciśnięcia: " + Math.Round(lastCompressionDepth, 1) + "mm");
+
+        handsYPosition.addValue((markers[4].transform.position.y - dummyHeight) * 1000);
+    }
+
+    void initGraphs()
+    {
+        rightElbowAngleGraph.initClearValues();
+        leftElbowAngleGraph.initClearValues();
+        armFloorAngleGraph.initClearValues();
+        compressionRateGraph.initClearValues();
+        compressionDepthGraph.initClearValues();
+        handsYPosition.initClearValues();
     }
 }
 
