@@ -80,6 +80,7 @@ public class GetMarkerCoordinates : MarkerTracking
             lastTimeStamp = Time.time;
             firstMeasurement = true;
             lastCompressionDepth = 0;
+            compressionRate = 0;
             initGraphs();
             if(saveCheckBox.isOn)
             {
@@ -110,7 +111,11 @@ public class GetMarkerCoordinates : MarkerTracking
 
         armsFloorAngle = Vector3.Angle(floorPlane.normal, armsPlane.normal);
 
-        compressionRate = compressionCount * 60 / (Time.time - lastTimeStamp);
+
+        if (Time.time - lastTimeStamp != 0)
+        {
+            compressionRate = compressionCount * 60 / (Time.time - lastTimeStamp);
+        }
     }
 
     void checkCompressionParameters()
