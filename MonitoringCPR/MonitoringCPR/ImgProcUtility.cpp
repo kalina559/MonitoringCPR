@@ -387,7 +387,7 @@ struct contour_sorter // 'less' for contours
 	bool operator ()(cv::Vec3f a, cv::Vec3f b)
 	{
 		// scale factor for y should be larger than img.width
-		return ((a[0] + 10 * a[1]) < (b[0] + 10 * b[1]));
+		return ((a[0] + 100 * a[1]) < (b[0] + 100 * b[1]));
 	}
 };
 
@@ -400,7 +400,7 @@ void ImgProcUtility::detectMarkers(cv::Mat& frame, cv::Mat& displayFrame, std::v
 
 
 	//cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-	cv::HoughCircles(cannyFrame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 30, 255, 15, 1, 30);
+	cv::HoughCircles(cannyFrame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 30, 255, 10, 1, 30);
 
 	std::sort(circles.begin(), circles.end(), contour_sorter());
 
