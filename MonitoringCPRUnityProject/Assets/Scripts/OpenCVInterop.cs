@@ -30,20 +30,20 @@ internal static class OpenCVInterop
     [DllImport("MonitoringCPR")]
     internal static extern void CloseSDLCameras();
     [DllImport("MonitoringCPR")]
-    internal static extern void saveCurrentFrames();
+    internal static extern void saveCurrentFrames(/*int captureMode*/);
     [DllImport("MonitoringCPR")]
-    internal static extern void clearCalibrationFramesFolder();
+    internal static extern void clearStereoCalibrationFramesFolder();
     [DllImport("MonitoringCPR")]
-    internal static extern bool checkCalibrationFrames(ref int invalidFrames, ref int singleFrames, ref int totalFrames);
+    internal static extern bool checkStereoCalibrationFrames(ref int invalidFrames, ref int singleFrames, ref int totalFrames);
     [DllImport("MonitoringCPR")]
-    internal static extern void showValidFrame(IntPtr firstFrame, IntPtr secondFrame);
+    internal static extern void showValidStereoFrame(IntPtr firstFrame, IntPtr secondFrame);
     [DllImport("MonitoringCPR")]
-    internal static extern bool deleteCurrentFrames();
+    internal static extern bool deleteCurrentStereoFrames();
     [DllImport("MonitoringCPR")]
     internal static extern bool moveToNextFrames();
     [DllImport("MonitoringCPR", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     [return: MarshalAs(UnmanagedType.BStr)]
-    internal static extern string getFramesSetId();
+    internal static extern string getStereoFramesSetId();
     [DllImport("MonitoringCPR")]
     internal static extern void stereoCalibrate(ref int pairCount, ref int time, ref bool isFinished);
     [DllImport("MonitoringCPR")]

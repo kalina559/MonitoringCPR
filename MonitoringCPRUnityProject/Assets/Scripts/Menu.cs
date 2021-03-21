@@ -51,15 +51,10 @@ public class Menu : MonoBehaviour
     {
         Application.Quit();
     }
-    public void SaveFrames()
-    {
-        //PlayerPrefs.SetInt("CalibrationValidate", 0);
-        OpenCVInterop.saveCurrentFrames();
-    }
     public void clearCalibrationFramesFolder()
     {
         //PlayerPrefs.SetInt("CalibrationValidate", 0);
-        OpenCVInterop.clearCalibrationFramesFolder();
+        OpenCVInterop.clearStereoCalibrationFramesFolder();
     }
     void OnApplicationQuit()
     {

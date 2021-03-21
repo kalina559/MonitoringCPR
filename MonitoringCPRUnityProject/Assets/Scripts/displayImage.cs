@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class displayImage : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class displayImage : MonoBehaviour
     private IntPtr firstPixelPtr;
     private IntPtr secondPixelPtr;
     private bool _ready;
+
+   // public TMP_Dropdown captureMode;
 
     void Start()
     {
@@ -68,5 +71,11 @@ public class displayImage : MonoBehaviour
         firstPixelHandle.Free();
         secondPixelHandle.Free();
         Debug.Log("Freed textures in onDisable displayImage");
+    }
+
+    public void SaveFrames()
+    {
+        //PlayerPrefs.SetInt("CalibrationValidate", 0);
+        OpenCVInterop.saveCurrentFrames(/*captureMode.value*/);
     }
 }

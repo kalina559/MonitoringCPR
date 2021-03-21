@@ -68,7 +68,7 @@ extern "C" void __declspec(dllexport) __stdcall  CloseSDLCameras()
 	StereoCapture::getInstance()->freeCameras();
 }
 
-extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames()
+extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames(/*int captureMode*/)
 {
 	char buffer[30];
 	char dateStr[30];
@@ -81,12 +81,31 @@ extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames()
 	std::string timestamp(buffer);
 	std::replace(timestamp.begin(), timestamp.end(), ':', '_');
 	std::replace(timestamp.begin(), timestamp.end(), '/', '_');
+	/*if (captureMode == 0)
+	{
+		cv::imwrite("../MonitoringCPR/images/Calibration/singleCamera/UnityFirstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
+	}
+	else if (captureMode == 1)
+	{
+		cv::imwrite("../MonitoringCPR/images/Calibration/singleCamera/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
+	}
+	else if (captureMode == 2)
+	{
+		cv::imwrite("../MonitoringCPR/images/Calibration/UnityFirstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
+		cv::imwrite("../MonitoringCPR/images/Calibration/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
+	}*/
 	cv::imwrite("../MonitoringCPR/images/Calibration/UnityFirstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
 	cv::imwrite("../MonitoringCPR/images/Calibration/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
 }
 
 extern "C" bool __declspec(dllexport) __stdcall detectMarkers(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
 {
+	if (StereoCapture::getInstance()->getTrackingState())   //jeœli istniej¹ jakieœ trackery
+	{
+		StereoCapture::getInstance()->setTrackingState(false);
+		StereoCapture::getInstance()->getFirstCapture().stopMultiTracker();
+		StereoCapture::getInstance()->getSecondCapture().stopMultiTracker();
+	}
 	std::vector<cv::Vec3f> circles1, circles2;
 
 	//ImgProcUtility::readRealTimeFrames(StereoCapture::getInstance(), width, height);
@@ -151,7 +170,7 @@ extern "C" void __declspec(dllexport) __stdcall realTimeMonitoring(unsigned char
 
 	bool result1 = StereoCapture::getInstance()->getFirstCapture().calculateMarkersCoordinates();
 	bool result2 = StereoCapture::getInstance()->getSecondCapture().calculateMarkersCoordinates();
-
+	
 		if (!result1 || !result2)
 	{
 		StereoCapture::getInstance()->setTrackingState(false);

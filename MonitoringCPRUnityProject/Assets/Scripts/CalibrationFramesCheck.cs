@@ -44,7 +44,6 @@ public class CalibrationFramesCheck : MonoBehaviour
                 errorMessagePanel.gameObject.SetActive(false);
                 validPairsCount = totalFrames - invalidFrames;
                 updateLabels();
-                Debug.Log("CalibFramesCheck start");
                 InitTexture();
                 GameObject.Find("firstFrame").GetComponent<RawImage>().texture = firstTex;
                 GameObject.Find("secondFrame").GetComponent<RawImage>().texture = secondTex;
@@ -74,7 +73,7 @@ public class CalibrationFramesCheck : MonoBehaviour
 
     void MatToTexture2D()
     {
-        OpenCVInterop.showValidFrame(firstPixelPtr, secondPixelPtr);
+        OpenCVInterop.showValidStereoFrame(firstPixelPtr, secondPixelPtr);
         //Update the Texture2D with array updated in C++
         firstTex.SetPixels32(firstPixel32);
         secondTex.SetPixels32(secondPixel32);
@@ -109,7 +108,7 @@ public class CalibrationFramesCheck : MonoBehaviour
         else
         {
             //OpenCVInterop.saveId("validatedFrameSetId.txt");
-            PlayerPrefs.SetString("validationId", OpenCVInterop.getFramesSetId());
+            PlayerPrefs.SetString("validationId", OpenCVInterop.getStereoFramesSetId());
             SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
     }
@@ -117,7 +116,7 @@ public class CalibrationFramesCheck : MonoBehaviour
     {
         invalidFrames++;
         validPairsCount = totalFrames - invalidFrames;
-        OpenCVInterop.deleteCurrentFrames();
+        OpenCVInterop.deleteCurrentStereoFrames();
         currentPairNumber--;
         moveToNextFrame();
     }
@@ -128,6 +127,6 @@ public class CalibrationFramesCheck : MonoBehaviour
     }
     void frameCheck()
     {
-        checkResult = OpenCVInterop.checkCalibrationFrames(ref invalidFrames, ref singleFrames, ref totalFrames);
+        checkResult = OpenCVInterop.checkStereoCalibrationFrames(ref invalidFrames, ref singleFrames, ref totalFrames);
     }
 }

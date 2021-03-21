@@ -20,7 +20,7 @@ public class CalibrationMessage : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        currentSetId = OpenCVInterop.getFramesSetId();
+        currentSetId = OpenCVInterop.getStereoFramesSetId();
         Debug.Log("current set" + currentSetId + "poprz " + PlayerPrefs.GetString("calibrationId"));
         if (PlayerPrefs.GetString("calibrationId") != currentSetId)
         {
@@ -60,7 +60,7 @@ public class CalibrationMessage : MonoBehaviour
             else
             {
                 gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("UKOŃCZONO KALIBRACJĘ NA PODSTAWIE " + frameCount + " ZDJĘĆ W " + formatTimeInSeconds(seconds));
-                PlayerPrefs.SetString("calibrationId", OpenCVInterop.getFramesSetId());
+                PlayerPrefs.SetString("calibrationId", OpenCVInterop.getStereoFramesSetId());
             }
         }
     }
