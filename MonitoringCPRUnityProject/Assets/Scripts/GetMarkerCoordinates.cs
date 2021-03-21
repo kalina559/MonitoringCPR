@@ -251,7 +251,7 @@ public class GetMarkerCoordinates : MarkerTracking
         }
         dummyLength.Normalize();
         dummy.transform.right = dummyLength;
-        dummy.transform.up = Vector3.up;
+        dummy.transform.up = Vector3.up; //zmiana
         head.position = dummy.transform.position + dummyLength * headToTorsoDistance;
 
         var middleOfDummy = (markers[5].transform.position + (markers[6].transform.position - markers[5].transform.position) / 2.0f) + (dummy.transform.forward * (torso.transform.localScale.z / 2.0f));

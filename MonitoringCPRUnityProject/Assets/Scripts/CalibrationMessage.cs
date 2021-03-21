@@ -19,26 +19,8 @@ public class CalibrationMessage : MonoBehaviour
     Time calibrationStart;
     // Start is called before the first frame update
     void Start()
-    {
-        currentSetId = OpenCVInterop.getStereoFramesSetId();
-        Debug.Log("current set" + currentSetId + "poprz " + PlayerPrefs.GetString("calibrationId"));
-        if (PlayerPrefs.GetString("calibrationId") != currentSetId)
-        {
-            if (PlayerPrefs.GetString("validationId") == currentSetId)
-            {
-                estimatedTimeInSeconds = OpenCVInterop.getEstimatedCalibrationTime();
-                gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("PRZEWIDYWANY CZAS KALIBRACJI: " + formatTimeInSeconds(estimatedTimeInSeconds));
-                calibrateButton.gameObject.SetActive(true);
-            }
-            else
-            {
-                gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("WPROWADZONO ZMIANY W FOLDERACH ZE ZDJĘCIAMI");
-            }
-        }
-        else
-        {
-            gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("KALIBRACJA ZOSTAŁA JUŻ PRZEPROWADZONA NA TYM ZESTAWIE ZDJĘĆ");
-        }
+    {        
+
     }
 
     // Update is called once per frame
@@ -61,6 +43,7 @@ public class CalibrationMessage : MonoBehaviour
             {
                 gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("UKOŃCZONO KALIBRACJĘ NA PODSTAWIE " + frameCount + " ZDJĘĆ W " + formatTimeInSeconds(seconds));
                 PlayerPrefs.SetString("calibrationId", OpenCVInterop.getStereoFramesSetId());
+                thread = null;
             }
         }
     }
@@ -101,5 +84,27 @@ public class CalibrationMessage : MonoBehaviour
     {
         if (thread != null)
             thread.Abort();
+    }
+
+    public void getCurrentFrameSetId()
+    {
+        currentSetId = OpenCVInterop.getStereoFramesSetId();
+        if (PlayerPrefs.GetString("calibrationId") != currentSetId)
+        {
+            if (PlayerPrefs.GetString("validationId") == currentSetId)
+            {
+                estimatedTimeInSeconds = OpenCVInterop.getEstimatedCalibrationTime();
+                gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("PRZEWIDYWANY CZAS KALIBRACJI: " + formatTimeInSeconds(estimatedTimeInSeconds));
+                calibrateButton.gameObject.SetActive(true);
+            }
+            else
+            {
+                gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("WPROWADZONO ZMIANY W FOLDERACH ZE ZDJĘCIAMI");
+            }
+        }
+        else
+        {
+            gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("KALIBRACJA ZOSTAŁA JUŻ PRZEPROWADZONA NA TYM ZESTAWIE ZDJĘĆ");
+        }
     }
 }
