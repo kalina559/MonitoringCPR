@@ -35,6 +35,8 @@ public class GetMarkerCoordinates : MarkerTracking
     public GraphRendering armFloorAngleGraph, leftElbowAngleGraph, rightElbowAngleGraph, compressionDepthGraph, compressionRateGraph, handsYPositionGraph;
     public GameObject dummy;
     float initialHandLocalXPosition, initialHandLocalZPosition;
+    public GameObject desiredLocation;
+    Vector3 offset;
     private void Start()
     {
         expectedNumberOfMarkerPairs = 10;
@@ -47,17 +49,17 @@ public class GetMarkerCoordinates : MarkerTracking
         for (int i = 0; i < _balls.Length; i++)
         {
             markers[i].transform.position =
-                new Vector3(Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z), floorPlane.normal), Vector3.right).magnitude, // sprobowac zrobic to samo co z Z, tzn project na vector3.right
+                new Vector3(-Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z), floorPlane.normal), Vector3.right).magnitude, // sprobowac zrobic to samo co z Z, tzn project na vector3.right
                  Math.Abs(floorPlane.GetDistanceToPoint(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z))),
-               Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z), floorPlane.normal), Vector3.forward).magnitude);
+               Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z), floorPlane.normal), Vector3.forward).magnitude) + offset;
         }
 
         neck.transform.position = (markers[1].transform.position - markers[0].transform.position) / 2.0f + markers[0].transform.position;
         if (firstMeasurement == true)
         {
             setDummyInitialPose();
-            setSubjectInitialPose();            
-            dummyHeight = markers[4].transform.position.y;       
+            setSubjectInitialPose();
+            dummyHeight = markers[4].transform.position.y;
 
         }
         updateDummyPose();
@@ -119,6 +121,52 @@ public class GetMarkerCoordinates : MarkerTracking
     }
     void checkCompressionParameters()
     {
+        //currentChestCompression = dummyHeight - markers[4].transform.position.y;
+        //if (firstMeasurement == true)
+        //{
+        //    maxChestCompression = currentChestCompression;
+        //    lastDistanceToFloor = currentChestCompression;
+        //    downwardMovement = false;
+        //    firstMeasurement = false;
+        //}
+        //else
+        //{
+        //    if (currentChestCompression > maxChestCompression)
+        //    {
+        //        maxChestCompression = currentChestCompression;
+        //    }
+        //    if (Math.Abs(currentChestCompression - lastDistanceToFloor) > 0.001)
+        //    {
+        //        if (currentChestCompression > lastDistanceToFloor)
+        //        {
+        //            if (downwardMovement == false)
+        //            {
+        //                ++downwardMovementFrameCount;
+        //                if (downwardMovementFrameCount == 5)
+        //                {
+        //                    downwardMovement = true;
+        //                    maxChestCompression = currentChestCompression;
+        //                }
+        //            }
+        //        }
+        //        else if (currentChestCompression < lastDistanceToFloor)
+        //        {
+        //            downwardMovementFrameCount = 0;
+
+        //            if (downwardMovement == true)
+        //            {
+        //                downwardMovementFrameCount = 0;
+        //                downwardMovement = false;
+        //                ++compressionCount;
+        //                lastCompressionDepth = (maxChestCompression) * 1000;
+        //                compressionDepthGraph.addValue(lastCompressionDepth);
+        //                maxChestCompression = 0;
+        //            }
+        //        }
+        //    }
+        //    lastDistanceToFloor = currentChestCompression;
+        //}
+
         currentChestCompression = dummyHeight - markers[4].transform.position.y;
         if (firstMeasurement == true)
         {
@@ -133,33 +181,30 @@ public class GetMarkerCoordinates : MarkerTracking
             {
                 maxChestCompression = currentChestCompression;
             }
-            if (Math.Abs(currentChestCompression - lastDistanceToFloor) > 0.001)
+            if (currentChestCompression > lastDistanceToFloor)
             {
-                if (currentChestCompression > lastDistanceToFloor)
+                if (downwardMovement == false)
                 {
-                    if (downwardMovement == false)
+                    ++downwardMovementFrameCount;
+                    if (downwardMovementFrameCount == 5)
                     {
-                        ++downwardMovementFrameCount;
-                        if (downwardMovementFrameCount == 5)
-                        {
-                            downwardMovement = true;
-                            maxChestCompression = currentChestCompression;
-                        }
+                        downwardMovement = true;
+                        maxChestCompression = currentChestCompression;
                     }
                 }
-                else if (currentChestCompression < lastDistanceToFloor)
+            }
+            else if (currentChestCompression <= 0)
+            {
+                downwardMovementFrameCount = 0;
+
+                if (downwardMovement == true)
                 {
                     downwardMovementFrameCount = 0;
-
-                    if (downwardMovement == true)
-                    {
-                        downwardMovementFrameCount = 0;
-                        downwardMovement = false;
-                        ++compressionCount;
-                        lastCompressionDepth = (maxChestCompression) * 1000;
-                        compressionDepthGraph.addValue(lastCompressionDepth);
-                        maxChestCompression = 0;
-                    }
+                    downwardMovement = false;
+                    ++compressionCount;
+                    lastCompressionDepth = (maxChestCompression) * 1000;
+                    compressionDepthGraph.addValue(lastCompressionDepth);
+                    maxChestCompression = 0;
                 }
             }
             lastDistanceToFloor = currentChestCompression;
@@ -171,6 +216,10 @@ public class GetMarkerCoordinates : MarkerTracking
            new Vector3(_balls[9].X, -_balls[9].Y, _balls[9].Z),
             new Vector3(_balls[8].X, -_balls[8].Y, _balls[8].Z),
             new Vector3(_balls[7].X, -_balls[7].Y, _balls[7].Z));
+
+        offset = desiredLocation.transform.position - new Vector3(-Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[4].X, -_balls[4].Y, _balls[4].Z), floorPlane.normal), Vector3.right).magnitude, // sprobowac zrobic to samo co z Z, tzn project na vector3.right
+                 desiredLocation.transform.position.y,
+               Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[4].X, -_balls[4].Y, _balls[4].Z), floorPlane.normal), Vector3.forward).magnitude);
     }
     void updateMeasurementMessages()
     {
@@ -204,7 +253,7 @@ public class GetMarkerCoordinates : MarkerTracking
     }
     void saveDataToTextFile()
     {
-        string newLine = String.Format("{0};{1};{2};{3};{4};{5}", DateTime.Now.ToString("h:mm:ss:fff tt"), rightElbowAngle, leftElbowAngle, armsFloorAngle, compressionRate, currentChestCompression);
+        string newLine = String.Format("{0};{1};{2};{3};{4};{5}", DateTime.Now.ToString("HH:mm:ss:fff"), rightElbowAngle, leftElbowAngle, armsFloorAngle, compressionRate, currentChestCompression);
         writetext.WriteLine(newLine);
 
     }
@@ -214,7 +263,7 @@ public class GetMarkerCoordinates : MarkerTracking
         var torso = dummy.transform.Find("Torso");
         Vector3 scale = torso.localScale;      // Scale it
         scale.y = markers[4].transform.position.y;
-        Vector3 dummyLength = (markers[6].transform.position - markers[5].transform.position);
+        Vector3 dummyLength = Vector3.ProjectOnPlane((markers[6].transform.position - markers[5].transform.position), Vector3.up);
         scale.x = dummyLength.magnitude;
         Vector3 distanceFromHandToDummyEdge = markers[5].transform.position + (markers[6].transform.position - markers[5].transform.position) / 2.0f - markers[4].transform.position;
         scale.z = Vector3.ProjectOnPlane(distanceFromHandToDummyEdge, Vector3.up).magnitude * 2;
@@ -239,11 +288,12 @@ public class GetMarkerCoordinates : MarkerTracking
         {
             scale.y = markers[4].transform.position.y;
             torso.transform.localScale = scale;
+            dummy.transform.position = new Vector3(dummy.transform.position.x, markers[4].transform.position.y / 2.0f, dummy.transform.position.z);
         }
-        Vector3 dummyLength = (markers[6].transform.position - markers[5].transform.position);
+        Vector3 dummyLength = Vector3.ProjectOnPlane((markers[6].transform.position - markers[5].transform.position), Vector3.up);
         var head = dummy.transform.Find("Head");
         float headToTorsoDistance = scale.x / 2.0f + head.transform.localScale.y / 2.0f;
-        //head.transform.position = new Vector3(head.transform.position.x, head.transform.localScale.y, head.transform.position.z);
+        head.transform.position = new Vector3(head.transform.position.x, head.transform.localScale.y, head.transform.position.z);
 
         if (!handsInRightPosition(torso, dummyLength))
         {
@@ -251,8 +301,8 @@ public class GetMarkerCoordinates : MarkerTracking
         }
         dummyLength.Normalize();
         dummy.transform.right = dummyLength;
-        dummy.transform.up = Vector3.up; //zmiana
-        head.position = dummy.transform.position + dummyLength * headToTorsoDistance;
+        //dummy.transform.up = Vector3.up; //zmiana
+        head.position = dummy.transform.position + dummy.transform.right * headToTorsoDistance;
 
         var middleOfDummy = (markers[5].transform.position + (markers[6].transform.position - markers[5].transform.position) / 2.0f) + (dummy.transform.forward * (torso.transform.localScale.z / 2.0f));
         dummy.transform.position = new Vector3(middleOfDummy.x, dummy.transform.position.y, middleOfDummy.z);

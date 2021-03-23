@@ -151,7 +151,6 @@
     <ClCompile Include="ImgProcUtility.cpp" />
     <ClCompile Include="PS3EyeCapture.cpp" />
     <ClCompile Include="RealTimeInterop.cpp" />
-    <ClCompile Include="RecordedCaptureInterop.cpp" />
     <ClCompile Include="StereoCapture.cpp" />
   </ItemGroup>
   <ItemGroup>

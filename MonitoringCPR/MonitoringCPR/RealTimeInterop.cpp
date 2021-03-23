@@ -1,26 +1,16 @@
 #pragma once
 #include "StereoCapture.h"
 #include "ImgProcUtility.h"
-
-
 const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 
 extern "C" int __declspec(dllexport) __stdcall InitSDLCameras(int& outCameraWidth, int& outCameraHeight)
 {
 	StereoCapture::getInstance()->initializeMatrices();
-	//return ImgProcUtility::initializeCameras(StereoCapture::getInstance());
 	return StereoCapture::getInstance()->initCameras();
-	/*cv::Mat img1 = cv::imread("C:/Users/Kalin/Desktop/outstanding.png");
-	cv::Mat img2 = cv::imread("C:/Users/Kalin/Desktop/outstanding.png");
-	cv::imshow("eee1", img1);
-	cv::imshow("eee2", img2);
-	cv::waitKey(0);
-	return 0;*/
 }
 
 extern "C" void __declspec(dllexport) __stdcall GetCalibrationFrame(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
 {
-	//ImgProcUtility::readRealTimeFrames(StereoCapture::getInstance(), width, height);
 	StereoCapture::getInstance()->updateFrames(width, height);
 	cv::Mat firstFrameCopy, secondFrameCopy;
 	StereoCapture::getInstance()->getFirstCapture().getCurrentFrame().copyTo(firstFrameCopy);
@@ -68,7 +58,7 @@ extern "C" void __declspec(dllexport) __stdcall  CloseSDLCameras()
 	StereoCapture::getInstance()->freeCameras();
 }
 
-extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames(/*int captureMode*/)
+extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames(int captureMode)
 {
 	char buffer[30];
 	char dateStr[30];
@@ -81,21 +71,21 @@ extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames(/*int captureM
 	std::string timestamp(buffer);
 	std::replace(timestamp.begin(), timestamp.end(), ':', '_');
 	std::replace(timestamp.begin(), timestamp.end(), '/', '_');
-	/*if (captureMode == 0)
+	if (captureMode == 0)
 	{
-		cv::imwrite("../MonitoringCPR/images/Calibration/singleCamera/UnityFirstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
+		cv::imwrite("../MonitoringCPR/images/Calibration/SingleCamera/UnityFirstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
 	}
 	else if (captureMode == 1)
 	{
-		cv::imwrite("../MonitoringCPR/images/Calibration/singleCamera/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
+		cv::imwrite("../MonitoringCPR/images/Calibration/SingleCamera/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
 	}
 	else if (captureMode == 2)
 	{
 		cv::imwrite("../MonitoringCPR/images/Calibration/UnityFirstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
 		cv::imwrite("../MonitoringCPR/images/Calibration/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
-	}*/
-	cv::imwrite("../MonitoringCPR/images/Calibration/UnityFirstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
-	cv::imwrite("../MonitoringCPR/images/Calibration/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
+	}
+	//cv::imwrite("../MonitoringCPR/images/Calibration/UnityFirstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
+	//cv::imwrite("../MonitoringCPR/images/Calibration/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
 }
 
 extern "C" bool __declspec(dllexport) __stdcall detectMarkers(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height)
@@ -108,7 +98,6 @@ extern "C" bool __declspec(dllexport) __stdcall detectMarkers(unsigned char* fir
 	}
 	std::vector<cv::Vec3f> circles1, circles2;
 
-	//ImgProcUtility::readRealTimeFrames(StereoCapture::getInstance(), width, height);
 	StereoCapture::getInstance()->updateFrames(width, height);
 	cv::Mat frame1, frame2;
 	StereoCapture::getInstance()->getFirstCapture().getCurrentFrame().copyTo(frame1);
@@ -121,8 +110,6 @@ extern "C" bool __declspec(dllexport) __stdcall detectMarkers(unsigned char* fir
 	int threshLevel = StereoCapture::getInstance()->getFirstCapture().getThreshLevel();
 	cv::threshold(gray1, threshFrame1, threshLevel, 255, cv::THRESH_BINARY);
 	cv::threshold(gray2, threshFrame2, threshLevel, 255, cv::THRESH_BINARY);
-	//auto erodedFrame1 = ImgProcUtility::erodeImage(threshFrame1, 1, cv::MORPH_RECT);
-	//auto erodedFrame2 = ImgProcUtility::erodeImage(threshFrame2, 1, cv::MORPH_RECT);
 
 	ImgProcUtility::detectMarkers(threshFrame1, frame1, circles1);
 	ImgProcUtility::detectMarkers(threshFrame2, frame2, circles2);
@@ -161,12 +148,9 @@ extern "C" void __declspec(dllexport) __stdcall realTimeMonitoring(unsigned char
 	}
 
 	std::pair<cv::Mat, cv::Mat> frames = { StereoCapture::getInstance()->getFirstCapture().getCurrentFrame() ,StereoCapture::getInstance()->getSecondCapture().getCurrentFrame() };
-	//std::pair<cv::Mat, cv::Mat> grayFrames = ImgProcUtility::convertFramesToGray(frames);
 
 	StereoCapture::getInstance()->getFirstCapture().updateTracker();
 	StereoCapture::getInstance()->getSecondCapture().updateTracker();
-
-	//auto outBalls = std::vector<ImgProcUtility::Coordinates>(expectedNumberOfMarkers)
 
 	bool result1 = StereoCapture::getInstance()->getFirstCapture().calculateMarkersCoordinates();
 	bool result2 = StereoCapture::getInstance()->getSecondCapture().calculateMarkersCoordinates();

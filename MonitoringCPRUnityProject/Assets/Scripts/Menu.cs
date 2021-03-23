@@ -11,17 +11,17 @@ public class Menu : MonoBehaviour
         Init,
         MainMenu,
         CalibrationMenu,
-        MarkerMovement,
         CaptureCalibrationFrames,
-        CalibrationFramesCheck,
-        Calibration,
+        FrameCheckMenu,
+        SingleCameraCalibrationFramesCheck,
+        StereoCalibrationFramesCheck,
         CalibrationTest,
         Monitoring
     }
-    public void GoToMarkerMovement()
-    {
-        SceneManager.LoadScene((int)Scenes.MarkerMovement);
-    }
+    //public void GoToMarkerMovement()
+    //{
+    //    SceneManager.LoadScene((int)Scenes.MarkerMovement);
+    //}
     public void GoToMonitoring()
     {
         SceneManager.LoadScene((int)Scenes.Monitoring);
@@ -39,9 +39,17 @@ public class Menu : MonoBehaviour
     {
         SceneManager.LoadScene((int)Scenes.CaptureCalibrationFrames);
     }
-    public void GoToCalibrationFramesCheck()
+    public void GoToFrameCheckMenu()
     {
-        SceneManager.LoadScene((int)Scenes.CalibrationFramesCheck);
+        SceneManager.LoadScene((int)Scenes.FrameCheckMenu);
+    }
+    public void GoToSingleCameraCalibrationFramesCheck()
+    {
+        SceneManager.LoadScene((int)Scenes.SingleCameraCalibrationFramesCheck);
+    }
+    public void GoToStereoCalibrationFramesCheck()
+    {
+        SceneManager.LoadScene((int)Scenes.StereoCalibrationFramesCheck);
     }
     public void GoToCalibrationTest()
     {

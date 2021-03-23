@@ -5,12 +5,6 @@ using UnityEngine;
 public class Cylinder : MonoBehaviour
 {
     public GameObject firstMarker, secondMarker;
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -19,8 +13,6 @@ public class Cylinder : MonoBehaviour
         var v3T = transform.localScale;      // Scale it
         v3T.y = (firstMarker.transform.position - secondMarker.transform.position).magnitude/4;
         transform.localScale = v3T;
-
-
         // Rotate it
         transform.rotation = Quaternion.FromToRotation(Vector3.up, firstMarker.transform.position - secondMarker.transform.position);
     }

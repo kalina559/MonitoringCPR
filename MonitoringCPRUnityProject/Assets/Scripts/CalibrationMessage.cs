@@ -14,15 +14,7 @@ public class CalibrationMessage : MonoBehaviour
     int frameCount = 0, seconds = 0;
     bool done = false;
     float timer;
-    string currentSetId;
     int timerSeconds = 0;
-    Time calibrationStart;
-    // Start is called before the first frame update
-    void Start()
-    {        
-
-    }
-
     // Update is called once per frame
     void Update()
     {
@@ -85,13 +77,15 @@ public class CalibrationMessage : MonoBehaviour
         if (thread != null)
             thread.Abort();
     }
-
     public void getCurrentFrameSetId()
     {
-        currentSetId = OpenCVInterop.getStereoFramesSetId();
-        if (PlayerPrefs.GetString("calibrationId") != currentSetId)
+        string currentStereoFramesSetId = OpenCVInterop.getStereoFramesSetId();
+        string currentFirstCameraFramesSet = OpenCVInterop.getSingleCameraFramesSetId(0);
+        string currentSecondCameraFramesSet = OpenCVInterop.getSingleCameraFramesSetId(1);
+        if (PlayerPrefs.GetString("calibrationId") != currentStereoFramesSetId)
         {
-            if (PlayerPrefs.GetString("validationId") == currentSetId)
+            string message = checkForChangesInFolders(currentStereoFramesSetId, currentFirstCameraFramesSet, currentSecondCameraFramesSet);
+            if (message.Length == 0)
             {
                 estimatedTimeInSeconds = OpenCVInterop.getEstimatedCalibrationTime();
                 gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("PRZEWIDYWANY CZAS KALIBRACJI: " + formatTimeInSeconds(estimatedTimeInSeconds));
@@ -99,12 +93,40 @@ public class CalibrationMessage : MonoBehaviour
             }
             else
             {
-                gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("WPROWADZONO ZMIANY W FOLDERACH ZE ZDJĘCIAMI");
+                gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("WPROWADZONO ZMIANY W FOLDERACH ZE ZDJĘCIAMI" + message);
             }
         }
         else
         {
             gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("KALIBRACJA ZOSTAŁA JUŻ PRZEPROWADZONA NA TYM ZESTAWIE ZDJĘĆ");
         }
+    }
+
+    string checkForChangesInFolders(string stereoFrameSetId, string firstCameraFrameSet, string secondCameraFrameSet)
+    {
+        Debug.Log(stereoFrameSetId + "/////"+ firstCameraFrameSet + "/////" +secondCameraFrameSet);
+        string message = "";
+        if(PlayerPrefs.GetString("SingleCameraValidationId0") != firstCameraFrameSet)
+        {
+            message += " DO KALIBRACJI PIERWSZEJ KAMERY";
+        }
+        if (PlayerPrefs.GetString("SingleCameraValidationId1") != secondCameraFrameSet)
+        {
+            if(message.Length > 0)
+            {
+                message += ", ";
+            }
+            message += " DO KALIBRACJI DRUGIEJ KAMERY";
+        }
+        if (PlayerPrefs.GetString("validationId") != stereoFrameSetId)
+        {
+            if (message.Length > 0)
+            {
+                message += ", ";
+            }
+            message += " DO STEREO KALIBRACJI";
+        }
+
+        return message;
     }
 }

@@ -14,7 +14,6 @@ const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 
 std::vector<std::pair<std::string, std::string>> validStereoFramesPaths;
 
-
 extern "C" bool __declspec(dllexport) __stdcall checkStereoCalibrationFrames(int& invalidFramesCount, int& framesWithoutPair, int& totalFramesCount)
 {
 	validStereoFramesPaths.clear();
@@ -80,41 +79,6 @@ extern "C" bool __declspec(dllexport) __stdcall checkStereoCalibrationFrames(int
 
 	return true;     //wszystko git
 }
-//void  checkSingleCameraCalibrationFrames(std::string path)
-//{
-//
-//	int invalid = 0;
-//
-//	std::vector<cv::String> fileNames;
-//	cv::glob(path, fileNames, false);
-//
-//	for (size_t i = 0; i < fileNames.size(); ++i)
-//	{
-//		cv::Mat img = cv::imread(fileNames[i]);
-//
-//		cv::Mat gray;
-//		cvtColor(img, gray, cv::COLOR_BGR2GRAY);
-//		std::vector<cv::Point2f> centers;
-//
-//		cv::SimpleBlobDetector::Params params;
-//		params.minArea = 10;
-//		params.minThreshold = 1;
-//
-//		params.filterByConvexity = 1;
-//		params.minConvexity = 0.5;
-//
-//		cv::Ptr<cv::FeatureDetector> blobDetector = cv::SimpleBlobDetector::create(params);
-//
-//		bool patternFound = findCirclesGrid(gray, arrayOfCirclesSize, centers, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
-//
-//		if (!patternFound)
-//		{
-//			++invalid;
-//			remove(fileNames[i].c_str());
-//		}
-//	}
-//
-//}
 extern "C" void __declspec(dllexport) __stdcall showValidStereoFrame(unsigned char* firstFrameData, unsigned char* secondFrameData)
 {
 	auto firstFrame = cv::imread(validStereoFramesPaths.back().first);
@@ -150,25 +114,6 @@ extern "C" void __declspec(dllexport) __stdcall showValidStereoFrame(unsigned ch
 	std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
 	std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
 }
-
-extern "C" void __declspec(dllexport) __stdcall deleteCurrentStereoFrames()
-{
-	remove(validStereoFramesPaths.back().first.c_str());
-	remove(validStereoFramesPaths.back().second.c_str());
-}
-
-extern "C" bool __declspec(dllexport) __stdcall moveToNextFrames()
-{
-	if (validStereoFramesPaths.size() > 1)
-	{
-		validStereoFramesPaths.pop_back();
-	}
-	else
-	{
-		return false;
-	}
-}
-
 extern "C" void __declspec(dllexport) __stdcall clearStereoCalibrationFramesFolder()
 {
 	std::string command = "del /Q ";
@@ -179,8 +124,22 @@ extern "C" void __declspec(dllexport) __stdcall clearStereoCalibrationFramesFold
 	path = "..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg";
 	system(command.append(path).c_str());
 }
-
-std::string test = "halo";
+extern "C" void __declspec(dllexport) __stdcall deleteCurrentStereoFrames()
+{
+	remove(validStereoFramesPaths.back().first.c_str());
+	remove(validStereoFramesPaths.back().second.c_str());
+}
+extern "C" bool __declspec(dllexport) __stdcall moveToNextStereoFrames()
+{
+	if (validStereoFramesPaths.size() > 1)
+	{
+		validStereoFramesPaths.pop_back();
+	}
+	else
+	{
+		return false;
+	}
+}
 extern "C" __declspec(dllexport) BSTR __stdcall  getStereoFramesSetId()
 {
 	BSTR bs;
@@ -209,46 +168,20 @@ extern "C" __declspec(dllexport) BSTR __stdcall  getStereoFramesSetId()
 	bs = SysAllocString(L"");
 	return SysAllocString(bs);
 }
-
-//extern "C" void __declspec(dllexport) __stdcall  saveId(std::string path)
-//{
-//	auto currentFrameSetId = ImgProcUtility::getId();
-//	std::ofstream outputFile;
-//	outputFile.open(path);
-//	outputFile << currentFrameSetId;
-//	outputFile.close();
-//
-//}
-//extern "C" bool __declspec(dllexport) __stdcall  checkId()
-//{
-//	std::string validatedFrameSetId;
-//	std::ifstream inputFile;
-//	inputFile.open("validatedFrameSetId.txt");
-//	inputFile >> validatedFrameSetId;
-//	inputFile.close();
-//
-//	return validatedFrameSetId == ImgProcUtility::getId();
-//}
-
 extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount, int& time, bool& isFinished)
 {
 	Uint32 start_ticks = SDL_GetTicks();
-	std::vector<cv::Mat> images1, images2/*, singleFrames1, singleFrames2*/;
+	std::vector<cv::Mat> images1, images2, singleFrames1, singleFrames2;
 
 	CameraCalibration::loadPhotos("..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg", images1);
 	CameraCalibration::loadPhotos("..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg", images2);
 
-	/*checkSingleCameraCalibrationFrames("..\\MonitoringCPR\\images\\Calibration\\singleCamera\\UnityFirstCam\\*.jpg");
-	checkSingleCameraCalibrationFrames("..\\MonitoringCPR\\images\\Calibration\\singleCamera\\UnitySecondCam\\*.jpg");
-
-	CameraCalibration::loadPhotos("..\\MonitoringCPR\\images\\Calibration\\singleCamera\\UnityFirstCam\\*.jpg", singleFrames1);
-	CameraCalibration::loadPhotos("..\\MonitoringCPR\\images\\Calibration\\singleCamera\\UnitySecondCam\\*.jpg", singleFrames2);*/
-
-
+	CameraCalibration::loadPhotos("..\\MonitoringCPR\\images\\Calibration\\SingleCamera\\UnityFirstCam\\*.jpg", singleFrames1);
+	CameraCalibration::loadPhotos("..\\MonitoringCPR\\images\\Calibration\\SingleCamera\\UnitySecondCam\\*.jpg", singleFrames2);
 
 	cv::Mat firstCamCoeffs, secondCamCoeffs, firstCamMatrix, secondCamMatrix;
 
-	CameraCalibration::getSingleCamerasCoeffs(images1, images2, arrayOfCirclesSize, distanceBetweenCircles, firstCamMatrix, secondCamMatrix, firstCamCoeffs, secondCamCoeffs);
+	CameraCalibration::getSingleCamerasCoeffs(singleFrames1, singleFrames2, arrayOfCirclesSize, distanceBetweenCircles, firstCamMatrix, secondCamMatrix, firstCamCoeffs, secondCamCoeffs);
 
 	cv::Mat R, T, E, F;
 
@@ -284,4 +217,155 @@ extern "C" int __declspec(dllexport) __stdcall  getEstimatedCalibrationTime()
 	double estimatedTime = 0.0004 * pow(x, 3) + 0.0216 * pow(x, 2) - 0.5134 * x + 2.8644;
 
 	return ceil(estimatedTime);
+}
+
+//KALIBRACJA POJEDYNCZYCH KAMER:
+std::vector<std::string> validSingleCameraFramesPaths;
+
+extern "C" void __declspec(dllexport) __stdcall showValidSingleFrame(unsigned char* data)
+{
+	auto frame = cv::imread(validSingleCameraFramesPaths.back());
+
+	cv::Mat gray;
+	cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+	std::vector<cv::Point2f> centers;
+
+	cv::SimpleBlobDetector::Params params;
+	params.minArea = 10;
+	params.minThreshold = 1;
+
+	params.filterByConvexity = 1;
+	params.minConvexity = 0.5;
+
+	cv::Ptr<cv::FeatureDetector> blobDetector = cv::SimpleBlobDetector::create(params);
+
+	bool patternFound1 = findCirclesGrid(gray, arrayOfCirclesSize, centers, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
+
+	drawChessboardCorners(frame, arrayOfCirclesSize, cv::Mat(centers), patternFound1);
+
+	cv::Mat argbImg;
+	cv::cvtColor(frame, argbImg, cv::COLOR_BGR2RGBA);
+	std::memcpy(data, argbImg.data, argbImg.total() * argbImg.elemSize());
+}
+extern "C" bool __declspec(dllexport) __stdcall  checkSingleCameraCalibrationFrames(int& invalidFramesCount, int& totalFramesCount, int cameraId)
+{
+	std::string path;
+	if (cameraId == 0)
+	{
+		path = "../MonitoringCPR/images/Calibration/SingleCamera/UnityFirstCam/";
+	}
+	else
+	{
+		path = "../MonitoringCPR/images/Calibration/SingleCamera/UnitySecondCam/";
+	}
+	int invalid = 0;
+
+	std::vector<cv::String> fileNames;
+	cv::glob(path, fileNames, false);
+
+	for (size_t i = 0; i < fileNames.size(); ++i)
+	{
+		cv::Mat img = cv::imread(fileNames[i]);
+
+		cv::Mat gray;
+		cvtColor(img, gray, cv::COLOR_BGR2GRAY);
+		std::vector<cv::Point2f> centers;
+
+		cv::SimpleBlobDetector::Params params;
+		params.minArea = 10;
+		params.minThreshold = 1;
+
+		params.filterByConvexity = 1;
+		params.minConvexity = 0.5;
+
+		cv::Ptr<cv::FeatureDetector> blobDetector = cv::SimpleBlobDetector::create(params);
+
+		bool patternFound = findCirclesGrid(gray, arrayOfCirclesSize, centers, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
+
+		if (patternFound)
+		{
+			validSingleCameraFramesPaths.push_back(fileNames[i]);
+		}
+		else
+		{
+			++invalid;
+			remove(fileNames[i].c_str());
+		}
+	}
+
+	totalFramesCount = fileNames.size();
+	invalidFramesCount = invalid;
+
+	if (invalid == totalFramesCount)
+	{
+		return false;  //brak poprawnych zdjec
+	}
+	return true;     //wszystko git
+}
+extern "C" void __declspec(dllexport) __stdcall deleteCurrentSingleCameraFrame()
+{
+	remove(validSingleCameraFramesPaths.back().c_str());
+}
+extern "C" bool __declspec(dllexport) __stdcall moveToNextSingleCameraFrame()
+{
+	if (validSingleCameraFramesPaths.size() > 1)
+	{
+		validSingleCameraFramesPaths.pop_back();
+	}
+	else
+	{
+		return false;
+	}
+}
+extern "C" void __declspec(dllexport) __stdcall clearSingleCameraFramesFolder(int cameraId)
+{
+	std::string command = "del /Q ";
+	std::string path;
+	if (cameraId == 0)
+	{
+		path = "../MonitoringCPR/images/Calibration/SingleCamera/UnityFirstCam/";
+	}
+	else
+	{
+		path = "../MonitoringCPR/images/Calibration/SingleCamera/UnitySecondCam/";
+	}
+	system(command.append(path).c_str());
+}
+
+extern "C" __declspec(dllexport) BSTR __stdcall  getSingleCameraFramesSetId(int cameraId)
+{
+	BSTR bs;
+	std::string path;
+	if (cameraId == 0)
+	{
+		path = "../MonitoringCPR/images/Calibration/SingleCamera/UnityFirstCam/";
+	}
+	else
+	{
+		path = "../MonitoringCPR/images/Calibration/SingleCamera/UnitySecondCam/";
+	}
+	std::vector<cv::String> fileNames;
+
+	cv::glob(path, fileNames, false);
+
+	std::wstring outDigitString;
+	if (fileNames.size() != 0)
+	{
+		for (int i = 0; i < fileNames.size(); ++i)
+		{
+			auto fileName = std::filesystem::path(fileNames[i]).filename();
+			std::wstring fileNameStr{ fileName.wstring() };
+
+			outDigitString += fileNameStr;
+		}
+		bs = SysAllocStringLen(outDigitString.data(), outDigitString.size());
+		return SysAllocString(bs);
+	}
+	bs = SysAllocString(L"");
+	return SysAllocString(bs);
+}
+
+extern "C" void __declspec(dllexport) __stdcall  clearSingleCameraFramesVector()
+{
+	validSingleCameraFramesPaths.clear();
 }

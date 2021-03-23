@@ -29,7 +29,6 @@ public class MarkerTracking : MonoBehaviour
     Int64 f, s;
     protected void Update()
     {
-        Debug.Log("e" + expectedNumberOfMarkerPairs);
         MatToTexture2D();
         MonitoringUtils.setStartButtonText(beginTracking, changeModeButton);
         checkFPS();
@@ -96,7 +95,7 @@ public class MarkerTracking : MonoBehaviour
         if (frameCount % 10 == 0)
         {
             float now = Time.time;
-            //Debug.Log("fps: " + frameCount / (now - lastTimeStamp));
+            Debug.Log("fps: " + frameCount / (now - lastTimeStamp));
             lastTimeStamp = now;
             frameCount = 0;
         }
@@ -136,10 +135,10 @@ public class MarkerTracking : MonoBehaviour
         firstFrame.texture = textures.Item1;
         secondFrame.texture = textures.Item2;
 
-        int camWidth = 0, camHeight = 0;
-        int result = OpenCVInterop.Init(ref camWidth, ref camHeight);
+       // int camWidth = 0, camHeight = 0;
+        //int result = OpenCVInterop.Init(ref camWidth, ref camHeight);
 
-        MonitoringUtils.checkInitResult(result);
+        //MonitoringUtils.checkInitResult(result);
 
         _balls = new CvCoordinates[expectedNumberOfMarkerPairs]; //tworzymy bufor o podanej wielkoœci
     }

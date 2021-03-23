@@ -160,7 +160,7 @@ double CameraCalibration::stereoCalibration(std::vector<cv::Mat> images1, std::v
 	worldSpaceCircleCenters.resize(images1.size(), worldSpaceCircleCenters[0]);
 
 	double rms = stereoCalibrate(worldSpaceCircleCenters, centers1, centers2, firstCamMatrix, firstCamCoeffs, secondCamMatrix,
-		secondCamCoeffs, cv::Size(1224, 1024), R, T, E, F, cv::CALIB_USE_INTRINSIC_GUESS, cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-6));
+		secondCamCoeffs, cv::Size(1224, 1024), R, T, E, F, cv::CALIB_FIX_INTRINSIC, cv::TermCriteria(cv::TermCriteria::COUNT + cv::TermCriteria::EPS, 30, 1e-6));
 	//std::cout << "after stereo" << std::endl;
 	CameraCalibration::saveMatrix("matrices/stereoCalibration/R", R);
 	CameraCalibration::saveMatrix("matrices/stereoCalibration/T", T);  //todo te sciezki jako const string
