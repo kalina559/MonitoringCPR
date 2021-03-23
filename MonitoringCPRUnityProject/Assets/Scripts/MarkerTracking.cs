@@ -24,7 +24,7 @@ public class MarkerTracking : MonoBehaviour
     protected CvCoordinates[] _balls;
     int threshValue;
     protected int expectedNumberOfMarkerPairs;
-    Int64 delay;
+    protected Int64 delay;
     protected void Update()
     {
         MatToTexture2D();

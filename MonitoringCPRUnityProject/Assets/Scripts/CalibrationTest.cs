@@ -30,7 +30,7 @@ public class CalibrationTest : MarkerTracking
         distance = calculateDistanceBetweenMarkers(0, 1);
         detectedDistance.SetText("Odległość: " + Math.Round(distance * 1000, 2).ToString());
         detectedError.SetText("Błąd: " + Math.Round(Math.Abs(PlayerPrefs.GetInt("expectedLength") - distance * 1000), 2).ToString());
-        string newLine = String.Format("{0};{1};{2}", DateTime.Now.ToString("HH:mm:ss:fff"), Math.Abs(PlayerPrefs.GetInt("expectedLength") - distance * 1000), distance * 1000);
+        string newLine = String.Format("{0};{1};{2};{3}", DateTime.Now.ToString("HH:mm:ss:fff"), Math.Abs(PlayerPrefs.GetInt("expectedLength") - distance * 1000), distance * 1000, delay);
         writetext.WriteLine(newLine);
     }   
     public void openExpectedLengthMenu()
