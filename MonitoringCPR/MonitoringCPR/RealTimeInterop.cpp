@@ -73,16 +73,16 @@ extern "C" void __declspec(dllexport) __stdcall saveCurrentFrames(int captureMod
 	std::replace(timestamp.begin(), timestamp.end(), '/', '_');
 	if (captureMode == 0)
 	{
-		cv::imwrite("../MonitoringCPR/images/Calibration/SingleCamera/UnityFirstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
+		cv::imwrite("../MonitoringCPR/CalibrationImages/SingleCamera/firstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
 	}
 	else if (captureMode == 1)
 	{
-		cv::imwrite("../MonitoringCPR/images/Calibration/SingleCamera/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
+		cv::imwrite("../MonitoringCPR/CalibrationImages/SingleCamera/secondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
 	}
 	else if (captureMode == 2)
 	{
-		cv::imwrite("../MonitoringCPR/images/Calibration/UnityFirstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
-		cv::imwrite("../MonitoringCPR/images/Calibration/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
+		cv::imwrite("../MonitoringCPR/CalibrationImages/Stereo/firstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
+		cv::imwrite("../MonitoringCPR/CalibrationImages/Stereo/secondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
 	}
 	//cv::imwrite("../MonitoringCPR/images/Calibration/UnityFirstCam/" + timestamp, StereoCapture::getInstance()->getFirstCapture().getCurrentFrame());
 	//cv::imwrite("../MonitoringCPR/images/Calibration/UnitySecondCam/" + timestamp, StereoCapture::getInstance()->getSecondCapture().getCurrentFrame());
@@ -130,7 +130,7 @@ extern "C" void __declspec(dllexport) __stdcall setExpectedNumberOfMarkerPairs(i
 	StereoCapture::getInstance()->setExpectedNumberOfMarkerPairs(number);
 }
 
-extern "C" void __declspec(dllexport) __stdcall realTimeMonitoring(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height, ImgProcUtility::Coordinates * outBalls, bool& beginTracking, int64& f, int64&s) // w parametrach powinno byc jeszcze frames.first i frames.second, tak zeby mozna bylo wyswietlac je w unity
+extern "C" void __declspec(dllexport) __stdcall realTimeMonitoring(unsigned char* firstFrameData, unsigned char* secondFrameData, int width, int height, ImgProcUtility::Coordinates * outBalls, bool& beginTracking, int64& delay) // w parametrach powinno byc jeszcze frames.first i frames.second, tak zeby mozna bylo wyswietlac je w unity
 {
 	cv::Mat firstCameraFrame, secondCameraFrame, croppedImg1, croppedImg2,
 		threshImg1, threshImg2, croppedColor1, croppedColor2;
@@ -138,7 +138,7 @@ extern "C" void __declspec(dllexport) __stdcall realTimeMonitoring(unsigned char
 	std::vector<cv::Vec3f> v3fCircles1, v3fCircles2;
 	std::vector<cv::Vec3f> circles1, circles2;
 
-	StereoCapture::getInstance()->updateFrames(width, height, f, s);
+	StereoCapture::getInstance()->updateFrames(width, height, delay);
 
 	if (!StereoCapture::getInstance()->getTrackingState())       //jesli jeszcze nie zaczeto trackowania, inicjalizacja multitrackerow
 	{

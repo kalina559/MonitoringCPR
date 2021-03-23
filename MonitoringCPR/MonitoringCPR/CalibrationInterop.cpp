@@ -14,11 +14,16 @@ const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 
 std::vector<std::pair<std::string, std::string>> validStereoFramesPaths;
 
+enum singleCameraId
+{
+	firstCamera,
+	secondCamera
+};
 extern "C" bool __declspec(dllexport) __stdcall checkStereoCalibrationFrames(int& invalidFramesCount, int& framesWithoutPair, int& totalFramesCount)
 {
 	validStereoFramesPaths.clear();
-	std::string path1 = "../MonitoringCPR/images/Calibration/UnityFirstCam/";
-	std::string path2 = "../MonitoringCPR/images/Calibration/UnitySecondCam/";
+	std::string path1 = "../MonitoringCPR/CalibrationImages/Stereo/firstCam/";
+	std::string path2 = "../MonitoringCPR/CalibrationImages/Stereo/secondCam/";
 	std::string imgFormat = "*.jpg";
 
 	auto singleFrames = CameraCalibration::checkFramesPairs(path1, path2, imgFormat);
@@ -117,11 +122,11 @@ extern "C" void __declspec(dllexport) __stdcall showValidStereoFrame(unsigned ch
 extern "C" void __declspec(dllexport) __stdcall clearStereoCalibrationFramesFolder()
 {
 	std::string command = "del /Q ";
-	std::string path = "..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg";
+	std::string path = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg";
 	system(command.append(path).c_str());
 
 	command = "del /Q ";
-	path = "..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg";
+	path = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\secondCam\\*.jpg";
 	system(command.append(path).c_str());
 }
 extern "C" void __declspec(dllexport) __stdcall deleteCurrentStereoFrames()
@@ -143,8 +148,8 @@ extern "C" bool __declspec(dllexport) __stdcall moveToNextStereoFrames()
 extern "C" __declspec(dllexport) BSTR __stdcall  getStereoFramesSetId()
 {
 	BSTR bs;
-	std::string firstPath = "..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg";
-	std::string secondPath = "..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg";
+	std::string firstPath = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg";
+	std::string secondPath = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\secondCam\\*.jpg";
 	std::vector<cv::String> fileNames1, fileNames2;
 
 	cv::glob(firstPath, fileNames1, false); //todo wrzucic to w imgprocutility 
@@ -173,11 +178,11 @@ extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount,
 	Uint32 start_ticks = SDL_GetTicks();
 	std::vector<cv::Mat> images1, images2, singleFrames1, singleFrames2;
 
-	CameraCalibration::loadPhotos("..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg", images1);
-	CameraCalibration::loadPhotos("..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg", images2);
+	CameraCalibration::loadPhotos("..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg", images1);
+	CameraCalibration::loadPhotos("..\\MonitoringCPR\\CalibrationImages\\Stereo\\secondCam\\*.jpg", images2);
 
-	CameraCalibration::loadPhotos("..\\MonitoringCPR\\images\\Calibration\\SingleCamera\\UnityFirstCam\\*.jpg", singleFrames1);
-	CameraCalibration::loadPhotos("..\\MonitoringCPR\\images\\Calibration\\SingleCamera\\UnitySecondCam\\*.jpg", singleFrames2);
+	CameraCalibration::loadPhotos("..\\MonitoringCPR\\CalibrationImages\\SingleCamera\\firstCam\\*.jpg", singleFrames1);
+	CameraCalibration::loadPhotos("..\\MonitoringCPR\\CalibrationImages\\SingleCamera\\secondCam\\*.jpg", singleFrames2);
 
 	cv::Mat firstCamCoeffs, secondCamCoeffs, firstCamMatrix, secondCamMatrix;
 
@@ -207,7 +212,7 @@ extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount,
 
 extern "C" int __declspec(dllexport) __stdcall  getEstimatedCalibrationTime()
 {
-	std::string firstPath = "..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg";
+	std::string firstPath = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg";
 	std::vector<cv::String> fileNames1;
 	cv::glob(firstPath, fileNames1, false); //todo wrzucic to w imgprocutility 
 
@@ -250,13 +255,14 @@ extern "C" void __declspec(dllexport) __stdcall showValidSingleFrame(unsigned ch
 extern "C" bool __declspec(dllexport) __stdcall  checkSingleCameraCalibrationFrames(int& invalidFramesCount, int& totalFramesCount, int cameraId)
 {
 	std::string path;
-	if (cameraId == 0)
+	validSingleCameraFramesPaths.clear();
+	if (cameraId == singleCameraId::firstCamera)
 	{
-		path = "../MonitoringCPR/images/Calibration/SingleCamera/UnityFirstCam/";
+		path = "../MonitoringCPR/CalibrationImages/SingleCamera/firstCam/";
 	}
-	else
+	else if(singleCameraId::secondCamera)
 	{
-		path = "../MonitoringCPR/images/Calibration/SingleCamera/UnitySecondCam/";
+		path = "../MonitoringCPR/CalibrationImages/SingleCamera/secondCam/";
 	}
 	int invalid = 0;
 
@@ -321,13 +327,13 @@ extern "C" void __declspec(dllexport) __stdcall clearSingleCameraFramesFolder(in
 {
 	std::string command = "del /Q ";
 	std::string path;
-	if (cameraId == 0)
+	if (cameraId == singleCameraId::firstCamera)
 	{
-		path = "../MonitoringCPR/images/Calibration/SingleCamera/UnityFirstCam/";
+		path = "..\\MonitoringCPR\\CalibrationImages\\SingleCamera\\firstCam\\*.jpg";
 	}
-	else
+	else if (singleCameraId::secondCamera)
 	{
-		path = "../MonitoringCPR/images/Calibration/SingleCamera/UnitySecondCam/";
+		path = "..\\MonitoringCPR\\CalibrationImages\\SingleCamera\\secondCam\\*.jpg";
 	}
 	system(command.append(path).c_str());
 }
@@ -336,13 +342,13 @@ extern "C" __declspec(dllexport) BSTR __stdcall  getSingleCameraFramesSetId(int 
 {
 	BSTR bs;
 	std::string path;
-	if (cameraId == 0)
+	if (cameraId == singleCameraId::firstCamera)
 	{
-		path = "../MonitoringCPR/images/Calibration/SingleCamera/UnityFirstCam/";
+		path = "../MonitoringCPR/CalibrationImages/SingleCamera/firstCam/";
 	}
-	else
+	else if (singleCameraId::secondCamera)
 	{
-		path = "../MonitoringCPR/images/Calibration/SingleCamera/UnitySecondCam/";
+		path = "../MonitoringCPR/CalibrationImages/SingleCamera/secondCam/";
 	}
 	std::vector<cv::String> fileNames;
 
@@ -363,9 +369,4 @@ extern "C" __declspec(dllexport) BSTR __stdcall  getSingleCameraFramesSetId(int 
 	}
 	bs = SysAllocString(L"");
 	return SysAllocString(bs);
-}
-
-extern "C" void __declspec(dllexport) __stdcall  clearSingleCameraFramesVector()
-{
-	validSingleCameraFramesPaths.clear();
 }

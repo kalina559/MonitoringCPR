@@ -7,7 +7,7 @@ using TMPro;
 using System.Threading;
 public class SingleCameraCalibrationFrameCheck : MonoBehaviour
 {
-    public TMP_Dropdown captureMode;
+    public TMP_Dropdown cameraId;
     private Texture2D tex;
     private Color32[] pixel32;
     private GCHandle pixelHandle;
@@ -20,7 +20,6 @@ public class SingleCameraCalibrationFrameCheck : MonoBehaviour
     private int currentPairNumber = 1;
     private int validPairsCount;
     Thread thread;
-    bool checkFinished = true;
     bool checkResult;
 
     void Start()
@@ -32,7 +31,7 @@ public class SingleCameraCalibrationFrameCheck : MonoBehaviour
     }
     private void Update()
     {
-        if (thread != null && !thread.IsAlive && checkFinished)     //when frameCheck is finished
+        if (thread != null && !thread.IsAlive)     //when frameCheck is finished
         {
             if (checkResult)
             {
@@ -45,10 +44,9 @@ public class SingleCameraCalibrationFrameCheck : MonoBehaviour
             }
             else
             {
-                errorMessagePanel.GetComponentInChildren<TextMeshProUGUI>().SetText("Nie znaleziono ¿adnej poprawnej pary zdjêæ");
+                errorMessagePanel.GetComponentInChildren<TextMeshProUGUI>(true).SetText("Nie znaleziono ¿adnego poprawnego zdjêcia");
                 errorMessagePanel.GetComponentInChildren<Button>(true).gameObject.SetActive(true);
             }
-            checkFinished = false;
         }
     }
     void InitTexture()
@@ -70,7 +68,7 @@ public class SingleCameraCalibrationFrameCheck : MonoBehaviour
     }
     private void updateLabels()
     {
-        messageLabel.SetText("Liczba znalezionych par zdjêæ: " + totalFrames + "\nLiczba usuniêtych par nieprawid³owych zdjêæ: " + invalidFrames);
+        messageLabel.SetText("Liczba znalezionych zdjêæ: " + totalFrames + "\nLiczba usuniêtych nieprawid³owych zdjêæ: " + invalidFrames);
         frameNumberLabel.SetText(currentPairNumber + " / " + validPairsCount);
     }
     private void OnDisable()
@@ -94,7 +92,7 @@ public class SingleCameraCalibrationFrameCheck : MonoBehaviour
         }
         else
         {
-            PlayerPrefs.SetString("SingleCameraValidationId" + captureMode.value, OpenCVInterop.getSingleCameraFramesSetId(captureMode.value));
+            PlayerPrefs.SetString("SingleCameraValidationId" + cameraId.value, OpenCVInterop.getSingleCameraFramesSetId(cameraId.value));
             SceneManager.LoadScene((int)Menu.Scenes.FrameCheckMenu);
         }
     }
@@ -107,13 +105,13 @@ public class SingleCameraCalibrationFrameCheck : MonoBehaviour
         moveToNextFrame();
     }
     public void startFrameCheckThread()
-    {
-        OpenCVInterop.clearSingleCameraFramesVector();
+    {        
         thread = new Thread(frameCheck);
         thread.Start();
     }
     void frameCheck()
     {
-        checkResult = OpenCVInterop.checkSingleCameraCalibrationFrames(ref invalidFrames, ref totalFrames, captureMode.value);
+        checkResult = OpenCVInterop.checkSingleCameraCalibrationFrames(ref invalidFrames, ref totalFrames, cameraId.value);
+        currentPairNumber = 1;
     }
 }

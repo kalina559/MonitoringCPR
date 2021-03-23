@@ -26,7 +26,7 @@ public class MarkerTracking : MonoBehaviour
     protected CvCoordinates[] _balls;
     int threshValue;
     protected int expectedNumberOfMarkerPairs;
-    Int64 f, s;
+    Int64 delay;
     protected void Update()
     {
         MatToTexture2D();
@@ -39,7 +39,6 @@ public class MarkerTracking : MonoBehaviour
     }
     protected void MatToTexture2D()
     {
-        Debug.Log("matTexture");
         var textures = display.getTextures();
         var pixelPtrs = display.getPixelPtrs();
         if (adjustThreshLevel == true)
@@ -102,13 +101,12 @@ public class MarkerTracking : MonoBehaviour
     }
     protected void readMarkerCoordinates(Tuple<Texture2D, Texture2D> textures, Tuple<IntPtr, IntPtr> pixelPtrs)
     {
-        Debug.Log("readMarkerCoords");
         unsafe
         {
             fixed (CvCoordinates* outBalls = _balls)
             {
-                OpenCVInterop.realTimeMonitoring(pixelPtrs.Item1, pixelPtrs.Item2, textures.Item1.width, textures.Item2.height, outBalls, ref beginTracking, ref f, ref s) ;
-                Debug.Log("first timestamp: " + f + " second timestamp: " + s);
+                OpenCVInterop.realTimeMonitoring(pixelPtrs.Item1, pixelPtrs.Item2, textures.Item1.width, textures.Item2.height, outBalls, ref beginTracking, ref delay) ;
+                Debug.Log("delay between frames:" + delay);
             }
         }
     }
@@ -134,12 +132,6 @@ public class MarkerTracking : MonoBehaviour
         var textures = display.getTextures();
         firstFrame.texture = textures.Item1;
         secondFrame.texture = textures.Item2;
-
-       // int camWidth = 0, camHeight = 0;
-        //int result = OpenCVInterop.Init(ref camWidth, ref camHeight);
-
-        //MonitoringUtils.checkInitResult(result);
-
         _balls = new CvCoordinates[expectedNumberOfMarkerPairs]; //tworzymy bufor o podanej wielkoœci
     }
 }

@@ -77,4 +77,20 @@ public class CalibrationFramesCapture
         //PlayerPrefs.SetInt("CalibrationValidate", 0);
         OpenCVInterop.saveCurrentFrames(captureMode.value);
     }
+
+    public void clearCalibrationFramesFolder()
+    {
+        if (captureMode.value == 0)
+        {
+            OpenCVInterop.clearSingleCameraFramesFolder(0);
+        }
+        else if (captureMode.value == 1)
+        {
+            OpenCVInterop.clearSingleCameraFramesFolder(1);
+        }
+        else if(captureMode.value == 2)
+        {
+            OpenCVInterop.clearStereoCalibrationFramesFolder();
+        }
+    }
 }

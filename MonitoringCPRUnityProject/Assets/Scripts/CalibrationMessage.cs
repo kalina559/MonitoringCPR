@@ -126,7 +126,6 @@ public class CalibrationMessage : MonoBehaviour
             }
             message += " DO STEREO KALIBRACJI";
         }
-
         return message;
     }
 }

@@ -64,15 +64,15 @@ void StereoCapture::updateFrames(int width, int height)
 	first.setCurrentFrame(firstResizedMat);
 	second.setCurrentFrame(secondResizedMat);
 }
-void StereoCapture::updateFrames(int width, int height, int64& firstTimeStamp, int64& secondTimeStamp)
+void StereoCapture::updateFrames(int width, int height, int64& delay)
 {
 	cv::Mat firstFrame = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
 	cv::Mat secondFrame = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
 
-	first.getCamera()->getFrame(firstFrame.data);
-	firstTimeStamp = GetTickCount64();
+	int64 firstTimeStamp = GetTickCount64();
+	first.getCamera()->getFrame(firstFrame.data);	
 	second.getCamera()->getFrame(secondFrame.data);
-	secondTimeStamp = GetTickCount64();
+	delay = GetTickCount64() - firstTimeStamp;
 
 	cv::Mat firstResizedMat(height, width, firstFrame.type());
 	cv::Mat secondResizedMat(height, width, secondFrame.type());

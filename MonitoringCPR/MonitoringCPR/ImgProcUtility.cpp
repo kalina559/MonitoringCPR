@@ -359,8 +359,8 @@ void ImgProcUtility::displayDistanceBetweenMarkers(cv::Mat& displayMatrix, std::
 }
 std::string ImgProcUtility::getId()
 {
-	std::string firstPath = "..\\MonitoringCPR\\images\\Calibration\\UnityFirstCam\\*.jpg";
-	std::string secondPath = "..\\MonitoringCPR\\images\\Calibration\\UnitySecondCam\\*.jpg";
+	std::string firstPath = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg";
+	std::string secondPath = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\secondCam\\*.jpg";
 	std::vector<cv::String> fileNames1, fileNames2;
 
 	cv::glob(firstPath, fileNames1, false); //todo wrzucic to w imgprocutility 
