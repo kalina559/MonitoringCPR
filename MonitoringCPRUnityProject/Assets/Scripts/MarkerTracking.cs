@@ -9,10 +9,8 @@ public class MarkerTracking : MonoBehaviour
 {
     frameDisplay display;
     //Game Objects
-    public GameObject thresholdMenu;
-    public GameObject mainMenu;
+    public GameObject thresholdMenu, mainMenu, changeModeButton;
     public TextMeshProUGUI threshLevelDisplay;
-    public GameObject changeModeButton;
     public List<GameObject> markers;
     public RawImage firstFrame, secondFrame;
     //used to count fps

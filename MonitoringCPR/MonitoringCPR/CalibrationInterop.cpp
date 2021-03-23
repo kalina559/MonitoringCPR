@@ -236,7 +236,6 @@ extern "C" void __declspec(dllexport) __stdcall showValidSingleFrame(unsigned ch
 	std::vector<cv::Point2f> centers;
 
 	cv::SimpleBlobDetector::Params params;
-	params.minArea = 10;
 	params.minThreshold = 1;
 
 	params.filterByConvexity = 1;
@@ -260,7 +259,7 @@ extern "C" bool __declspec(dllexport) __stdcall  checkSingleCameraCalibrationFra
 	{
 		path = "../MonitoringCPR/CalibrationImages/SingleCamera/firstCam/";
 	}
-	else if(singleCameraId::secondCamera)
+	else if(cameraId == singleCameraId::secondCamera)
 	{
 		path = "../MonitoringCPR/CalibrationImages/SingleCamera/secondCam/";
 	}
@@ -278,9 +277,7 @@ extern "C" bool __declspec(dllexport) __stdcall  checkSingleCameraCalibrationFra
 		std::vector<cv::Point2f> centers;
 
 		cv::SimpleBlobDetector::Params params;
-		params.minArea = 10;
 		params.minThreshold = 1;
-
 		params.filterByConvexity = 1;
 		params.minConvexity = 0.5;
 

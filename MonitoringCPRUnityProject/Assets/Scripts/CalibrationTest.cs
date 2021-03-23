@@ -6,6 +6,8 @@ using System;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System.IO;
+
 
 public class CalibrationTest : MarkerTracking
 {
@@ -14,19 +16,22 @@ public class CalibrationTest : MarkerTracking
     public TextMeshProUGUI detectedDistance;
     public TextMeshProUGUI detectedError;
     public TMP_InputField expectedLength;
-
+    StreamWriter writetext;
     double distance = 0;
 
     void Start()
     {
         expectedNumberOfMarkerPairs = 2;
         initializeScene();
+        writetext = new StreamWriter("savedData/calibrationError.txt");
     }
     protected override void useMarkerCoordinates()
     {
         distance = calculateDistanceBetweenMarkers(0, 1);
         detectedDistance.SetText("Odległość: " + Math.Round(distance * 1000, 2).ToString());
         detectedError.SetText("Błąd: " + Math.Round(Math.Abs(PlayerPrefs.GetInt("expectedLength") - distance * 1000), 2).ToString());
+        string newLine = String.Format("{0};{1};{2}", DateTime.Now.ToString("HH:mm:ss:fff"), Math.Abs(PlayerPrefs.GetInt("expectedLength") - distance * 1000), distance * 1000);
+        writetext.WriteLine(newLine);
     }   
     public void openExpectedLengthMenu()
     {

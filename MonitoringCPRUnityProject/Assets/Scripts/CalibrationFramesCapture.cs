@@ -7,29 +7,18 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 
-public class CalibrationFramesCapture
-    : MonoBehaviour
+public class CalibrationFramesCapture    : MonoBehaviour
 {
-    private Texture2D firstTex;
-    private Texture2D secondTex;
-
-    private Color32[] firstPixel32;
-    private Color32[] secondPixel32;
-
-    private GCHandle firstPixelHandle;
-    private GCHandle secondPixelHandle;
-
-    private IntPtr firstPixelPtr;
-    private IntPtr secondPixelPtr;
+    frameDisplay display;
     private bool _ready;
     public TMP_Dropdown captureMode;
+
     void Start()
     {
-
-        Debug.Log("displayImage start");
+        display = new frameDisplay();
         InitTexture();
-        GameObject.Find("firstFrame").GetComponent<RawImage>().texture = firstTex;
-        GameObject.Find("secondFrame").GetComponent<RawImage>().texture = secondTex;
+        GameObject.Find("firstFrame").GetComponent<RawImage>().texture = display.getTextures().Item1;
+        GameObject.Find("secondFrame").GetComponent<RawImage>().texture = display.getTextures().Item2;
         _ready = true;
     }
     void Update()
@@ -42,39 +31,22 @@ public class CalibrationFramesCapture
     }
     void InitTexture()
     {
-        firstTex = new Texture2D(640, 480, TextureFormat.ARGB32, false);
-        secondTex = new Texture2D(640, 480, TextureFormat.ARGB32, false);
-        firstPixel32 = firstTex.GetPixels32();
-        secondPixel32 = secondTex.GetPixels32();
-        //Pin pixel32 array
-        firstPixelHandle = GCHandle.Alloc(firstPixel32, GCHandleType.Pinned);
-        secondPixelHandle = GCHandle.Alloc(secondPixel32, GCHandleType.Pinned);
-        //Get the pinned address
-        firstPixelPtr = firstPixelHandle.AddrOfPinnedObject();
-        secondPixelPtr = secondPixelHandle.AddrOfPinnedObject();
+        display.Init();
     }
 
     void MatToTexture2D()
     {
-        //Convert Mat to Texture2D
-        OpenCVInterop.GetCalibrationFrame(firstPixelPtr, secondPixelPtr, firstTex.width, firstTex.height);
-        //Update the Texture2D with array updated in C++
-        firstTex.SetPixels32(firstPixel32);
-        secondTex.SetPixels32(secondPixel32);
-        firstTex.Apply();
-        secondTex.Apply();
+        OpenCVInterop.GetCalibrationFrame(display.getPixelPtrs().Item1, display.getPixelPtrs().Item2, display.getTextures().Item1.width, display.getTextures().Item2.height);
+        display.updateTextures();
     }
     private void OnDisable()
     {
-        //Free handle
-        firstPixelHandle.Free();
-        secondPixelHandle.Free();
+        display.freeHandles();
         Debug.Log("Freed textures in onDisable displayImage");
     }
 
     public void SaveFrames()
     {
-        //PlayerPrefs.SetInt("CalibrationValidate", 0);
         OpenCVInterop.saveCurrentFrames(captureMode.value);
     }
 
@@ -88,7 +60,7 @@ public class CalibrationFramesCapture
         {
             OpenCVInterop.clearSingleCameraFramesFolder(1);
         }
-        else if(captureMode.value == 2)
+        else if (captureMode.value == 2)
         {
             OpenCVInterop.clearStereoCalibrationFramesFolder();
         }

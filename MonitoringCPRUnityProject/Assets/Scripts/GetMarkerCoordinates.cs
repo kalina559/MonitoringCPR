@@ -8,6 +8,19 @@ using TMPro;
 using System.IO;
 public class GetMarkerCoordinates : MarkerTracking
 {
+    enum markerIds
+    {
+        rightArm,
+        leftArm,
+        rightElbow,
+        leftElbow,
+        Hands,
+        Floor1,
+        Floor2,
+        Dummy1,
+        Dummy2,
+        Floor3,
+    }
     public List<CvCoordinates> initialCoordinates;
     public List<GameObject> cylinders;
     public GameObject head, neck, hips;
@@ -36,6 +49,8 @@ public class GetMarkerCoordinates : MarkerTracking
     public GameObject dummy;
     float initialHandLocalXPosition, initialHandLocalZPosition;
     public GameObject desiredLocation;
+
+    float initialRightArmAngle = 0, initialLeftHandAngle = 0;
     Vector3 offset;
     private void Start()
     {
@@ -49,16 +64,19 @@ public class GetMarkerCoordinates : MarkerTracking
         for (int i = 0; i < _balls.Length; i++)
         {
             markers[i].transform.position =
-                new Vector3(-Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z), floorPlane.normal), Vector3.right).magnitude, // sprobowac zrobic to samo co z Z, tzn project na vector3.right
+                new Vector3(Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z), floorPlane.normal), Vector3.right).magnitude, // sprobowac zrobic to samo co z Z, tzn project na vector3.right
                  Math.Abs(floorPlane.GetDistanceToPoint(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z))),
                Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[i].X, -_balls[i].Y, _balls[i].Z), floorPlane.normal), Vector3.forward).magnitude) + offset;
         }
 
         neck.transform.position = (markers[1].transform.position - markers[0].transform.position) / 2.0f + markers[0].transform.position;
+
+        calculateAngles();
         if (firstMeasurement == true)
         {
             setDummyInitialPose();
             setSubjectInitialPose();
+            setInitialAngleValues();
             dummyHeight = markers[4].transform.position.y;
 
         }
@@ -67,7 +85,7 @@ public class GetMarkerCoordinates : MarkerTracking
         Vector3 spineVector = neck.transform.position - hips.transform.position;
         neck.transform.up = spineVector;
 
-        calculateAngles();
+        
         checkCompressionParameters();
         updateMeasurementMessages();
         if (saveCheckBox.isOn)
@@ -86,6 +104,8 @@ public class GetMarkerCoordinates : MarkerTracking
             firstMeasurement = true;
             lastCompressionDepth = 0;
             compressionRate = 0;
+            initialLeftHandAngle = 0;
+            initialRightArmAngle = 0;
             initGraphs();
             if (saveCheckBox.isOn)
             {
@@ -102,11 +122,11 @@ public class GetMarkerCoordinates : MarkerTracking
     {
         rightElbowFirstVec = markers[0].transform.position - markers[2].transform.position;
         rightElbowSecondVec = markers[2].transform.position - markers[4].transform.position;
-        rightElbowAngle = Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec);
+        rightElbowAngle = Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec) - initialRightArmAngle;
 
         leftElbowFirstVec = markers[1].transform.position - markers[3].transform.position;
         leftElbowSecondVec = markers[3].transform.position - markers[4].transform.position;
-        leftElbowAngle = Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec);
+        leftElbowAngle = Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec) - initialLeftHandAngle;
 
         armsPlane.Set3Points(
             new Vector3(_balls[0].X, -_balls[0].Y, _balls[0].Z),
@@ -214,10 +234,10 @@ public class GetMarkerCoordinates : MarkerTracking
     {
         floorPlane.Set3Points(
            new Vector3(_balls[9].X, -_balls[9].Y, _balls[9].Z),
-            new Vector3(_balls[8].X, -_balls[8].Y, _balls[8].Z),
-            new Vector3(_balls[7].X, -_balls[7].Y, _balls[7].Z));
+            new Vector3(_balls[6].X, -_balls[6].Y, _balls[6].Z),
+            new Vector3(_balls[5].X, -_balls[5].Y, _balls[5].Z));
 
-        offset = desiredLocation.transform.position - new Vector3(-Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[4].X, -_balls[4].Y, _balls[4].Z), floorPlane.normal), Vector3.right).magnitude, // sprobowac zrobic to samo co z Z, tzn project na vector3.right
+        offset = desiredLocation.transform.position - new Vector3(Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[4].X, -_balls[4].Y, _balls[4].Z), floorPlane.normal), Vector3.right).magnitude, // sprobowac zrobic to samo co z Z, tzn project na vector3.right
                  desiredLocation.transform.position.y,
                Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[4].X, -_balls[4].Y, _balls[4].Z), floorPlane.normal), Vector3.forward).magnitude);
     }
@@ -263,9 +283,9 @@ public class GetMarkerCoordinates : MarkerTracking
         var torso = dummy.transform.Find("Torso");
         Vector3 scale = torso.localScale;      // Scale it
         scale.y = markers[4].transform.position.y;
-        Vector3 dummyLength = Vector3.ProjectOnPlane((markers[6].transform.position - markers[5].transform.position), Vector3.up);
+        Vector3 dummyLength = Vector3.ProjectOnPlane((markers[8].transform.position - markers[7].transform.position), Vector3.up);
         scale.x = dummyLength.magnitude;
-        Vector3 distanceFromHandToDummyEdge = markers[5].transform.position + (markers[6].transform.position - markers[5].transform.position) / 2.0f - markers[4].transform.position;
+        Vector3 distanceFromHandToDummyEdge = markers[7].transform.position + (markers[8].transform.position - markers[7].transform.position) / 2.0f - markers[4].transform.position;
         scale.z = Vector3.ProjectOnPlane(distanceFromHandToDummyEdge, Vector3.up).magnitude * 2;
         torso.transform.localScale = scale;
 
@@ -276,7 +296,7 @@ public class GetMarkerCoordinates : MarkerTracking
         headScale.z = scale.y;
         head.transform.localScale = headScale;
 
-        initialHandLocalXPosition = (Vector3.Project((markers[4].transform.position - markers[5].transform.position), (markers[6].transform.position - markers[5].transform.position))).magnitude;
+        initialHandLocalXPosition = (Vector3.Project((markers[4].transform.position - markers[7].transform.position), (markers[8].transform.position - markers[7].transform.position))).magnitude;
         initialHandLocalZPosition = Vector3.Distance(markers[4].transform.position, dummyLength);
     }
     void updateDummyPose()
@@ -290,7 +310,7 @@ public class GetMarkerCoordinates : MarkerTracking
             torso.transform.localScale = scale;
             dummy.transform.position = new Vector3(dummy.transform.position.x, markers[4].transform.position.y / 2.0f, dummy.transform.position.z);
         }
-        Vector3 dummyLength = Vector3.ProjectOnPlane((markers[6].transform.position - markers[5].transform.position), Vector3.up);
+        Vector3 dummyLength = Vector3.ProjectOnPlane((markers[8].transform.position - markers[7].transform.position), Vector3.up);
         var head = dummy.transform.Find("Head");
         float headToTorsoDistance = scale.x / 2.0f + head.transform.localScale.y / 2.0f;
         head.transform.position = new Vector3(head.transform.position.x, head.transform.localScale.y, head.transform.position.z);
@@ -304,21 +324,24 @@ public class GetMarkerCoordinates : MarkerTracking
         //dummy.transform.up = Vector3.up; //zmiana
         head.position = dummy.transform.position + dummy.transform.right * headToTorsoDistance;
 
-        var middleOfDummy = (markers[5].transform.position + (markers[6].transform.position - markers[5].transform.position) / 2.0f) + (dummy.transform.forward * (torso.transform.localScale.z / 2.0f));
+        var middleOfDummy = (markers[7].transform.position + (markers[8].transform.position - markers[7].transform.position) / 2.0f) + (dummy.transform.forward * (torso.transform.localScale.z / 2.0f));   //tutaj cos jest ze znakiem +/-
         dummy.transform.position = new Vector3(middleOfDummy.x, dummy.transform.position.y, middleOfDummy.z);
     }
     bool handsInRightPosition(Transform torso, Vector3 dummyXAxis)
     {
-        var currentHandLocalXPosition = (Vector3.Project((markers[4].transform.position - markers[5].transform.position), (markers[6].transform.position - markers[5].transform.position))).magnitude;
+        var currentHandLocalXPosition = (Vector3.Project((markers[4].transform.position - markers[8].transform.position), (markers[8].transform.position - markers[7].transform.position))).magnitude;
         var currentHandLocalZPosition = Vector3.Distance(markers[4].transform.position, dummyXAxis);
         return (Math.Abs(currentHandLocalZPosition - initialHandLocalZPosition) < 0.5) && (Math.Abs(currentHandLocalXPosition - initialHandLocalXPosition) < 0.5);
     }
     void setSubjectInitialPose()
     {
-        // Vector3 hipsVector = neck.transform.position - markers[4].transform.position;
-        //hips.transform.position = new Vector3(markers[4].transform.position.x + hipsVector.x * 2, 0.2f, markers[4].transform.position.z + hipsVector.z * 2);
-        hips.transform.position = dummy.transform.position + dummy.transform.forward * dummy.transform.localScale.z / 2;
-        hips.transform.position = new Vector3(hips.transform.position.x, 0.2f, hips.transform.position.z);
+        hips.transform.position = dummy.transform.position + dummy.transform.forward * (dummy.transform.localScale.z / 2 + 0.3f);
+        hips.transform.position = new Vector3(hips.transform.position.x, 0.6f, hips.transform.position.z);
+    }
+    void setInitialAngleValues()
+    {
+        initialLeftHandAngle = leftElbowAngle;
+        initialRightArmAngle = rightElbowAngle;
     }
 }
 

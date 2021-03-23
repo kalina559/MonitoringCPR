@@ -74,7 +74,6 @@ void CameraCalibration::getCirclePositions(std::vector<cv::Mat> images, std::vec
 	cv::TermCriteria criteria = cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 40, 0.001);
 
 	cv::SimpleBlobDetector::Params params;
-	params.minArea = 10;
 	params.minThreshold = 1;
 
 	params.filterByConvexity = 1;
