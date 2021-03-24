@@ -64,7 +64,7 @@ internal static class OpenCVInterop
     [DllImport("MonitoringCPR")]
     internal unsafe static extern void realTimeMonitoring(IntPtr firstFrame, IntPtr secondFrame, int width, int height, CvCoordinates* outBalls, ref bool beginTracking);
     [DllImport("MonitoringCPR")]
-    internal static extern void GetCurrentGrayscaleFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height, int threshLevel);
+    internal static extern void GetCurrentThreshFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height, int threshLevel);
     [DllImport("MonitoringCPR")]
     internal static extern bool detectMarkers(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
     [DllImport("MonitoringCPR")]

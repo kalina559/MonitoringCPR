@@ -60,6 +60,13 @@ cv::Ptr<cv::FeatureDetector> ImgProcUtility::initBlobDetector()
 	return cv::SimpleBlobDetector::create(params);
 }
 
+void ImgProcUtility::passFrameToUnity(cv::Mat frame, unsigned char* frameData)
+{
+	cv::Mat argbImg;
+	cv::cvtColor(frame, argbImg, cv::COLOR_BGR2RGBA);
+	std::memcpy(frameData, argbImg.data, argbImg.total() * argbImg.elemSize());
+}
+
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::performCanny(std::pair<cv::Mat, cv::Mat> frames, int threshold)
 {
 	std::pair<cv::Mat, cv::Mat> cannyFrames;

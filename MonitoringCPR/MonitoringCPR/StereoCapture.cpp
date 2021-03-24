@@ -1,9 +1,6 @@
 #include "StereoCapture.h"
 int StereoCapture::initCameras()
 {
-	/*cv::Mat img = cv::imread("C:/Users/Kalin/Desktop/pierdoly/1615-bigsam.jpg");
-	cv::imshow("start", img);
-	cv::waitKey(0);*/
 	auto threshLevelStr = ImgProcUtility::readFile("C:/dev/MonitoringCPR/MonitoringCPRUnityProject/thresholdLevel.txt");
 	int threshLevel = std::stoi(threshLevelStr);
 	if (!(threshLevel >= 0) && !(threshLevel <= 255))
@@ -11,26 +8,13 @@ int StereoCapture::initCameras()
 	first.setThreshLevel(threshLevel);
 	first.setThreshLevel(threshLevel);
 
-	/*cv::imshow("thresh ustawiony", img);
-	cv::waitKey(0);*/
-	//first.setCamera(NULL);
-	//second.setCamera(NULL);
-	/*cv::imshow("wynullowane kamery", img);
-	cv::waitKey(0);*/
 	auto& devices = ps3eye::PS3EYECam::getDevices(true);
-	/*cv::imshow("devices", img);
-	cv::waitKey(0);*/
 	if (devices.empty())
 	{
 		return -1;
 	}
-	//cv::imshow("przed setem kamer", img);
-	//cv::waitKey(0);
-
 	first.setCamera(devices[0]);
 	second.setCamera(devices[1]);
-	//cv::imshow("po secie kamer", img);
-	//cv::waitKey(0);
 	bool success1 = first.getCamera()->init(640, 480, 60);
 	bool success2 = second.getCamera()->init(640, 480, 60);
 
@@ -38,12 +22,8 @@ int StereoCapture::initCameras()
 	{
 		return -2;
 	}
-	//cv::imshow("przed startem kamery", img);
-	//cv::waitKey(0);
 	first.getCamera()->start();
 	second.getCamera()->start();
-	//cv::imshow("po", img);
-	//cv::waitKey(0);
 	return 0;
 }
 
@@ -82,8 +62,6 @@ void StereoCapture::updateFrames(int width, int height, int64& delay)
 
 	first.setCurrentFrame(firstResizedMat);
 	second.setCurrentFrame(secondResizedMat);
-
-
 }
 PS3EyeCapture& StereoCapture::getFirstCapture()
 {
@@ -150,5 +128,35 @@ void StereoCapture::setExpectedNumberOfMarkerPairs(int number)
 bool StereoCapture::checkIfAllMarkersDetected(std::vector<cv::Vec3f> firstCircles, std::vector<cv::Vec3f> secondCircles)
 {
 	return (firstCircles.size() == expectedNumberOfMarkerPairs && secondCircles.size() == expectedNumberOfMarkerPairs);
+}
+
+bool StereoCapture::realTimeMonitoring(unsigned char* firstFrameData, unsigned char* secondFrameData, bool& performTracking)
+{
+	if (!isTracking)       //jesli jeszcze nie zaczeto trackowania, inicjalizacja multitrackerow
+	{
+		first.startMultiTracker();
+		second.startMultiTracker();
+		isTracking = true;
+	}
+
+	first.updateTracker();
+	second.updateTracker();
+
+	bool result1 = first.calculateMarkersCoordinates();
+	bool result2 = second.calculateMarkersCoordinates();
+
+	if (!result1 || !result2)
+	{
+		isTracking = false;
+		performTracking = false;
+		first.stopMultiTracker();
+		second.stopMultiTracker();
+		return false;
+	}
+	triangulateCameras();
+
+	ImgProcUtility::passFrameToUnity(first.getCurrentFrame(), firstFrameData);
+	ImgProcUtility::passFrameToUnity(second.getCurrentFrame(), secondFrameData);
+	return true;	
 }
 

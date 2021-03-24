@@ -115,7 +115,7 @@ public class MarkerTracking : MonoBehaviour
     {
         threshValue = (int)thresholdMenu.GetComponentInChildren<Slider>().value;
         threshLevelDisplay.text = threshValue.ToString();
-        OpenCVInterop.GetCurrentGrayscaleFrame(pixelPtrs.Item1, pixelPtrs.Item2, textures.Item1.width, textures.Item2.height, threshValue);
+        OpenCVInterop.GetCurrentThreshFrame(pixelPtrs.Item1, pixelPtrs.Item2, textures.Item1.width, textures.Item2.height, threshValue);
     }
     protected void OnDisable()
     {

@@ -39,4 +39,5 @@ public:
 	void setTreshLevel(int level);
 	void setExpectedNumberOfMarkerPairs(int number);
 	bool checkIfAllMarkersDetected(std::vector<cv::Vec3f> firstCircles, std::vector<cv::Vec3f> secondCircles);
+	bool realTimeMonitoring(unsigned char* firstFrameData, unsigned char* secondFrameData, bool& performTracking);
 };

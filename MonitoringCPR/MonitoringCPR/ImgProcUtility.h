@@ -82,4 +82,5 @@ namespace ImgProcUtility
 	std::string getCurrentTimeStr();
 	void drawDetectedCirclesGrid(cv::Mat& frame, cv::Ptr<cv::FeatureDetector> blobDetector);
 	cv::Ptr<cv::FeatureDetector> initBlobDetector();
+	void passFrameToUnity(cv::Mat frame, unsigned char* frameData);
 }

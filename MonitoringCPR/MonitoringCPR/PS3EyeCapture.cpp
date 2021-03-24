@@ -124,6 +124,8 @@ bool PS3EyeCapture::detectMarkers(cv::Mat& displayFrame)
 	std::vector<cv::Vec3f> circles;
 	cv::HoughCircles(cannyFrame, circles, cv::HOUGH_GRADIENT, 1, displayFrame.rows / 30, 255, 10, 1, 30);
 
+	setROIs(circles);
+
 	std::sort(circles.begin(), circles.end(), contourSorter());
 
 	for (int i = 0; i < circles.size(); ++i)
