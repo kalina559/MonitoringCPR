@@ -1,5 +1,6 @@
 #pragma once
 #include<PS3EyeCapture.h>
+#include<CameraCalibration.h>
 class StereoCapture
 {
 	bool isTracking = false;

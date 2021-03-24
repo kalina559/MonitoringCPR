@@ -1,9 +1,10 @@
 #pragma once
-#include "CameraCalibration.h"
+#define NOMINMAX
 #include <cstdlib>
 #include "opencv2/objdetect.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
+#include<opencv2/calib3d.hpp>
 #include <iostream>
 #include <stdio.h>
 #include <math.h>
@@ -13,6 +14,13 @@
 #include "ps3eye.h"
 #include <opencv2/tracking.hpp>
 #include<opencv2/tracking/tracking_legacy.hpp>
+#include<filesystem>
+#include<fstream>
+#include<string>
+#include<opencv2/opencv.hpp>
+
+const float distanceBetweenCircles = 0.068f;
+const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 
 struct StereoROISets
 {
@@ -31,6 +39,13 @@ enum singleCameraId
 	secondCamera
 };
 
+struct contourSorter
+{
+	bool operator ()(cv::Vec3f first, cv::Vec3f second)
+	{
+		return ((first[0] + 100 * first[1]) < (second[0] + 100 * second[1]));
+	}
+};
 struct Matrices
 {
 	cv::Mat firstCamMatrix = cv::Mat(cv::Size(3, 3), CV_64FC1);
@@ -63,4 +78,8 @@ namespace ImgProcUtility
 	void detectMarkers(cv::Mat& frame, cv::Mat& displayFrame, std::vector<cv::Vec3f>& circles);
 	bool isROIinFrame(cv::Rect ROI, cv::Mat frame);
 	std::vector<std::string> getFileNames(std::string path);
+	std::string getCurrentDateStr();
+	std::string getCurrentTimeStr();
+	void drawDetectedCirclesGrid(cv::Mat& frame, cv::Ptr<cv::FeatureDetector> blobDetector);
+	cv::Ptr<cv::FeatureDetector> initBlobDetector();
 }

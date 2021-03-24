@@ -92,7 +92,7 @@ public class SingleCameraCalibrationFrameCheck : MonoBehaviour
         }
         else
         {
-            PlayerPrefs.SetString("SingleCameraValidationId" + cameraId.value, OpenCVInterop.getSingleCameraFramesSetId(cameraId.value));
+            PlayerPrefs.SetString("SingleCameraValidationId" + cameraId.value, OpenCVInterop.getFramesSetId(cameraId.value));
             SceneManager.LoadScene((int)Menu.Scenes.FrameCheckMenu);
         }
     }

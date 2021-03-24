@@ -82,12 +82,8 @@ void CameraCalibration::getCirclePositions(std::vector<cv::Mat> images, std::vec
 	cv::Ptr<cv::FeatureDetector> blobDetector = cv::SimpleBlobDetector::create(params);
 	for (size_t i = 0; i < images.size(); ++i) 
 	{
-		cv::cvtColor(images[i], grayImg, cv::COLOR_BGR2GRAY);   //findCirclesGrid moze byc na RGB, ale cornerSubPix potrzebuje Grayscale
+		cv::cvtColor(images[i], grayImg, cv::COLOR_BGR2GRAY);
 		bool patternFound = cv::findCirclesGrid(grayImg, arrayOfCirclesSize, centers[i], cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
-		//subpix
-		//cv::cornerSubPix(grayImg, centers[i], winSize, zeroZone, criteria);
-
-		//just for debug purposes
 	}
 }
 
@@ -174,10 +170,11 @@ void CameraCalibration::getSingleCamerasCoeffs(std::vector<cv::Mat> firstCamImgs
 	double firstRMS = CameraCalibration::singleCameraCalibration(firstCamImgs, boardSize, distanceBetweenCircles, firstCamMatrix, firstCamCoeffs);
 	double secondRMS = CameraCalibration::singleCameraCalibration(secondCamImgs, boardSize, distanceBetweenCircles, secondCamMatrix, secondCamCoeffs);
 
-	std::ofstream outStream("RMS.txt");
+	std::ofstream outStream("RMS.txt", std::ofstream::app);
 	if (outStream)
 	{
-		outStream << "first camera RMS: " + std::to_string(firstRMS) + "\nsecond camera RMS: " +  std::to_string(secondRMS) + "\n";
+		std::string timestamp = ImgProcUtility::getCurrentDateStr() + "	" + ImgProcUtility::getCurrentTimeStr();
+		outStream << timestamp + "\nfirst camera RMS: " + std::to_string(firstRMS) + "\nsecond camera RMS: " + std::to_string(secondRMS) + "\n";
 	}
 	outStream.close();
 

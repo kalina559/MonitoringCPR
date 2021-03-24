@@ -80,7 +80,7 @@ public class StereoCalibrationFramesCheck : MonoBehaviour
         }
         else
         {
-            PlayerPrefs.SetString("validationId", OpenCVInterop.getStereoFramesSetId());
+            PlayerPrefs.SetString("StereoValidationId", OpenCVInterop.getFramesSetId(2));
             SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
     }

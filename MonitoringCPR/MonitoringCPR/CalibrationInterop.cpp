@@ -9,8 +9,7 @@
 #include"StereoCapture.h"
 #include<filesystem>
 
-const float distanceBetweenCircles = 0.068f;
-const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
+
 
 std::vector<std::pair<std::string, std::string>> validStereoFramesPaths;
 
@@ -74,10 +73,9 @@ extern "C" bool __declspec(dllexport) __stdcall checkStereoCalibrationFrames(int
 	invalidFramesCount = invalid;
 	if (totalFramesCount == invalidFramesCount)
 	{
-		return false;  //brak poprawnych zdjec
+		return false; 
 	}
-
-	return true;     //wszystko git
+	return true;     
 }
 extern "C" void __declspec(dllexport) __stdcall showValidStereoFrame(unsigned char* firstFrameData, unsigned char* secondFrameData)
 {
@@ -97,10 +95,6 @@ extern "C" void __declspec(dllexport) __stdcall showValidStereoFrame(unsigned ch
 	params.minConvexity = 0.5;
 
 	cv::Ptr<cv::FeatureDetector> blobDetector = cv::SimpleBlobDetector::create(params);
-
-	//cv::Mat firstThresh, secondThresh;
-	//cv::adaptiveThreshold(gray1, firstThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 11, 12);
-	//cv::adaptiveThreshold(gray2, secondThresh, 255, cv::ADAPTIVE_THRESH_GAUSSIAN_C, cv::THRESH_BINARY, 11, 12);
 
 	bool patternFound1 = findCirclesGrid(gray1, arrayOfCirclesSize, centers1, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
 	bool patternFound2 = findCirclesGrid(gray2, arrayOfCirclesSize, centers2, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
@@ -140,38 +134,6 @@ extern "C" bool __declspec(dllexport) __stdcall moveToNextStereoFrames()
 		return false;
 	}
 }
-extern "C" __declspec(dllexport) BSTR __stdcall  getStereoFramesSetId()
-{
-	//BSTR bs;
-	//std::string firstPath = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg";
-	//std::string secondPath = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\secondCam\\*.jpg";
-	//std::vector<cv::String> fileNames1, fileNames2;
-
-	//cv::glob(firstPath, fileNames1, false); //todo wrzucic to w imgprocutility 
-	//cv::glob(secondPath, fileNames2, false);
-
-	//std::wstring outDigitString;
-	//if (fileNames1.size() == fileNames2.size() && fileNames1.size() != 0)
-	//{
-	//	for (int i = 0; i < fileNames1.size(); ++i)
-	//	{
-	//		auto firstFileName = std::filesystem::path(fileNames1[i]).filename();
-	//		auto secondFileName = std::filesystem::path(fileNames2[i]).filename();
-	//		std::wstring firstFileNameStr{ firstFileName.wstring() };
-	//		std::wstring secondFileNameStr{ secondFileName.wstring() };
-
-	//		outDigitString += firstFileNameStr += secondFileNameStr;
-	//	}
-	//	bs = SysAllocStringLen(outDigitString.data(), outDigitString.size());
-	//	return SysAllocString(bs);
-	//}
-	//bs = SysAllocString(L"");
-	//return SysAllocString(bs);
-
-	bstr_t temp = ImgProcUtility::getFrameSetId("..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg");
-	temp += ImgProcUtility::getFrameSetId("..\\MonitoringCPR\\CalibrationImages\\Stereo\\secondCam\\*.jpg");
-	return temp.copy();
-}
 extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount, int& time, bool& isFinished)
 {
 	Uint32 start_ticks = SDL_GetTicks();
@@ -209,20 +171,15 @@ extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount,
 	StereoCapture::getInstance()->initializeMatrices();
 }
 
-extern "C" int __declspec(dllexport) __stdcall  getEstimatedCalibrationTime()
+extern "C" int __declspec(dllexport) __stdcall  getEstimatedCalibrationTime()  //mozna troche dopracowac
 {
-	std::string firstPath = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg";
-	std::vector<cv::String> fileNames1;
-	cv::glob(firstPath, fileNames1, false); //todo wrzucic to w imgprocutility 
-
-	int x = fileNames1.size();            //number of pairs of frames
-
+	std::vector<cv::String> fileNamesVec = ImgProcUtility::getFileNames("..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg");	
+	int x = fileNamesVec.size();            //number of pairs of frames
 	/*double estimatedTime = 0.0008 * pow(x, 3) - 0.0138 * pow(x, 2) + 0.393 * x - 1.2881;*/
 	double estimatedTime = 0.0004 * pow(x, 3) + 0.0216 * pow(x, 2) - 0.5134 * x + 2.8644;
 
 	return ceil(estimatedTime);
 }
-
 //KALIBRACJA POJEDYNCZYCH KAMER:
 std::vector<std::string> validSingleCameraFramesPaths;
 
@@ -334,35 +291,26 @@ extern "C" void __declspec(dllexport) __stdcall clearSingleCameraFramesFolder(in
 	system(command.append(path).c_str());
 }
 
-extern "C" __declspec(dllexport) BSTR __stdcall  getSingleCameraFramesSetId(int cameraId)
+enum frameSetMode
 {
-	/*BSTR bs;
-	std::string path;*/
-	if (cameraId == singleCameraId::firstCamera)
+	first,
+	second,
+	stereo
+};
+extern "C" __declspec(dllexport) BSTR __stdcall  getFramesSetId(int mode)
+{
+	if (mode == frameSetMode::first)
 	{
-		return ImgProcUtility::getFrameSetId("../MonitoringCPR/CalibrationImages/SingleCamera/firstCam/");
+		return ImgProcUtility::getFrameSetId("..\\MonitoringCPR\\CalibrationImages\\SingleCamera\\firstCam\\*.jpg");
 	}
-	else if (singleCameraId::secondCamera)
+	else if (mode == frameSetMode::second)
 	{
-		return ImgProcUtility::getFrameSetId("../MonitoringCPR/CalibrationImages/SingleCamera/secondCam/");
+		return ImgProcUtility::getFrameSetId("..\\MonitoringCPR\\CalibrationImages\\SingleCamera\\secondCam\\*.jpg");
 	}
-	/*std::vector<cv::String> fileNames;
-
-	cv::glob(path, fileNames, false);
-
-	std::wstring outDigitString;
-	if (fileNames.size() != 0)
+	else if (mode == frameSetMode::stereo)
 	{
-		for (int i = 0; i < fileNames.size(); ++i)
-		{
-			auto fileName = std::filesystem::path(fileNames[i]).filename();
-			std::wstring fileNameStr{ fileName.wstring() };
-
-			outDigitString += fileNameStr;
-		}
-		bs = SysAllocStringLen(outDigitString.data(), outDigitString.size());
-		return SysAllocString(bs);
+		bstr_t temp = ImgProcUtility::getFrameSetId("..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg");
+		temp += ImgProcUtility::getFrameSetId("..\\MonitoringCPR\\CalibrationImages\\Stereo\\secondCam\\*.jpg");
+		return temp.copy();
 	}
-	bs = SysAllocString(L"");
-	return SysAllocString(bs);*/
 }

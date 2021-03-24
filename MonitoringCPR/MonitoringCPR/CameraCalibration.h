@@ -1,16 +1,6 @@
 #pragma once
-#include<opencv2/core.hpp>
-#include<opencv2/imgcodecs.hpp>
-#include<opencv2/imgproc.hpp>
-#include<opencv2/highgui.hpp>
-#include<opencv2/calib3d.hpp>
-#include<opencv2/videoio/videoio.hpp>
-#include<opencv2/opencv.hpp>
-#include<opencv2/features2d.hpp>
-#include<iostream>
-#include<fstream>
-#include<string>
-#include<filesystem>
+#include<ImgProcUtility.h>
+
 namespace CameraCalibration
 {
 	void loadPhotos(std::string path, std::vector<cv::Mat>& images);

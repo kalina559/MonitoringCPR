@@ -39,12 +39,12 @@ internal static class OpenCVInterop
 
 
     //generowanie łańcucha znaków reprezentującego pliki znajdujące się w folderach
-    [DllImport("MonitoringCPR", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
-    [return: MarshalAs(UnmanagedType.BStr)]    
-    internal static extern string getStereoFramesSetId();
+    //[DllImport("MonitoringCPR", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
+    //[return: MarshalAs(UnmanagedType.BStr)]    
+    //internal static extern string getStereoFramesSetId();
     [DllImport("MonitoringCPR", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     [return: MarshalAs(UnmanagedType.BStr)]
-    internal static extern string getSingleCameraFramesSetId(int cameraId);
+    internal static extern string getFramesSetId(int cameraId);
 
 
 

@@ -34,7 +34,7 @@ public class CalibrationMessage : MonoBehaviour
             else
             {
                 gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("UKOŃCZONO KALIBRACJĘ NA PODSTAWIE " + frameCount + " ZDJĘĆ W " + formatTimeInSeconds(seconds));
-                PlayerPrefs.SetString("calibrationId", OpenCVInterop.getStereoFramesSetId());
+                PlayerPrefs.SetString("calibrationId", OpenCVInterop.getFramesSetId(2) + OpenCVInterop.getFramesSetId(0) + OpenCVInterop.getFramesSetId(1));
                 thread = null;
             }
         }
@@ -79,10 +79,12 @@ public class CalibrationMessage : MonoBehaviour
     }
     public void getCurrentFrameSetId()
     {
-        string currentStereoFramesSetId = OpenCVInterop.getStereoFramesSetId();
-        string currentFirstCameraFramesSet = OpenCVInterop.getSingleCameraFramesSetId(0);
-        string currentSecondCameraFramesSet = OpenCVInterop.getSingleCameraFramesSetId(1);
-        if (PlayerPrefs.GetString("calibrationId") != currentStereoFramesSetId)
+        string currentStereoFramesSetId = OpenCVInterop.getFramesSetId(2);
+        string currentFirstCameraFramesSet = OpenCVInterop.getFramesSetId(0);
+        string currentSecondCameraFramesSet = OpenCVInterop.getFramesSetId(1);
+
+        string frameSetsConcatenated = currentStereoFramesSetId + currentFirstCameraFramesSet + currentSecondCameraFramesSet;
+        if (PlayerPrefs.GetString("calibrationId") != frameSetsConcatenated)
         {
             string message = checkForChangesInFolders(currentStereoFramesSetId, currentFirstCameraFramesSet, currentSecondCameraFramesSet);
             if (message.Length == 0)
@@ -104,7 +106,6 @@ public class CalibrationMessage : MonoBehaviour
 
     string checkForChangesInFolders(string stereoFrameSetId, string firstCameraFrameSet, string secondCameraFrameSet)
     {
-        Debug.Log(stereoFrameSetId + "/////"+ firstCameraFrameSet + "/////" +secondCameraFrameSet);
         string message = "";
         if(PlayerPrefs.GetString("SingleCameraValidationId0") != firstCameraFrameSet)
         {
@@ -118,7 +119,7 @@ public class CalibrationMessage : MonoBehaviour
             }
             message += " DO KALIBRACJI DRUGIEJ KAMERY";
         }
-        if (PlayerPrefs.GetString("validationId") != stereoFrameSetId)
+        if (PlayerPrefs.GetString("StereoValidationId") != stereoFrameSetId)
         {
             if (message.Length > 0)
             {

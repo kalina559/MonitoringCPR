@@ -70,7 +70,7 @@ void StereoCapture::updateFrames(int width, int height, int64& delay)
 	cv::Mat secondFrame = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);
 
 	int64 firstTimeStamp = GetTickCount64();
-	first.getCamera()->getFrame(firstFrame.data);	
+	first.getCamera()->getFrame(firstFrame.data);
 	second.getCamera()->getFrame(secondFrame.data);
 	delay = GetTickCount64() - firstTimeStamp;
 
@@ -151,3 +151,4 @@ bool StereoCapture::checkIfAllMarkersDetected(std::vector<cv::Vec3f> firstCircle
 {
 	return (firstCircles.size() == expectedNumberOfMarkerPairs && secondCircles.size() == expectedNumberOfMarkerPairs);
 }
+

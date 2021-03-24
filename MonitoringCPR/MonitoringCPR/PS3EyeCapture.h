@@ -9,7 +9,7 @@ class PS3EyeCapture
 	std::vector<cv::Rect> ROIs;
 	std::vector<cv::Vec2f> markersCoordinates2D;// = std::vector<cv::Vec2f>(expectedNumberOfMarkers);
 	int threshLevel = 70;
-	int expectedNumberOfMarkers;
+	int expectedNumberOfMarkers = 0;
 public:
 	~PS3EyeCapture()
 	{
@@ -35,5 +35,6 @@ public:
 	void setThreshLevel(int level);
 	int getThreshLevel();
 	void setExpectedNumberOfMarkers(int number);
-	void detectMarkers();
+	bool detectMarkers(cv::Mat& displayFrame);
+	bool checkIfAllMarkersDetected(std::vector<cv::Vec3f> circles);
 };

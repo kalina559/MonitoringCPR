@@ -19,8 +19,45 @@ std::pair<cv::Mat, cv::Mat> ImgProcUtility::thresholdImages(std::pair<cv::Mat, c
 std::vector<std::string> ImgProcUtility::getFileNames(std::string path)
 {
 	std::vector<std::string> fileNamesVec;
-	cv::glob(path, fileNamesVec, false); //todo wrzucic to w imgprocutility 
+	cv::glob(path, fileNamesVec, false);
 	return fileNamesVec;
+}
+
+std::string ImgProcUtility::getCurrentDateStr()
+{
+	char buffer[30];
+	char dateStr[30];
+	_strdate_s(dateStr);
+	sprintf_s(buffer, dateStr);
+	return std::string(buffer);
+}
+
+std::string ImgProcUtility::getCurrentTimeStr()
+{
+	char buffer[30];
+	char timeStr[30];
+	_strtime_s(timeStr);
+	sprintf_s(buffer, timeStr);
+	return std::string(buffer);
+}
+
+void ImgProcUtility::drawDetectedCirclesGrid(cv::Mat& frame, cv::Ptr<cv::FeatureDetector> blobDetector)
+{
+	std::vector<cv::Point2f> centers;
+	cv::Mat gray;
+	cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+
+	bool patternFound1 = findCirclesGrid(gray, arrayOfCirclesSize, centers, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
+	drawChessboardCorners(frame, arrayOfCirclesSize, cv::Mat(centers), 1);
+}
+
+cv::Ptr<cv::FeatureDetector> ImgProcUtility::initBlobDetector()
+{
+	cv::SimpleBlobDetector::Params params;
+	params.minThreshold = 1;
+	params.filterByConvexity = 1;
+	params.minConvexity = 0.5;
+	return cv::SimpleBlobDetector::create(params);
 }
 
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::performCanny(std::pair<cv::Mat, cv::Mat> frames, int threshold)
@@ -139,18 +176,17 @@ BSTR ImgProcUtility::getFrameSetId(std::string path)
 	return SysAllocString(bs);
 }
 
-struct contourSorter
-{
-	bool operator ()(cv::Vec3f first, cv::Vec3f second)
-	{
-		return ((first[0] + 100 * first[1]) < (second[0] + 100 * second[1]));
-	}
-};
-
 void ImgProcUtility::detectMarkers(cv::Mat& frame, cv::Mat& displayFrame, std::vector<cv::Vec3f>& circles)
 {
+	//cv::Mat gray;
+	//cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+	//cv::Mat threshFrame;
+	//int threshLevel = StereoCapture::getInstance()->getFirstCapture().getThreshLevel();
+	//cv::threshold(gray, threshFrame, threshLevel, 255, cv::THRESH_BINARY);
+
+
+
 	cv::Mat cannyFrame;
-	std::vector<cv::Point> circleContour;
 	cv::Canny(frame, cannyFrame, 200, 255);
 
 	cv::HoughCircles(cannyFrame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 30, 255, 10, 1, 30);
