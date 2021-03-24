@@ -7,32 +7,50 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.IO;
-
-
 public class CalibrationTest : MarkerTracking
 {
-    frameDisplay display;
     public GameObject expectedLengthMenu;
     public TextMeshProUGUI detectedDistance;
     public TextMeshProUGUI detectedError;
     public TMP_InputField expectedLength;
-    StreamWriter writetext;
+    StreamWriter writer;
     double distance = 0;
-
+    List<Vector3> previousMarkerPositions;
+    public Toggle saveCheckBox;
     void Start()
     {
+        previousMarkerPositions = new List<Vector3>();
         expectedNumberOfMarkerPairs = 2;
-        initializeScene();
-        writetext = new StreamWriter("savedData/calibrationError.txt");
+        initializeScene();        
     }
     protected override void useMarkerCoordinates()
     {
         distance = calculateDistanceBetweenMarkers(0, 1);
         detectedDistance.SetText("Odległość: " + Math.Round(distance * 1000, 2).ToString());
         detectedError.SetText("Błąd: " + Math.Round(Math.Abs(PlayerPrefs.GetInt("expectedLength") - distance * 1000), 2).ToString());
-        string newLine = String.Format("{0};{1};{2};{3}", DateTime.Now.ToString("HH:mm:ss:fff"), Math.Abs(PlayerPrefs.GetInt("expectedLength") - distance * 1000), distance * 1000, delay);
-        writetext.WriteLine(newLine);
-    }   
+        if (saveCheckBox.isOn)
+        {
+            writeToTextFile();
+        }
+    }
+
+    public override void changeMode()
+    {
+        if (beginTracking == false && allMarkersDetected == true)
+        {
+            beginTracking = true;
+            frameCount = 0;
+            previousMarkerPositions.Clear();
+            if (saveCheckBox.isOn)
+            {
+                writer = new StreamWriter("savedData/" + DateTime.Now.ToString().Replace(':', '.') + "calibrationError.txt");
+            }
+        }
+        else
+        {
+            beginTracking = false;
+        }
+    }
     public void openExpectedLengthMenu()
     {
         expectedLengthMenu.gameObject.SetActive(true);
@@ -54,5 +72,28 @@ public class CalibrationTest : MarkerTracking
     {
         return Math.Sqrt(Math.Pow(_balls[firstMarker].X - _balls[secondMarker].X, 2) + Math.Pow(_balls[firstMarker].Y - _balls[secondMarker].Y, 2)
         + Math.Pow(_balls[firstMarker].Z - _balls[secondMarker].Z, 2));
+    }
+
+    void writeToTextFile()
+    {
+        float firstMarkerPositionChange = getMarkerPositionChange(0);
+        float secondMarkerPositionChange = getMarkerPositionChange(1);
+        string newLine = String.Format("{0};{1};{2};{3};{4};{5}", DateTime.Now.ToString("HH:mm:ss:fff"), Math.Abs(PlayerPrefs.GetInt("expectedLength") - distance * 1000), 
+            distance * 1000, delay, firstMarkerPositionChange * 1000, secondMarkerPositionChange * 1000);
+        writer.WriteLine(newLine);
+    }
+
+    float getMarkerPositionChange(int index)
+    {
+        if (index >= previousMarkerPositions.Count)
+        {
+            previousMarkerPositions.Add(MonitoringUtils.CvCoordinatesToVec3(_balls[index]));
+            return 0;
+        }
+        Vector3 currentMarkerPosition = MonitoringUtils.CvCoordinatesToVec3(_balls[index]);
+        float distance =  Vector3.Distance(previousMarkerPositions[index], currentMarkerPosition);
+        previousMarkerPositions[index] = currentMarkerPosition;
+
+        return distance;
     }
 }

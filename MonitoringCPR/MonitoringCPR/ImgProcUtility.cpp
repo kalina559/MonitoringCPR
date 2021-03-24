@@ -8,13 +8,6 @@ std::string ImgProcUtility::readFile(std::string name)
 	inputFile.close();
 	return content;
 }
-std::pair<cv::Mat, cv::Mat> ImgProcUtility::readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence)
-{
-	std::pair<cv::Mat, cv::Mat> frames;
-	firstSequence >> frames.first;
-	secondSequence >> frames.second;
-	return frames;
-}
 
 std::pair<cv::Mat, cv::Mat> ImgProcUtility::resizeFrames(std::pair<cv::Mat, cv::Mat> frames, double scale)
 {

@@ -18,10 +18,6 @@ public class Menu : MonoBehaviour
         CalibrationTest,
         Monitoring
     }
-    //public void GoToMarkerMovement()
-    //{
-    //    SceneManager.LoadScene((int)Scenes.MarkerMovement);
-    //}
     public void GoToMonitoring()
     {
         SceneManager.LoadScene((int)Scenes.Monitoring);

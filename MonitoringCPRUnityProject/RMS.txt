@@ -1,3 +1,3 @@
-first camera RMS: 0.357697
-second camera RMS: 0.336374
-stereo RMS: 0.220557
+first camera RMS: 0.336374
+second camera RMS: 0.357697
+stereo RMS: 0.221074

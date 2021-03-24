@@ -44,7 +44,6 @@ namespace ImgProcUtility
 	};
 	//int initializeCameras(realTimeCapturePair* stereoCapture);
 	std::string readFile(std::string name);
-	std::pair<cv::Mat, cv::Mat> readFrames(cv::VideoCapture firstSequence, cv::VideoCapture secondSequence);
 	//void readRealTimeFrames(realTimeCapturePair* stereoCapture, int width, int height);
 	std::pair<cv::Mat, cv::Mat> resizeFrames(std::pair<cv::Mat, cv::Mat> frames, double scale);
 	StereoROISets selectMarkers(std::pair<cv::Mat, cv::Mat> frames, std::pair<cv::Ptr<cv::legacy::MultiTracker>, cv::Ptr<cv::legacy::MultiTracker>> multitrackers);

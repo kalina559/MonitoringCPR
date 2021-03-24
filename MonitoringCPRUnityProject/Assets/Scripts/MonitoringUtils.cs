@@ -38,6 +38,11 @@ public class MonitoringUtils : MonoBehaviour
             return;
         }
     }
+
+    internal static Vector3 CvCoordinatesToVec3(CvCoordinates coordinates)
+    {
+        return new Vector3(coordinates.X, coordinates.Y, coordinates.Z);
+    }
 }
 public class frameDisplay
 {
@@ -72,8 +77,12 @@ public class frameDisplay
     }
     internal void freeHandles()
     {
-        firstPixelHandle.Free();
-        secondPixelHandle.Free();
+        if (firstPixelHandle.IsAllocated && secondPixelHandle.IsAllocated)
+        {
+            //Free handle
+            firstPixelHandle.Free();
+            secondPixelHandle.Free();
+        }
     }
     internal Tuple<Texture2D, Texture2D> getTextures()
     {

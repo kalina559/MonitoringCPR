@@ -30,7 +30,7 @@ public class GetMarkerCoordinates : MarkerTracking
     Vector3 rightElbowFirstVec, rightElbowSecondVec, leftElbowFirstVec, leftElbowSecondVec;
     public Toggle saveCheckBox;
     string fileName;
-    StreamWriter writetext;
+    StreamWriter writer;
 
     //parametry:
     float leftElbowAngle, rightElbowAngle, armsFloorAngle, compressionRate;
@@ -39,7 +39,6 @@ public class GetMarkerCoordinates : MarkerTracking
     int compressionCount = 0;
     float lastDistanceToFloor = 0;
     float lastTimeStamp;
-
     float maxChestCompression, lastCompressionDepth;
     bool firstMeasurement = true;
     float dummyHeight = 0;
@@ -51,6 +50,8 @@ public class GetMarkerCoordinates : MarkerTracking
     public GameObject desiredLocation;
 
     float initialRightArmAngle = 0, initialLeftHandAngle = 0;
+
+
     Vector3 offset;
     private void Start()
     {
@@ -110,7 +111,7 @@ public class GetMarkerCoordinates : MarkerTracking
             if (saveCheckBox.isOn)
             {
                 fileName = "savedData/" + DateTime.Now.ToString().Replace(':', '.') + ".txt";
-                writetext = new StreamWriter(fileName);
+                writer = new StreamWriter(fileName);
             }
         }
         else
@@ -120,18 +121,18 @@ public class GetMarkerCoordinates : MarkerTracking
     }
     void calculateAngles()
     {
-        rightElbowFirstVec = markers[0].transform.position - markers[2].transform.position;
-        rightElbowSecondVec = markers[2].transform.position - markers[4].transform.position;
+        rightElbowFirstVec = markers[(int)markerIds.rightArm].transform.position - markers[(int)markerIds.rightElbow].transform.position;
+        rightElbowSecondVec = markers[(int)markerIds.rightElbow].transform.position - markers[(int)markerIds.Hands].transform.position;
         rightElbowAngle = Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec) - initialRightArmAngle;
 
-        leftElbowFirstVec = markers[1].transform.position - markers[3].transform.position;
-        leftElbowSecondVec = markers[3].transform.position - markers[4].transform.position;
+        leftElbowFirstVec = markers[(int)markerIds.leftArm].transform.position - markers[(int)markerIds.leftElbow].transform.position;
+        leftElbowSecondVec = markers[(int)markerIds.leftElbow].transform.position - markers[(int)markerIds.Hands].transform.position;
         leftElbowAngle = Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec) - initialLeftHandAngle;
 
         armsPlane.Set3Points(
-            new Vector3(_balls[0].X, -_balls[0].Y, _balls[0].Z),
-            new Vector3(_balls[1].X, -_balls[1].Y, _balls[1].Z),
-            new Vector3(_balls[4].X, -_balls[4].Y, _balls[4].Z));
+            new Vector3(_balls[(int)markerIds.rightArm].X, -_balls[(int)markerIds.rightArm].Y, _balls[(int)markerIds.rightArm].Z),
+            new Vector3(_balls[(int)markerIds.leftArm].X, -_balls[(int)markerIds.leftArm].Y, _balls[(int)markerIds.leftArm].Z),
+            new Vector3(_balls[(int)markerIds.Hands].X, -_balls[(int)markerIds.Hands].Y, _balls[(int)markerIds.Hands].Z));
 
         armsFloorAngle = Vector3.Angle(floorPlane.normal, armsPlane.normal);
         if (Time.time - lastTimeStamp != 0)
@@ -140,53 +141,7 @@ public class GetMarkerCoordinates : MarkerTracking
         }
     }
     void checkCompressionParameters()
-    {
-        //currentChestCompression = dummyHeight - markers[4].transform.position.y;
-        //if (firstMeasurement == true)
-        //{
-        //    maxChestCompression = currentChestCompression;
-        //    lastDistanceToFloor = currentChestCompression;
-        //    downwardMovement = false;
-        //    firstMeasurement = false;
-        //}
-        //else
-        //{
-        //    if (currentChestCompression > maxChestCompression)
-        //    {
-        //        maxChestCompression = currentChestCompression;
-        //    }
-        //    if (Math.Abs(currentChestCompression - lastDistanceToFloor) > 0.001)
-        //    {
-        //        if (currentChestCompression > lastDistanceToFloor)
-        //        {
-        //            if (downwardMovement == false)
-        //            {
-        //                ++downwardMovementFrameCount;
-        //                if (downwardMovementFrameCount == 5)
-        //                {
-        //                    downwardMovement = true;
-        //                    maxChestCompression = currentChestCompression;
-        //                }
-        //            }
-        //        }
-        //        else if (currentChestCompression < lastDistanceToFloor)
-        //        {
-        //            downwardMovementFrameCount = 0;
-
-        //            if (downwardMovement == true)
-        //            {
-        //                downwardMovementFrameCount = 0;
-        //                downwardMovement = false;
-        //                ++compressionCount;
-        //                lastCompressionDepth = (maxChestCompression) * 1000;
-        //                compressionDepthGraph.addValue(lastCompressionDepth);
-        //                maxChestCompression = 0;
-        //            }
-        //        }
-        //    }
-        //    lastDistanceToFloor = currentChestCompression;
-        //}
-
+    {        
         currentChestCompression = dummyHeight - markers[4].transform.position.y;
         if (firstMeasurement == true)
         {
@@ -233,13 +188,13 @@ public class GetMarkerCoordinates : MarkerTracking
     void getGameFloorPlane()
     {
         floorPlane.Set3Points(
-           new Vector3(_balls[9].X, -_balls[9].Y, _balls[9].Z),
-            new Vector3(_balls[6].X, -_balls[6].Y, _balls[6].Z),
-            new Vector3(_balls[5].X, -_balls[5].Y, _balls[5].Z));
+           new Vector3(_balls[(int)markerIds.Floor3].X, -_balls[(int)markerIds.Floor3].Y, _balls[(int)markerIds.Floor3].Z),
+            new Vector3(_balls[(int)markerIds.Floor2].X, -_balls[(int)markerIds.Floor2].Y, _balls[(int)markerIds.Floor2].Z),
+            new Vector3(_balls[(int)markerIds.Floor1].X, -_balls[(int)markerIds.Floor1].Y, _balls[(int)markerIds.Floor1].Z));
 
-        offset = desiredLocation.transform.position - new Vector3(Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[4].X, -_balls[4].Y, _balls[4].Z), floorPlane.normal), Vector3.right).magnitude, // sprobowac zrobic to samo co z Z, tzn project na vector3.right
+        offset = desiredLocation.transform.position - new Vector3(Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[(int)markerIds.Hands].X, -_balls[(int)markerIds.Hands].Y, _balls[(int)markerIds.Hands].Z), floorPlane.normal), Vector3.right).magnitude, // sprobowac zrobic to samo co z Z, tzn project na vector3.right
                  desiredLocation.transform.position.y,
-               Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[4].X, -_balls[4].Y, _balls[4].Z), floorPlane.normal), Vector3.forward).magnitude);
+               Vector3.Project(Vector3.ProjectOnPlane(new Vector3(_balls[(int)markerIds.Hands].X, -_balls[(int)markerIds.Hands].Y, _balls[(int)markerIds.Hands].Z), floorPlane.normal), Vector3.forward).magnitude);
     }
     void updateMeasurementMessages()
     {
@@ -260,7 +215,7 @@ public class GetMarkerCoordinates : MarkerTracking
         armFloorAngleGraph.addValue(armsFloorAngle);
         compressionDepthText.SetText("Głębokość ostatniego uciśnięcia: " + Math.Round(lastCompressionDepth, 1) + "mm");
 
-        handsYPositionGraph.addValue((markers[4].transform.position.y - dummyHeight) * 1000);
+        handsYPositionGraph.addValue((markers[(int)markerIds.Hands].transform.position.y - dummyHeight) * 1000);
     }
     void initGraphs()
     {
@@ -274,18 +229,18 @@ public class GetMarkerCoordinates : MarkerTracking
     void saveDataToTextFile()
     {
         string newLine = String.Format("{0};{1};{2};{3};{4};{5}", DateTime.Now.ToString("HH:mm:ss:fff"), rightElbowAngle, leftElbowAngle, armsFloorAngle, compressionRate, currentChestCompression);
-        writetext.WriteLine(newLine);
+        writer.WriteLine(newLine);
 
     }
     void setDummyInitialPose()
     {
-        dummy.transform.position = new Vector3(markers[4].transform.position.x, markers[4].transform.position.y / 2, markers[4].transform.position.z);
+        dummy.transform.position = new Vector3(markers[(int)markerIds.Hands].transform.position.x, markers[(int)markerIds.Hands].transform.position.y / 2, markers[(int)markerIds.Hands].transform.position.z);
         var torso = dummy.transform.Find("Torso");
         Vector3 scale = torso.localScale;      // Scale it
-        scale.y = markers[4].transform.position.y;
-        Vector3 dummyLength = Vector3.ProjectOnPlane((markers[8].transform.position - markers[7].transform.position), Vector3.up);
+        scale.y = markers[(int)markerIds.Hands].transform.position.y;
+        Vector3 dummyLength = Vector3.ProjectOnPlane((markers[(int)markerIds.Dummy2].transform.position - markers[(int)markerIds.Dummy1].transform.position), Vector3.up);
         scale.x = dummyLength.magnitude;
-        Vector3 distanceFromHandToDummyEdge = markers[7].transform.position + (markers[8].transform.position - markers[7].transform.position) / 2.0f - markers[4].transform.position;
+        Vector3 distanceFromHandToDummyEdge = markers[(int)markerIds.Dummy1].transform.position + (markers[(int)markerIds.Dummy2].transform.position - markers[(int)markerIds.Dummy1].transform.position) / 2.0f - markers[(int)markerIds.Hands].transform.position;
         scale.z = Vector3.ProjectOnPlane(distanceFromHandToDummyEdge, Vector3.up).magnitude * 2;
         torso.transform.localScale = scale;
 
@@ -296,8 +251,8 @@ public class GetMarkerCoordinates : MarkerTracking
         headScale.z = scale.y;
         head.transform.localScale = headScale;
 
-        initialHandLocalXPosition = (Vector3.Project((markers[4].transform.position - markers[7].transform.position), (markers[8].transform.position - markers[7].transform.position))).magnitude;
-        initialHandLocalZPosition = Vector3.Distance(markers[4].transform.position, dummyLength);
+        initialHandLocalXPosition = (Vector3.Project((markers[(int)markerIds.Hands].transform.position - markers[(int)markerIds.Dummy1].transform.position), (markers[(int)markerIds.Dummy2].transform.position - markers[(int)markerIds.Dummy1].transform.position))).magnitude;
+        initialHandLocalZPosition = Vector3.Distance(markers[(int)markerIds.Hands].transform.position, dummyLength);
     }
     void updateDummyPose()
     {
@@ -306,11 +261,11 @@ public class GetMarkerCoordinates : MarkerTracking
 
         if (markers[4].transform.position.y < dummyHeight)
         {
-            scale.y = markers[4].transform.position.y;
+            scale.y = markers[(int)markerIds.Hands].transform.position.y;
             torso.transform.localScale = scale;
-            dummy.transform.position = new Vector3(dummy.transform.position.x, markers[4].transform.position.y / 2.0f, dummy.transform.position.z);
+            dummy.transform.position = new Vector3(dummy.transform.position.x, markers[(int)markerIds.Hands].transform.position.y / 2.0f, dummy.transform.position.z);
         }
-        Vector3 dummyLength = Vector3.ProjectOnPlane((markers[8].transform.position - markers[7].transform.position), Vector3.up);
+        Vector3 dummyLength = Vector3.ProjectOnPlane((markers[(int)markerIds.Dummy2].transform.position - markers[(int)markerIds.Dummy1].transform.position), Vector3.up);
         var head = dummy.transform.Find("Head");
         float headToTorsoDistance = scale.x / 2.0f + head.transform.localScale.y / 2.0f;
         head.transform.position = new Vector3(head.transform.position.x, head.transform.localScale.y, head.transform.position.z);
@@ -324,13 +279,13 @@ public class GetMarkerCoordinates : MarkerTracking
         //dummy.transform.up = Vector3.up; //zmiana
         head.position = dummy.transform.position + dummy.transform.right * headToTorsoDistance;
 
-        var middleOfDummy = (markers[7].transform.position + (markers[8].transform.position - markers[7].transform.position) / 2.0f) + (dummy.transform.forward * (torso.transform.localScale.z / 2.0f));   //tutaj cos jest ze znakiem +/-
+        var middleOfDummy = (markers[(int)markerIds.Dummy1].transform.position + (markers[(int)markerIds.Dummy2].transform.position - markers[(int)markerIds.Dummy1].transform.position) / 2.0f) + (dummy.transform.forward * (torso.transform.localScale.z / 2.0f));   //tutaj cos jest ze znakiem +/-
         dummy.transform.position = new Vector3(middleOfDummy.x, dummy.transform.position.y, middleOfDummy.z);
     }
     bool handsInRightPosition(Transform torso, Vector3 dummyXAxis)
     {
-        var currentHandLocalXPosition = (Vector3.Project((markers[4].transform.position - markers[8].transform.position), (markers[8].transform.position - markers[7].transform.position))).magnitude;
-        var currentHandLocalZPosition = Vector3.Distance(markers[4].transform.position, dummyXAxis);
+        var currentHandLocalXPosition = (Vector3.Project((markers[(int)markerIds.Hands].transform.position - markers[(int)markerIds.Dummy2].transform.position), (markers[(int)markerIds.Dummy2].transform.position - markers[(int)markerIds.Dummy1].transform.position))).magnitude;
+        var currentHandLocalZPosition = Vector3.Distance(markers[(int)markerIds.Hands].transform.position, dummyXAxis);
         return (Math.Abs(currentHandLocalZPosition - initialHandLocalZPosition) < 0.5) && (Math.Abs(currentHandLocalXPosition - initialHandLocalXPosition) < 0.5);
     }
     void setSubjectInitialPose()

@@ -7,18 +7,7 @@ using TMPro;
 using System.Threading;
 public class StereoCalibrationFramesCheck : MonoBehaviour
 {
-    private Texture2D firstTex;
-    private Texture2D secondTex;
-
-    private Color32[] firstPixel32;
-    private Color32[] secondPixel32;
-
-    private GCHandle firstPixelHandle;
-    private GCHandle secondPixelHandle;
-
-    private IntPtr firstPixelPtr;
-    private IntPtr secondPixelPtr;
-
+    frameDisplay display;
     public Image errorMessagePanel;
     int invalidFrames = 0, totalFrames = 0, singleFrames = 0;
     public TextMeshProUGUI messageLabel;
@@ -30,6 +19,7 @@ public class StereoCalibrationFramesCheck : MonoBehaviour
     bool checkResult;
     void Start()
     {
+        display = new frameDisplay();
         errorMessagePanel.GetComponentInChildren<TextMeshProUGUI>().SetText("Trwa wstępne sprawdzanie poprawności zdjęć");
         errorMessagePanel.gameObject.SetActive(true);
         errorMessagePanel.GetComponentInChildren<Button>().gameObject.SetActive(false);
@@ -45,8 +35,8 @@ public class StereoCalibrationFramesCheck : MonoBehaviour
                 validPairsCount = totalFrames - invalidFrames;
                 updateLabels();
                 InitTexture();
-                GameObject.Find("firstFrame").GetComponent<RawImage>().texture = firstTex;
-                GameObject.Find("secondFrame").GetComponent<RawImage>().texture = secondTex;
+                GameObject.Find("firstFrame").GetComponent<RawImage>().texture = display.getTextures().Item1;
+                GameObject.Find("secondFrame").GetComponent<RawImage>().texture = display.getTextures().Item2;
                 MatToTexture2D();
             }
             else
@@ -60,26 +50,14 @@ public class StereoCalibrationFramesCheck : MonoBehaviour
     }
     void InitTexture()
     {
-        firstTex = new Texture2D(640, 480, TextureFormat.ARGB32, false);
-        secondTex = new Texture2D(640, 480, TextureFormat.ARGB32, false);
-        firstPixel32 = firstTex.GetPixels32();
-        secondPixel32 = secondTex.GetPixels32();
-        //Pin pixel32 array
-        firstPixelHandle = GCHandle.Alloc(firstPixel32, GCHandleType.Pinned);
-        secondPixelHandle = GCHandle.Alloc(secondPixel32, GCHandleType.Pinned);
-        //Get the pinned address
-        firstPixelPtr = firstPixelHandle.AddrOfPinnedObject();
-        secondPixelPtr = secondPixelHandle.AddrOfPinnedObject();
+        display.Init();
     }
 
     void MatToTexture2D()
     {
-        OpenCVInterop.showValidStereoFrame(firstPixelPtr, secondPixelPtr);
-        //Update the Texture2D with array updated in C++
-        firstTex.SetPixels32(firstPixel32);
-        secondTex.SetPixels32(secondPixel32);
-        firstTex.Apply();
-        secondTex.Apply();
+        OpenCVInterop.showValidStereoFrame(display.getPixelPtrs().Item1, display.getPixelPtrs().Item2);
+
+        display.updateTextures();
     }
     private void updateLabels()
     {
@@ -87,14 +65,8 @@ public class StereoCalibrationFramesCheck : MonoBehaviour
         pairNumberLabel.SetText(currentPairNumber + " / " + validPairsCount);
     }
     private void OnDisable()
-    { 
-        if (firstPixelHandle.IsAllocated && secondPixelHandle.IsAllocated)
-        {
-            //Free handle
-            firstPixelHandle.Free();
-            secondPixelHandle.Free();
-            Debug.Log("Freed textures in onDisable displayImage");
-        }
+    {
+        display.freeHandles();
         if (thread != null)
             thread.Abort();
     }
@@ -108,7 +80,6 @@ public class StereoCalibrationFramesCheck : MonoBehaviour
         }
         else
         {
-            //OpenCVInterop.saveId("validatedFrameSetId.txt");
             PlayerPrefs.SetString("validationId", OpenCVInterop.getStereoFramesSetId());
             SceneManager.LoadScene((int)Menu.Scenes.CalibrationMenu);
         }
