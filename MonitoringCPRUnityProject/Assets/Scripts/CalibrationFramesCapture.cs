@@ -9,13 +9,13 @@ using TMPro;
 
 public class CalibrationFramesCapture    : MonoBehaviour
 {
-    frameDisplay display;
+    FrameDisplay display;
     private bool _ready;
     public TMP_Dropdown captureMode;
 
     void Start()
     {
-        display = new frameDisplay();
+        display = new FrameDisplay();
         InitTexture();
         GameObject.Find("firstFrame").GetComponent<RawImage>().texture = display.getTextures().Item1;
         GameObject.Find("secondFrame").GetComponent<RawImage>().texture = display.getTextures().Item2;

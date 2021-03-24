@@ -15,7 +15,6 @@ public class CalibrationMessage : MonoBehaviour
     bool done = false;
     float timer;
     int timerSeconds = 0;
-    // Update is called once per frame
     void Update()
     {
         if (thread != null)

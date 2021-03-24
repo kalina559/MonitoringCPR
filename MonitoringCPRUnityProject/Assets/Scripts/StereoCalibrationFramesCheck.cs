@@ -7,7 +7,7 @@ using TMPro;
 using System.Threading;
 public class StereoCalibrationFramesCheck : MonoBehaviour
 {
-    frameDisplay display;
+    FrameDisplay display;
     public Image errorMessagePanel;
     int invalidFrames = 0, totalFrames = 0, singleFrames = 0;
     public TextMeshProUGUI messageLabel;
@@ -19,7 +19,7 @@ public class StereoCalibrationFramesCheck : MonoBehaviour
     bool checkResult;
     void Start()
     {
-        display = new frameDisplay();
+        display = new FrameDisplay();
         errorMessagePanel.GetComponentInChildren<TextMeshProUGUI>().SetText("Trwa wstępne sprawdzanie poprawności zdjęć");
         errorMessagePanel.gameObject.SetActive(true);
         errorMessagePanel.GetComponentInChildren<Button>().gameObject.SetActive(false);

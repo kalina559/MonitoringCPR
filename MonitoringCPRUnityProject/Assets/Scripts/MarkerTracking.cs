@@ -7,28 +7,23 @@ using UnityEngine.UI;
 using TMPro;
 public class MarkerTracking : MonoBehaviour
 {
-    frameDisplay display;
+    FrameDisplay display;
     //Game Objects
     public GameObject thresholdMenu, mainMenu, changeModeButton;
     public TextMeshProUGUI threshLevelDisplay;
-    public List<GameObject> markers;
     public RawImage firstFrame, secondFrame;
     //used to count fps
-    protected int frameCount = 0;
+    protected int frameCount = 0, expectedNumberOfMarkerPairs, threshValue;
     float lastTimeStamp;
     //scene logic
-    protected bool allMarkersDetected = false;
-    protected bool beginTracking = false;
-    protected bool adjustThreshLevel = false;
+    protected bool allMarkersDetected = false, performTracking = false, adjustThreshLevel = false;   
     //marker tracking variables
     protected CvCoordinates[] _balls;
-    int threshValue;
-    protected int expectedNumberOfMarkerPairs;
     protected Int64 delay;
     protected void Update()
     {
         MatToTexture2D();
-        MonitoringUtils.setStartButtonText(beginTracking, changeModeButton);
+        MonitoringUtils.setStartButtonText(performTracking, changeModeButton);
         checkFPS();
     }
     protected void InitTexture()
@@ -45,7 +40,7 @@ public class MarkerTracking : MonoBehaviour
         }
         else
         {
-            if (beginTracking == false)
+            if (performTracking == false)
             {
                 allMarkersDetected = OpenCVInterop.detectMarkers(pixelPtrs.Item1, pixelPtrs.Item2, 640, 480);
             }
@@ -59,14 +54,14 @@ public class MarkerTracking : MonoBehaviour
     }
     public virtual void changeMode()
     {
-        if (beginTracking == false && allMarkersDetected == true)
+        if (performTracking == false && allMarkersDetected == true)
         {
-            beginTracking = true;
+            performTracking = true;
             frameCount = 0;
         }
         else
         {
-            beginTracking = false;
+            performTracking = false;
         }
     }
     public void saveThreshLevel()
@@ -103,7 +98,7 @@ public class MarkerTracking : MonoBehaviour
         {
             fixed (CvCoordinates* outBalls = _balls)
             {
-                OpenCVInterop.realTimeMonitoring(pixelPtrs.Item1, pixelPtrs.Item2, textures.Item1.width, textures.Item2.height, outBalls, ref beginTracking, ref delay) ;
+                OpenCVInterop.realTimeMonitoring(pixelPtrs.Item1, pixelPtrs.Item2, textures.Item1.width, textures.Item2.height, outBalls, ref performTracking, ref delay) ;
                 Debug.Log("delay between frames:" + delay);
             }
         }
@@ -125,7 +120,7 @@ public class MarkerTracking : MonoBehaviour
     protected void initializeScene()
     {
         OpenCVInterop.setExpectedNumberOfMarkerPairs(expectedNumberOfMarkerPairs);
-        display = new frameDisplay();
+        display = new FrameDisplay();
         InitTexture();
         var textures = display.getTextures();
         firstFrame.texture = textures.Item1;

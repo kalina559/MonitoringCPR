@@ -36,9 +36,9 @@ public class CalibrationTest : MarkerTracking
 
     public override void changeMode()
     {
-        if (beginTracking == false && allMarkersDetected == true)
+        if (performTracking == false && allMarkersDetected == true)
         {
-            beginTracking = true;
+            performTracking = true;
             frameCount = 0;
             previousMarkerPositions.Clear();
             if (saveCheckBox.isOn)
@@ -48,7 +48,7 @@ public class CalibrationTest : MarkerTracking
         }
         else
         {
-            beginTracking = false;
+            performTracking = false;
         }
     }
     public void openExpectedLengthMenu()

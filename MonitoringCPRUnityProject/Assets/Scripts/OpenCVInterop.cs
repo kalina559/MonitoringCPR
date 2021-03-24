@@ -37,16 +37,9 @@ internal static class OpenCVInterop
     [DllImport("MonitoringCPR")]
     internal static extern void clearSingleCameraFramesFolder(int cameraId);
 
-
-    //generowanie łańcucha znaków reprezentującego pliki znajdujące się w folderach
-    //[DllImport("MonitoringCPR", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
-    //[return: MarshalAs(UnmanagedType.BStr)]    
-    //internal static extern string getStereoFramesSetId();
     [DllImport("MonitoringCPR", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     [return: MarshalAs(UnmanagedType.BStr)]
     internal static extern string getFramesSetId(int cameraId);
-
-
 
 
     //kalibracja
