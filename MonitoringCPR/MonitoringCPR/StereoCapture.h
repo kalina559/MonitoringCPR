@@ -7,7 +7,7 @@ class StereoCapture
 	PS3EyeCapture first;
 	PS3EyeCapture second;
 	cv::Mat triangulatedCoordinates;
-	int expectedNumberOfMarkerPairs;
+	int expectedNumberOfMarkerPairs = 0;
 	
 public:
 	static StereoCapture* getInstance()

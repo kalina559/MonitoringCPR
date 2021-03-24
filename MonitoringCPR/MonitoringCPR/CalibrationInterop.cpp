@@ -14,11 +14,6 @@ const cv::Size arrayOfCirclesSize = cv::Size(4, 11);
 
 std::vector<std::pair<std::string, std::string>> validStereoFramesPaths;
 
-enum singleCameraId
-{
-	firstCamera,
-	secondCamera
-};
 extern "C" bool __declspec(dllexport) __stdcall checkStereoCalibrationFrames(int& invalidFramesCount, int& framesWithoutPair, int& totalFramesCount)
 {
 	validStereoFramesPaths.clear();
@@ -147,31 +142,35 @@ extern "C" bool __declspec(dllexport) __stdcall moveToNextStereoFrames()
 }
 extern "C" __declspec(dllexport) BSTR __stdcall  getStereoFramesSetId()
 {
-	BSTR bs;
-	std::string firstPath = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg";
-	std::string secondPath = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\secondCam\\*.jpg";
-	std::vector<cv::String> fileNames1, fileNames2;
+	//BSTR bs;
+	//std::string firstPath = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg";
+	//std::string secondPath = "..\\MonitoringCPR\\CalibrationImages\\Stereo\\secondCam\\*.jpg";
+	//std::vector<cv::String> fileNames1, fileNames2;
 
-	cv::glob(firstPath, fileNames1, false); //todo wrzucic to w imgprocutility 
-	cv::glob(secondPath, fileNames2, false);
+	//cv::glob(firstPath, fileNames1, false); //todo wrzucic to w imgprocutility 
+	//cv::glob(secondPath, fileNames2, false);
 
-	std::wstring outDigitString;
-	if (fileNames1.size() == fileNames2.size() && fileNames1.size() != 0)
-	{
-		for (int i = 0; i < fileNames1.size(); ++i)
-		{
-			auto firstFileName = std::filesystem::path(fileNames1[i]).filename();
-			auto secondFileName = std::filesystem::path(fileNames2[i]).filename();
-			std::wstring firstFileNameStr{ firstFileName.wstring() };
-			std::wstring secondFileNameStr{ secondFileName.wstring() };
+	//std::wstring outDigitString;
+	//if (fileNames1.size() == fileNames2.size() && fileNames1.size() != 0)
+	//{
+	//	for (int i = 0; i < fileNames1.size(); ++i)
+	//	{
+	//		auto firstFileName = std::filesystem::path(fileNames1[i]).filename();
+	//		auto secondFileName = std::filesystem::path(fileNames2[i]).filename();
+	//		std::wstring firstFileNameStr{ firstFileName.wstring() };
+	//		std::wstring secondFileNameStr{ secondFileName.wstring() };
 
-			outDigitString += firstFileNameStr += secondFileNameStr;
-		}
-		bs = SysAllocStringLen(outDigitString.data(), outDigitString.size());
-		return SysAllocString(bs);
-	}
-	bs = SysAllocString(L"");
-	return SysAllocString(bs);
+	//		outDigitString += firstFileNameStr += secondFileNameStr;
+	//	}
+	//	bs = SysAllocStringLen(outDigitString.data(), outDigitString.size());
+	//	return SysAllocString(bs);
+	//}
+	//bs = SysAllocString(L"");
+	//return SysAllocString(bs);
+
+	bstr_t temp = ImgProcUtility::getFrameSetId("..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg");
+	temp += ImgProcUtility::getFrameSetId("..\\MonitoringCPR\\CalibrationImages\\Stereo\\secondCam\\*.jpg");
+	return temp.copy();
 }
 extern "C" void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount, int& time, bool& isFinished)
 {
@@ -337,17 +336,17 @@ extern "C" void __declspec(dllexport) __stdcall clearSingleCameraFramesFolder(in
 
 extern "C" __declspec(dllexport) BSTR __stdcall  getSingleCameraFramesSetId(int cameraId)
 {
-	BSTR bs;
-	std::string path;
+	/*BSTR bs;
+	std::string path;*/
 	if (cameraId == singleCameraId::firstCamera)
 	{
-		path = "../MonitoringCPR/CalibrationImages/SingleCamera/firstCam/";
+		return ImgProcUtility::getFrameSetId("../MonitoringCPR/CalibrationImages/SingleCamera/firstCam/");
 	}
 	else if (singleCameraId::secondCamera)
 	{
-		path = "../MonitoringCPR/CalibrationImages/SingleCamera/secondCam/";
+		return ImgProcUtility::getFrameSetId("../MonitoringCPR/CalibrationImages/SingleCamera/secondCam/");
 	}
-	std::vector<cv::String> fileNames;
+	/*std::vector<cv::String> fileNames;
 
 	cv::glob(path, fileNames, false);
 
@@ -365,5 +364,5 @@ extern "C" __declspec(dllexport) BSTR __stdcall  getSingleCameraFramesSetId(int 
 		return SysAllocString(bs);
 	}
 	bs = SysAllocString(L"");
-	return SysAllocString(bs);
+	return SysAllocString(bs);*/
 }
