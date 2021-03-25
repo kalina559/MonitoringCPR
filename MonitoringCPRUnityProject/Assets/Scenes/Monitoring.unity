@@ -602,6 +602,11 @@ PrefabInstance:
       propertyPath: highLimit
       value: 60
       objectReference: {fileID: 0}
+    - target: {fileID: 7448418823109990705, guid: 4f7defe95bc4fa74f9104dc80ff05902,
+        type: 3}
+      propertyPath: numberOfPoints
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 7448418823109990706, guid: 4f7defe95bc4fa74f9104dc80ff05902,
         type: 3}
       propertyPath: m_Name
@@ -2120,6 +2125,11 @@ PrefabInstance:
     - target: {fileID: 7448418823109990705, guid: 4f7defe95bc4fa74f9104dc80ff05902,
         type: 3}
       propertyPath: highLimit
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 7448418823109990705, guid: 4f7defe95bc4fa74f9104dc80ff05902,
+        type: 3}
+      propertyPath: numberOfPoints
       value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 7448418823109990706, guid: 4f7defe95bc4fa74f9104dc80ff05902,
@@ -4958,6 +4968,11 @@ PrefabInstance:
       propertyPath: highLimit
       value: 20
       objectReference: {fileID: 0}
+    - target: {fileID: 7448418823109990705, guid: 4f7defe95bc4fa74f9104dc80ff05902,
+        type: 3}
+      propertyPath: numberOfPoints
+      value: 20
+      objectReference: {fileID: 0}
     - target: {fileID: 7448418823109990706, guid: 4f7defe95bc4fa74f9104dc80ff05902,
         type: 3}
       propertyPath: m_Name
@@ -5438,6 +5453,11 @@ PrefabInstance:
         type: 3}
       propertyPath: highLimit
       value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 7448418823109990705, guid: 4f7defe95bc4fa74f9104dc80ff05902,
+        type: 3}
+      propertyPath: numberOfPoints
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 7448418823109990706, guid: 4f7defe95bc4fa74f9104dc80ff05902,
         type: 3}
@@ -6048,6 +6068,11 @@ PrefabInstance:
         type: 3}
       propertyPath: highLimit
       value: -50
+      objectReference: {fileID: 0}
+    - target: {fileID: 7448418823109990705, guid: 4f7defe95bc4fa74f9104dc80ff05902,
+        type: 3}
+      propertyPath: numberOfPoints
+      value: 60
       objectReference: {fileID: 0}
     - target: {fileID: 7448418823109990706, guid: 4f7defe95bc4fa74f9104dc80ff05902,
         type: 3}
@@ -7385,6 +7410,8 @@ MonoBehaviour:
   mainMenu: {fileID: 918554068}
   changeModeButton: {fileID: 882292126}
   threshLevelDisplay: {fileID: 206718933}
+  firstFrame: {fileID: 1195180069}
+  secondFrame: {fileID: 862789848}
   markers:
   - {fileID: 83063249}
   - {fileID: 766527816}
@@ -7396,8 +7423,6 @@ MonoBehaviour:
   - {fileID: 558955779}
   - {fileID: 714504350}
   - {fileID: 471589243}
-  firstFrame: {fileID: 1195180069}
-  secondFrame: {fileID: 862789848}
   cylinders:
   - {fileID: 264142883}
   - {fileID: 1007986454}
@@ -7406,6 +7431,8 @@ MonoBehaviour:
   head: {fileID: 852462944}
   neck: {fileID: 880224460}
   hips: {fileID: 2140033210}
+  dummy: {fileID: 848319276}
+  desiredLocation: {fileID: 179960643}
   firstElbowAngleText: {fileID: 167336478}
   secondElbowAngleText: {fileID: 1460335106}
   armAngleText: {fileID: 962959032}
@@ -7419,8 +7446,6 @@ MonoBehaviour:
   compressionDepthGraph: {fileID: 144424846}
   compressionRateGraph: {fileID: 1110028295}
   handsYPositionGraph: {fileID: 1365150949}
-  dummy: {fileID: 848319276}
-  desiredLocation: {fileID: 179960643}
 --- !u!114 &1887440105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8711,6 +8736,11 @@ PrefabInstance:
         type: 3}
       propertyPath: highLimitText
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 7448418823109990705, guid: 4f7defe95bc4fa74f9104dc80ff05902,
+        type: 3}
+      propertyPath: numberOfPoints
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 7448418823109990706, guid: 4f7defe95bc4fa74f9104dc80ff05902,
         type: 3}

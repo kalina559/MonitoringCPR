@@ -94,11 +94,17 @@ public class GetMarkerCoordinates : MarkerTracking
     {
         rightElbowFirstVec = MonitoringUtils.CvCoordinatesToVec3(_balls[0]) - MonitoringUtils.CvCoordinatesToVec3(_balls[2]);
         rightElbowSecondVec = MonitoringUtils.CvCoordinatesToVec3(_balls[2]) - MonitoringUtils.CvCoordinatesToVec3(_balls[4]);
-        rightElbowAngle = Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec) - initialRightArmAngle;
+        rightElbowAngle = Math.Abs(Vector3.Angle(rightElbowFirstVec, rightElbowSecondVec) - initialRightArmAngle);
+
+
+        //var test1 = markers[0].transform.position - markers[2].transform.position;
+        //var test2 = markers[2].transform.position - markers[4].transform.position;
+        //var testAngle = Math.Abs(Vector3.Angle(test1, test2) - initialRightArmAngle);
+        //Debug.Log("Różnica między układami współrzędnych: " + (rightElbowAngle - testAngle));
 
         leftElbowFirstVec = MonitoringUtils.CvCoordinatesToVec3(_balls[1]) - MonitoringUtils.CvCoordinatesToVec3(_balls[3]);
         leftElbowSecondVec = MonitoringUtils.CvCoordinatesToVec3(_balls[3]) - MonitoringUtils.CvCoordinatesToVec3(_balls[4]);
-        leftElbowAngle = Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec) - initialLeftHandAngle;
+        leftElbowAngle = Math.Abs(Vector3.Angle(leftElbowFirstVec, leftElbowSecondVec) - initialLeftHandAngle);
 
         armsPlane.Set3Points(
             MonitoringUtils.CvCoordinatesToVec3(_balls[(int)markerIds.rightArm]),
@@ -132,7 +138,7 @@ public class GetMarkerCoordinates : MarkerTracking
                 if (downwardMovement == false)
                 {
                     ++downwardMovementFrameCount;
-                    if (downwardMovementFrameCount == 5)
+                    if (downwardMovementFrameCount == 10)
                     {
                         downwardMovement = true;
                         maxChestCompression = currentChestCompression;

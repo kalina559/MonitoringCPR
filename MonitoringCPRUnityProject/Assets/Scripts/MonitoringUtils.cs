@@ -46,9 +46,12 @@ public class MonitoringUtils : MonoBehaviour
 
     internal static Vector3 getCoordinatesRelativeToPlane(CvCoordinates coordinates, Plane plane)
     {
-        return new Vector3(Vector3.Project(Vector3.ProjectOnPlane(new Vector3(coordinates.X, -coordinates.Y, coordinates.Z), plane.normal), Vector3.right).magnitude,
-                 Math.Abs(plane.GetDistanceToPoint(new Vector3(coordinates.X, -coordinates.Y, coordinates.Z))),
-               Vector3.Project(Vector3.ProjectOnPlane(new Vector3(coordinates.X, -coordinates.Y, coordinates.Z), plane.normal), Vector3.forward).magnitude);
+        //return new Vector3(Vector3.Project(Vector3.ProjectOnPlane(new Vector3(coordinates.X, -coordinates.Y, coordinates.Z), plane.normal), Vector3.right).magnitude,
+        //         Math.Abs(plane.GetDistanceToPoint(new Vector3(coordinates.X, -coordinates.Y, coordinates.Z))),
+        //       Vector3.Project(Vector3.ProjectOnPlane(new Vector3(coordinates.X, -coordinates.Y, coordinates.Z), plane.normal), Vector3.forward).magnitude);
+        return new Vector3(Vector3.Project(Vector3.ProjectOnPlane(new Vector3(coordinates.X, -coordinates.Y, coordinates.Z), plane.normal), Vector3.ProjectOnPlane(Vector3.right, plane.normal)).magnitude,
+               Math.Abs(plane.GetDistanceToPoint(new Vector3(coordinates.X, -coordinates.Y, coordinates.Z))),
+             Vector3.Project(Vector3.ProjectOnPlane(new Vector3(coordinates.X, -coordinates.Y, coordinates.Z), plane.normal), Vector3.Cross(plane.normal, Vector3.ProjectOnPlane(Vector3.right, plane.normal))).magnitude);
     }
 }
 //public class frameDisplay
