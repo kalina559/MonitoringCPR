@@ -5,8 +5,6 @@ using System;
 
 public class GraphRendering : MonoBehaviour
 {
-    //public List<GameObject> dots;
-    
     List<float> yValues;
     public float maxValue;
     public float minValue;
@@ -17,7 +15,6 @@ public class GraphRendering : MonoBehaviour
     float xAxisLength;
     public float highLimit, lowLimit, yAxisLineHeight;
     LineRenderer lineRenderer;
-    //public TextMesh maxValueText, minValueText, lowLimitText, highLimitText, YAxisLineText, unitsText;
     public string units;
     public SpriteRenderer circle;
 
@@ -33,8 +30,8 @@ public class GraphRendering : MonoBehaviour
         xAxisRight = transform.position.x + 0.43f * transform.localScale.x;
         xAxisLength = Math.Abs(xAxisRight - xAxisLeft);
         xUnit = (xAxisLength / numberOfPoints);
-        initClearValues();       
-        initializeGraph();
+        initializeGraphPoints();
+        initializeGraphAxes();
     }
 
     // Update is called once per frame
@@ -73,7 +70,7 @@ public class GraphRendering : MonoBehaviour
         yValues[numberOfPoints - 1] = newValue;
     }
 
-    void initializeGraph()
+    void initializeGraphAxes()
     {
         lineRenderer.sortingLayerName = "Background";
         
@@ -119,18 +116,10 @@ public class GraphRendering : MonoBehaviour
             YAxisLineText.gameObject.SetActive(false);
         }
     }
-
-    public void initClearValues()
+    public void initializeGraphPoints()
     {
         for (int i = 0; i < numberOfPoints; ++i)
         {
-            //GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            //var scale = sphere.transform.localScale;
-            //scale.x = 0.025f;
-            //scale.y = 0.05f;
-            //scale.z = 0.025f;
-            //sphere.transform.localScale = scale;
-            //newDots.Add(sphere);
             SpriteRenderer clone = Instantiate(circle, transform, true);
             clone.sortingLayerName = "Foreground";
             var scale = clone.gameObject.transform.localScale;

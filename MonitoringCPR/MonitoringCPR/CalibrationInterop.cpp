@@ -1,15 +1,6 @@
 ﻿#pragma once
 #include "CameraCalibration.h"
-#include <cstdlib>
-#include "opencv2/objdetect.hpp"
-#include <stdio.h>
-#include <opencv2/tracking.hpp>
-#include <math.h>
-#include <SDL.h>
 #include"StereoCapture.h"
-#include<filesystem>
-
-
 
 std::vector<std::pair<std::string, std::string>> validStereoFramesPaths;
 
@@ -45,15 +36,7 @@ extern "C" bool __declspec(dllexport) __stdcall checkStereoCalibrationFrames(int
 		cvtColor(img1, gray1, cv::COLOR_BGR2GRAY);
 		cvtColor(img2, gray2, cv::COLOR_BGR2GRAY);
 		std::vector<cv::Point2f> centers1, centers2;
-
-		cv::SimpleBlobDetector::Params params;
-		params.minArea = 10;
-		params.minThreshold = 1;
-
-		params.filterByConvexity = 1;
-		params.minConvexity = 0.5;
-
-		cv::Ptr<cv::FeatureDetector> blobDetector = cv::SimpleBlobDetector::create(params);
+		cv::Ptr<cv::FeatureDetector> blobDetector = ImgProcUtility::initBlobDetector();
 
 		bool patternFound1 = findCirclesGrid(gray1, arrayOfCirclesSize, centers1, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
 		bool patternFound2 = findCirclesGrid(gray2, arrayOfCirclesSize, centers2, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
@@ -232,12 +215,7 @@ extern "C" bool __declspec(dllexport) __stdcall  checkSingleCameraCalibrationFra
 		cvtColor(img, gray, cv::COLOR_BGR2GRAY);
 		std::vector<cv::Point2f> centers;
 
-		cv::SimpleBlobDetector::Params params;
-		params.minThreshold = 1;
-		params.filterByConvexity = 1;
-		params.minConvexity = 0.5;
-
-		cv::Ptr<cv::FeatureDetector> blobDetector = cv::SimpleBlobDetector::create(params);
+		cv::Ptr<cv::FeatureDetector> blobDetector = ImgProcUtility::initBlobDetector();
 
 		bool patternFound = findCirclesGrid(gray, arrayOfCirclesSize, centers, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
 
@@ -290,7 +268,6 @@ extern "C" void __declspec(dllexport) __stdcall clearSingleCameraFramesFolder(in
 	}
 	system(command.append(path).c_str());
 }
-
 enum frameSetMode
 {
 	first,

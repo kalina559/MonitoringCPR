@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using UnityEngine;
 using System.Runtime.InteropServices;
 using System.Text;
-
 internal static class OpenCVInterop
 {
    //potwierdzanie poprawności zdjęć
@@ -26,9 +25,6 @@ internal static class OpenCVInterop
     internal static extern bool moveToNextStereoFrames();
     [DllImport("MonitoringCPR")]
     internal static extern bool moveToNextSingleCameraFrame();
-
-
-
     // wykonywanie zdjęć do kalibracji
     [DllImport("MonitoringCPR")]
     internal static extern void saveCurrentFrames(int captureMode);
@@ -36,19 +32,14 @@ internal static class OpenCVInterop
     internal static extern void clearStereoCalibrationFramesFolder();
     [DllImport("MonitoringCPR")]
     internal static extern void clearSingleCameraFramesFolder(int cameraId);
-
     [DllImport("MonitoringCPR", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.StdCall)]
     [return: MarshalAs(UnmanagedType.BStr)]
     internal static extern string getFramesSetId(int cameraId);
-
-
     //kalibracja
     [DllImport("MonitoringCPR")]
     internal static extern void stereoCalibrate(ref int pairCount, ref int time, ref bool isFinished);   
     [DllImport("MonitoringCPR")]
     internal static extern int getEstimatedCalibrationTime();        
-    
-
     //real time monitoring
     [DllImport("MonitoringCPR")]
     internal static extern int setExpectedNumberOfMarkerPairs(int number);
@@ -64,9 +55,6 @@ internal static class OpenCVInterop
     internal static extern void saveThreshLevel(int threshLevel);
     [DllImport("MonitoringCPR")]
     internal static extern int getThreshLevel();
-
-
-
     //obsługa kamer
     [DllImport("MonitoringCPR", EntryPoint = "InitSDLCameras")]
     internal static extern int InitSDLCameras(ref int outCameraWidth, ref int outCameraHeight);

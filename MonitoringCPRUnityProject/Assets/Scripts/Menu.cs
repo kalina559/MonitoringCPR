@@ -26,7 +26,6 @@ public class Menu : MonoBehaviour
     {
         SceneManager.LoadScene((int)Scenes.CalibrationMenu);
     }
-
     public void GoToMainMenu()
     {
         SceneManager.LoadScene((int)Scenes.MainMenu);
@@ -60,7 +59,6 @@ public class Menu : MonoBehaviour
         if (Init.camerasInitialized)
         {
             OpenCVInterop.CloseSDLCameras();
-            Debug.Log("Closed SDL cameras in Menu manager");
         }
     }
 }
