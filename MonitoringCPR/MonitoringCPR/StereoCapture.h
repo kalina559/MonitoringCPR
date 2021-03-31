@@ -9,6 +9,9 @@ class StereoCapture
 	PS3EyeCapture second;
 	cv::Mat triangulatedCoordinates;
 	int expectedNumberOfMarkerPairs = 0;
+	float fps = 0;
+	int64 lastTimeStamp = 0;
+	int frameCount = 0;
 	
 public:
 	static StereoCapture* getInstance()
@@ -27,6 +30,8 @@ public:
 	int initCameras();
 	void updateFrames(int width, int height);
 	void updateFrames(int width, int height, int64& delay);
+	void calculateFPS();
+	float getFPS();
 	PS3EyeCapture& getFirstCapture();
 	PS3EyeCapture& getSecondCapture();
 	void freeCameras();

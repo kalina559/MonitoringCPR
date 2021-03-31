@@ -144,7 +144,7 @@ bool CameraCalibration::loadMatrix(std::string name, int cols, int rows, cv::Mat
 }
 
 double CameraCalibration::stereoCalibration(std::vector<cv::Mat> images1, std::vector<cv::Mat> images2, cv::Mat firstCamMatrix, cv::Mat secondCamMatrix, cv::Mat firstCamCoeffs,
-	cv::Mat secondCamCoeffs, cv::Size boardSize, cv::Mat& R, cv::Mat& T, cv::Mat& E, cv::Mat& F, float distanceBetweenCircles)
+	cv::Mat secondCamCoeffs, cv::Size boardSize, cv::Mat& R, cv::Mat& T, cv::Mat& E, cv::Mat& F)
 {
 	std::vector<std::vector<cv::Point2f> > centers1(images1.size());
 	CameraCalibration::getCirclePositions(images1, centers1, boardSize);
@@ -164,7 +164,7 @@ double CameraCalibration::stereoCalibration(std::vector<cv::Mat> images1, std::v
 	return rms;
 }
 
-void CameraCalibration::getSingleCamerasCoeffs(std::vector<cv::Mat> firstCamImgs, std::vector<cv::Mat> secondCamImgs, cv::Size boardSize, float distanceBetweenCircles,
+void CameraCalibration::getSingleCamerasCoeffs(std::vector<cv::Mat> firstCamImgs, std::vector<cv::Mat> secondCamImgs, cv::Size boardSize,
 	cv::Mat& firstCamMatrix, cv::Mat& secondCamMatrix, cv::Mat& firstCamCoeffs, cv::Mat& secondCamCoeffs)
 {
 	double firstRMS = CameraCalibration::singleCameraCalibration(firstCamImgs, boardSize, distanceBetweenCircles, firstCamMatrix, firstCamCoeffs);

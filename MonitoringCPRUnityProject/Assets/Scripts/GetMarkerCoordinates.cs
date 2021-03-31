@@ -29,9 +29,9 @@ public class GetMarkerCoordinates : MarkerTracking
     Vector3 offset;
     public Toggle saveCheckBox;
     string fileName;
-    StreamWriter writer;
     public CPRDummy dummy;
     public SubjectModel subject;
+
 
     bool firstMeasurement = true;
     int compressionCount = 0;
@@ -46,15 +46,15 @@ public class GetMarkerCoordinates : MarkerTracking
     }
     protected override void useMarkerCoordinates()
     {
-        floorPlane = MonitoringUtils.getPlaneFromCvCoordinates(_balls[(int)markerIds.Floor3], _balls[(int)markerIds.Floor2], _balls[(int)markerIds.Floor1]);
-        for (int i = 0; i < _balls.Length; i++)
-        {
-            markers[i].transform.position = MonitoringUtils.getCoordinatesRelativeToPlane(_balls[i], floorPlane) + offset;
-        }
+        floorPlane = MonitoringUtils.getPlaneFromCvCoordinates(_balls[(int)markerIds.Floor3], _balls[(int)markerIds.Floor2], _balls[(int)markerIds.Floor1]);        
         calculateAngles();
         if (firstMeasurement == true)
         {
             setInitialValues();
+        }
+        for (int i = 0; i < _balls.Length; i++)
+        {
+            markers[i].transform.position = MonitoringUtils.getCoordinatesRelativeToPlane(_balls[i], floorPlane) + offset;
         }
         dummy.updateDummyPose(
             markers[(int)markerIds.Dummy1].transform.position, 
@@ -79,11 +79,12 @@ public class GetMarkerCoordinates : MarkerTracking
         {
             performTracking = true;
             resetVariables();
-            
+
             if (saveCheckBox.isOn)
             {
                 fileName = "savedData/" + DateTime.Now.ToString().Replace(':', '.') + ".txt";
                 writer = new StreamWriter(fileName);
+                
             }
         }
         else
@@ -93,8 +94,8 @@ public class GetMarkerCoordinates : MarkerTracking
     }
     void calculateAngles()
     {
-        rightElbowAngle = MonitoringUtils.calculateElbowAngle(_balls[0], _balls[2], _balls[4]) - initialRightArmAngle;
-        leftElbowAngle = MonitoringUtils.calculateElbowAngle(_balls[1], _balls[3], _balls[4]) - initialLeftHandAngle;
+        rightElbowAngle = Math.Abs(MonitoringUtils.calculateElbowAngle(_balls[0], _balls[2], _balls[4]) - initialRightArmAngle);
+        leftElbowAngle = Math.Abs(MonitoringUtils.calculateElbowAngle(_balls[1], _balls[3], _balls[4]) - initialLeftHandAngle);
         var armsPlane = new Plane();
         armsPlane.Set3Points(
             MonitoringUtils.CvCoordinatesToVec3(_balls[(int)markerIds.rightArm]),
@@ -191,9 +192,14 @@ public class GetMarkerCoordinates : MarkerTracking
     }
     void setInitialValues()
     {
-        dummy.setInitialPose(markers[(int)markerIds.Dummy1].transform.position, markers[(int)markerIds.Dummy2].transform.position, markers[(int)markerIds.Hands].transform.position);
-        setInitialAngleValues();
         offset = MonitoringUtils.setOffsetVector(desiredLocation.transform.position, floorPlane, _balls[(int)markerIds.Hands]);
+        for (int i = 0; i < _balls.Length; i++)
+        {
+            markers[i].transform.position = MonitoringUtils.getCoordinatesRelativeToPlane(_balls[i], floorPlane) + offset;
+        }
+        dummy.setInitialPose(markers[(int)markerIds.Dummy1].transform.position, markers[(int)markerIds.Dummy2].transform.position, markers[(int)markerIds.Hands].transform.position);
+        setInitialAngleValues();        
         subject.setSubjectInitialPose(offset, dummy.transform);
     }
+
 }

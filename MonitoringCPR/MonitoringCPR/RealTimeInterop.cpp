@@ -87,7 +87,9 @@ extern "C" void __declspec(dllexport) __stdcall realTimeMonitoring(unsigned char
 	cap->updateFrames(width, height, delay);
 
 	if (!cap->realTimeMonitoring(firstFrameData, secondFrameData, performTracking))
+	{
 		return;
+	}
 
 	ImgProcUtility::getMarkersCoordinates3D(cap->getTriangCoordinates(), outBalls);
 }
@@ -111,4 +113,8 @@ extern "C" int __declspec(dllexport) __stdcall  getThreshLevel()
 extern "C" void __declspec(dllexport) __stdcall  CloseSDLCameras()
 {
 	StereoCapture::getInstance()->freeCameras();
+}
+extern "C" float __declspec(dllexport) __stdcall  getFPS()
+{
+	return StereoCapture::getInstance()->getFPS();
 }

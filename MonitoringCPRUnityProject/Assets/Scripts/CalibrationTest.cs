@@ -13,7 +13,6 @@ public class CalibrationTest : MarkerTracking
     public TextMeshProUGUI detectedDistance;
     public TextMeshProUGUI detectedError;
     public TMP_InputField expectedLength;
-    StreamWriter writer;
     double distance = 0;
     List<Vector3> previousMarkerPositions;
     public Toggle saveCheckBox;

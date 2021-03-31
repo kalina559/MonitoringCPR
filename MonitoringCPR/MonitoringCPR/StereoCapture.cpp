@@ -43,6 +43,7 @@ void StereoCapture::updateFrames(int width, int height)
 
 	first.setCurrentFrame(firstResizedMat);
 	second.setCurrentFrame(secondResizedMat);
+	calculateFPS();
 }
 void StereoCapture::updateFrames(int width, int height, int64& delay)
 {
@@ -62,6 +63,29 @@ void StereoCapture::updateFrames(int width, int height, int64& delay)
 
 	first.setCurrentFrame(firstResizedMat);
 	second.setCurrentFrame(secondResizedMat);
+	calculateFPS();
+}
+
+void StereoCapture::calculateFPS()
+{
+	++frameCount;
+	if (lastTimeStamp != 0)
+	{
+		if (frameCount % 10 == 0)
+		{
+			fps = 1000 * float(frameCount)/ (SDL_GetTicks() - lastTimeStamp);
+			lastTimeStamp = SDL_GetTicks();
+			frameCount = 0;
+		}
+	}
+	else
+	{
+		lastTimeStamp = SDL_GetTicks();
+	}
+}
+float StereoCapture::getFPS()
+{
+	return fps;
 }
 PS3EyeCapture& StereoCapture::getFirstCapture()
 {

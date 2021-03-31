@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System;
 using UnityEngine.UI;
 using TMPro;
+using System.IO;
 public class MarkerTracking : MonoBehaviour
 {
     FrameDisplay display;
@@ -20,11 +21,14 @@ public class MarkerTracking : MonoBehaviour
     //marker tracking variables
     protected CvCoordinates[] _balls;
     protected Int64 delay;
+    float lastFPS = 0;
+    protected StreamWriter writer;
     protected void Update()
     {
         MatToTexture2D();
-        MonitoringUtils.setStartButtonText(performTracking, changeModeButton);
         checkFPS();
+        MonitoringUtils.setStartButtonText(performTracking, changeModeButton);
+       
     }
     protected void InitTexture()
     {
@@ -46,10 +50,11 @@ public class MarkerTracking : MonoBehaviour
             }
             else
             {
-                readMarkerCoordinates(textures, pixelPtrs);
+                readMarkerCoordinates(textures, pixelPtrs);                
                 useMarkerCoordinates();
             }
         }
+        
         display.updateTextures();
     }
     public virtual void changeMode()
@@ -83,13 +88,12 @@ public class MarkerTracking : MonoBehaviour
     }
     protected void checkFPS()
     {
-        ++frameCount;
-        if (frameCount % 10 == 0)
+        float currentFPS = OpenCVInterop.getFPS();
+
+        if(lastFPS != currentFPS)
         {
-            float now = Time.time;
-            Debug.Log("fps: " + frameCount / (now - lastTimeStamp));
-            lastTimeStamp = now;
-            frameCount = 0;
+            Debug.Log("fps: " + currentFPS);
+            lastFPS = currentFPS;
         }
     }
     protected void readMarkerCoordinates(Tuple<Texture2D, Texture2D> textures, Tuple<IntPtr, IntPtr> pixelPtrs)
@@ -115,6 +119,7 @@ public class MarkerTracking : MonoBehaviour
     protected void OnDisable()
     {
         display.freeHandles();
+        writer.Close();
     }
 
     protected void initializeScene()

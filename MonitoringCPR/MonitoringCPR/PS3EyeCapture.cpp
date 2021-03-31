@@ -70,11 +70,12 @@ void PS3EyeCapture::updateTracker()
 
 bool PS3EyeCapture::calculateMarkersCoordinates()
 {
-	int detectedMarkers = 0;
 	cv::Mat grayFrame;
 	cvtColor(currentFrame, grayFrame, cv::COLOR_BGR2GRAY);
-
-	markersCoordinates2D.clear();
+	if (markersCoordinates2D.size() > 0)
+	{
+		markersCoordinates2D.clear();
+	}
 	for (unsigned int i = 0; i < ROIs.size(); ++i)
 	{
 		if (!ImgProcUtility::isROIinFrame(ROIs[i], grayFrame))
@@ -88,7 +89,6 @@ bool PS3EyeCapture::calculateMarkersCoordinates()
 			return false;
 		}
 		markersCoordinates2D.push_back({ v3fCircles(0) + ROIs[i].x , v3fCircles(1) + ROIs[i].y });
-		++detectedMarkers;
 		circle(currentFrame, cv::Point(v3fCircles[0] + ROIs[i].x, v3fCircles[1] + ROIs[i].y), v3fCircles[2], cv::Scalar(0, 0, 255));
 		rectangle(currentFrame, ROIs[i], cv::Scalar(255, 0, 0), 2, 1);
 	}

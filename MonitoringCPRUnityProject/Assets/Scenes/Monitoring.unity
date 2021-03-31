@@ -3820,7 +3820,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &868366326
 RectTransform:
   m_ObjectHideFlags: 0
@@ -7422,15 +7422,15 @@ MonoBehaviour:
   compressionsRateText: {fileID: 1433923218}
   compressionsCountText: {fileID: 868366327}
   compressionDepthText: {fileID: 266951518}
-  saveCheckBox: {fileID: 1722071174}
-  dummy: {fileID: 848319278}
-  subject: {fileID: 1762239764}
   armFloorAngleGraph: {fileID: 865024351}
   leftElbowAngleGraph: {fileID: 1039917253}
   rightElbowAngleGraph: {fileID: 447254313}
   compressionDepthGraph: {fileID: 144424846}
   compressionRateGraph: {fileID: 1110028295}
   handsYPositionGraph: {fileID: 1365150949}
+  saveCheckBox: {fileID: 1722071174}
+  dummy: {fileID: 848319278}
+  subject: {fileID: 1762239764}
 --- !u!114 &1887440105
 MonoBehaviour:
   m_ObjectHideFlags: 0

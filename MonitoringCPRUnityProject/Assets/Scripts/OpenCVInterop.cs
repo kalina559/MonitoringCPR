@@ -55,6 +55,8 @@ internal static class OpenCVInterop
     internal static extern void saveThreshLevel(int threshLevel);
     [DllImport("MonitoringCPR")]
     internal static extern int getThreshLevel();
+    [DllImport("MonitoringCPR")]
+    internal static extern float getFPS();
     //obsługa kamer
     [DllImport("MonitoringCPR", EntryPoint = "InitSDLCameras")]
     internal static extern int InitSDLCameras(ref int outCameraWidth, ref int outCameraHeight);

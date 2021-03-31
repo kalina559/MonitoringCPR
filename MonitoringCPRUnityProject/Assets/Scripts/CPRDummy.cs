@@ -68,8 +68,8 @@ public class CPRDummy : MonoBehaviour
 
     bool handsInRightPosition(Vector3 firstDummyMarker, Vector3 secondDummyMarker, Vector3 handsMarker, Vector3 dummyEdgeVector)
     {
-        var currentHandLocalXPosition = (Vector3.Project((firstDummyMarker - secondDummyMarker), (secondDummyMarker - firstDummyMarker))).magnitude;
-        var currentHandLocalZPosition = Vector3.Distance(firstDummyMarker, dummyEdgeVector);
+        var currentHandLocalXPosition = (Vector3.Project((handsMarker - firstDummyMarker), (secondDummyMarker - firstDummyMarker))).magnitude;
+        var currentHandLocalZPosition = Vector3.Distance(handsMarker, dummyEdgeVector);
         return (Math.Abs(currentHandLocalZPosition - initialHandLocalZPosition) < 0.5) && (Math.Abs(currentHandLocalXPosition - initialHandLocalXPosition) < 0.5);
     }
 }
