@@ -119,7 +119,10 @@ public class MarkerTracking : MonoBehaviour
     protected void OnDisable()
     {
         display.freeHandles();
-        writer.Close();
+        if (writer != null)
+        {
+            writer.Close();
+        }
     }
 
     protected void initializeScene()

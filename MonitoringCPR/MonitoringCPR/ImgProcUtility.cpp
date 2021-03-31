@@ -112,7 +112,7 @@ bool ImgProcUtility::findCircleInROI(cv::Mat frame, cv::Vec3f& circleCoordinates
 	cv::Mat cannyFrame;
 	std::vector<cv::Point> circleContour;
 
-	cv::Canny(frame, cannyFrame, threshLevel, 255);
+	cv::Canny(frame, cannyFrame, threshLevel, (threshLevel + 255) / 2);
 	if (!getBiggestContours(cannyFrame, circleContour))
 		return false;
 
