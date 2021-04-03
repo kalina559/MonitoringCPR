@@ -4,7 +4,7 @@ using UnityEngine;
 using TMPro;
 using System.Runtime.InteropServices;
 using System;
-// Define the structure to be sequential and with the correct byte size (3 ints = 4 bytes * 3 = 12 bytes)
+
 [StructLayout(LayoutKind.Sequential, Size = 12)]
 public struct CvCoordinates
 {

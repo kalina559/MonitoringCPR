@@ -25,7 +25,7 @@ public class StereoCalibrationFramesCheck : MonoBehaviour
         errorMessagePanel.GetComponentInChildren<Button>().gameObject.SetActive(false);
         startFrameCheckThread();        
     }
-    private void Update()
+    void Update()
     {
         if (thread != null && !thread.IsAlive && checkFinished)     //when frameCheck is finished
         {            

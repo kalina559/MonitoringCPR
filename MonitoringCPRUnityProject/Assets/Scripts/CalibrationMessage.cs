@@ -38,7 +38,6 @@ public class CalibrationMessage : MonoBehaviour
             }
         }
     }
-
     public void OpenWindow()
     {
         gameObject.SetActive(true);
@@ -102,7 +101,6 @@ public class CalibrationMessage : MonoBehaviour
             gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("KALIBRACJA ZOSTAŁA JUŻ PRZEPROWADZONA NA TYM ZESTAWIE ZDJĘĆ");
         }
     }
-
     string checkForChangesInFolders(string stereoFrameSetId, string firstCameraFrameSet, string secondCameraFrameSet)
     {
         string message = "";

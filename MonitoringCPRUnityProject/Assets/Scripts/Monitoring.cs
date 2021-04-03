@@ -6,7 +6,7 @@ using System;
 using UnityEngine.UI;
 using TMPro;
 using System.IO;
-public class GetMarkerCoordinates : MarkerTracking
+public class Monitoring : MarkerTracking
 {
     enum markerIds
     {

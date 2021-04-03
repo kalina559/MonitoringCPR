@@ -23,14 +23,14 @@ cv::Mat PS3EyeCapture::getCurrentFrame()
 {
 	return currentFrame;
 }
-void PS3EyeCapture::setROIs(std::vector<cv::Vec3f> detectedMarkers)
+void PS3EyeCapture::setROIs(std::vector<cv::Vec3f> detectedCircles)
 {
-	if (detectedMarkers.size() == expectedNumberOfMarkers)
+	if (detectedCircles.size() == expectedNumberOfMarkers)
 	{
 		clearROIs();
-		for (int i = 0; i < detectedMarkers.size(); i++)
+		for (int i = 0; i < detectedCircles.size(); i++)
 		{
-			cv::Rect trackedArea(detectedMarkers[i](0) - 3 * detectedMarkers[i](2), detectedMarkers[i](1) - 3 * detectedMarkers[i](2), 6 * detectedMarkers[i](2), 6 * detectedMarkers[i](2));
+			cv::Rect trackedArea(detectedCircles[i](0) - 3 * detectedCircles[i](2), detectedCircles[i](1) - 3 * detectedCircles[i](2), 6 * detectedCircles[i](2), 6 * detectedCircles[i](2));
 			ROIs.push_back(trackedArea);
 		}
 
@@ -124,7 +124,7 @@ bool PS3EyeCapture::detectMarkers(cv::Mat& displayFrame)
 	std::vector<cv::Vec3f> circles;
 	cv::HoughCircles(cannyFrame, circles, cv::HOUGH_GRADIENT, 1, displayFrame.rows / 30, 255, 10, 1, 30);
 
-	std::sort(circles.begin(), circles.end(), contourSorter());
+	std::sort(circles.begin(), circles.end(), ImgProcUtility::contourSorter());
 	setROIs(circles);
 	for (int i = 0; i < circles.size(); ++i)
 	{

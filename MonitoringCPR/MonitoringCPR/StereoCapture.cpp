@@ -65,22 +65,20 @@ void StereoCapture::updateFrames(int width, int height, int64& delay)
 	second.setCurrentFrame(secondResizedMat);
 	calculateFPS();
 }
-
 void StereoCapture::calculateFPS()
 {
 	++frameCount;
-	if (lastTimeStamp != 0)
-	{
-		if (frameCount % 10 == 0)
-		{
-			fps = 1000 * float(frameCount)/ (SDL_GetTicks() - lastTimeStamp);
-			lastTimeStamp = SDL_GetTicks();
-			frameCount = 0;
-		}
-	}
-	else
+	if (lastTimeStamp == 0)
 	{
 		lastTimeStamp = SDL_GetTicks();
+	}
+	auto elapsedTime = SDL_GetTicks() - lastTimeStamp;
+
+	if (elapsedTime > 1000)
+	{
+		fps = 1000 * float(frameCount) / elapsedTime;
+		lastTimeStamp = SDL_GetTicks();
+		frameCount = 0;
 	}
 }
 float StereoCapture::getFPS()
@@ -104,16 +102,16 @@ void StereoCapture::freeCameras()
 }
 void StereoCapture::initializeMatrices()
 {
-	CameraCalibration::loadMatrix("matrices/singleCamCalibration/firstCamMatrix", 3, 3, matrices.firstCamMatrix);
-	CameraCalibration::loadMatrix("matrices/singleCamCalibration/secondCamMatrix", 3, 3, matrices.secondCamMatrix);
-	CameraCalibration::loadMatrix("matrices/singleCamCalibration/firstCamCoeffs", 5, 1, matrices.firstCamCoeffs);
-	CameraCalibration::loadMatrix("matrices/singleCamCalibration/secondCamCoeffs", 5, 1, matrices.secondCamCoeffs);
-	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/P1", 3, 4, matrices.P1);
-	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/P2", 3, 4, matrices.P2);
-	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/R1", 3, 3, matrices.R1);
-	CameraCalibration::loadMatrix("matrices/stereoRectifyResults/R2", 3, 3, matrices.R2);
+	CameraCalibrationUtility::loadMatrix("matrices/singleCamCalibration/firstCamMatrix", cv::Size(3, 3), matrices.firstCamMatrix);
+	CameraCalibrationUtility::loadMatrix("matrices/singleCamCalibration/secondCamMatrix", cv::Size(3, 3), matrices.secondCamMatrix);
+	CameraCalibrationUtility::loadMatrix("matrices/singleCamCalibration/firstCamCoeffs", cv::Size(5, 1), matrices.firstCamCoeffs);
+	CameraCalibrationUtility::loadMatrix("matrices/singleCamCalibration/secondCamCoeffs", cv::Size(5, 1), matrices.secondCamCoeffs);
+	CameraCalibrationUtility::loadMatrix("matrices/stereoRectifyResults/P1", cv::Size(3, 4), matrices.P1);
+	CameraCalibrationUtility::loadMatrix("matrices/stereoRectifyResults/P2", cv::Size(3, 4), matrices.P2);
+	CameraCalibrationUtility::loadMatrix("matrices/stereoRectifyResults/R1", cv::Size(3, 3), matrices.R1);
+	CameraCalibrationUtility::loadMatrix("matrices/stereoRectifyResults/R2", cv::Size(3, 3), matrices.R2);
 }
-Matrices& StereoCapture::getMatrices()
+ImgProcUtility::Matrices& StereoCapture::getMatrices()
 {
 	return matrices;
 }
@@ -128,8 +126,8 @@ void StereoCapture::setTrackingState(bool value)
 
 void StereoCapture::triangulateCameras()
 {
-	StereoCoordinates2D stereoCoordinates2D = { first.getMarkersCoordinates(), second.getMarkersCoordinates() };
-	triangulatedCoordinates = ImgProcUtility::process2DCoordinates(stereoCoordinates2D, matrices);
+	ImgProcUtility::StereoCoordinates2D stereoCoordinates2D = { first.getMarkersCoordinates(), second.getMarkersCoordinates() };
+	triangulatedCoordinates = ImgProcUtility::getMarkers3DCoordinates(stereoCoordinates2D, matrices);
 }
 cv::Mat StereoCapture::getTriangCoordinates()
 {
@@ -181,6 +179,6 @@ bool StereoCapture::realTimeMonitoring(unsigned char* firstFrameData, unsigned c
 
 	ImgProcUtility::passFrameToUnity(first.getCurrentFrame(), firstFrameData);
 	ImgProcUtility::passFrameToUnity(second.getCurrentFrame(), secondFrameData);
-	return true;	
+	return true;
 }
 

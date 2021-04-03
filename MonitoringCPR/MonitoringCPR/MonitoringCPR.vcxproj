@@ -147,14 +147,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CalibrationInterop.cpp" />
-    <ClCompile Include="CameraCalibration.cpp" />
+    <ClCompile Include="CameraCalibrationUtility.cpp" />
     <ClCompile Include="ImgProcUtility.cpp" />
     <ClCompile Include="PS3EyeCapture.cpp" />
     <ClCompile Include="RealTimeInterop.cpp" />
     <ClCompile Include="StereoCapture.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CameraCalibration.h" />
+    <ClInclude Include="CameraCalibrationUtility.h" />
     <ClInclude Include="ImgProcUtility.h" />
     <ClInclude Include="PS3EyeCapture.h" />
     <ClInclude Include="StereoCapture.h" />

@@ -76,7 +76,7 @@ std::pair<cv::Mat, cv::Mat> ImgProcUtility::performCanny(std::pair<cv::Mat, cv::
 	return cannyFrames;
 }
 
-bool ImgProcUtility::getBiggestContours(cv::Mat frame, std::vector<cv::Point>& biggestContour)  //dodac opisywanie okregu na konturze
+bool ImgProcUtility::getBiggestContour(cv::Mat frame, std::vector<cv::Point>& biggestContour)  //dodac opisywanie okregu na konturze
 {
 	std::vector<std::vector<cv::Point> > contours;
 	findContours(frame, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
@@ -113,7 +113,7 @@ bool ImgProcUtility::findCircleInROI(cv::Mat frame, cv::Vec3f& circleCoordinates
 	std::vector<cv::Point> circleContour;
 
 	cv::Canny(frame, cannyFrame, threshLevel, (threshLevel + 255) / 2);
-	if (!getBiggestContours(cannyFrame, circleContour))
+	if (!getBiggestContour(cannyFrame, circleContour))
 		return false;
 
 	circleCoordinates = getContoursMinEnclosingCircle(circleContour);
@@ -121,7 +121,7 @@ bool ImgProcUtility::findCircleInROI(cv::Mat frame, cv::Vec3f& circleCoordinates
 	return true;
 }
 
-cv::Mat ImgProcUtility::process2DCoordinates(StereoCoordinates2D coordinates2D, Matrices& matrices)
+cv::Mat ImgProcUtility::getMarkers3DCoordinates(StereoCoordinates2D coordinates2D, Matrices& matrices)
 {
 	std::pair<cv::Mat, cv::Mat> distCoords = ImgProcUtility::populateMatricesFromVectors(coordinates2D);
 
@@ -129,12 +129,12 @@ cv::Mat ImgProcUtility::process2DCoordinates(StereoCoordinates2D coordinates2D, 
 	undistortPoints(distCoords.first, undistCoords1, matrices.firstCamMatrix, matrices.firstCamCoeffs, matrices.R1, matrices.P1);
 	undistortPoints(distCoords.second, undistCoords2, matrices.secondCamMatrix, matrices.secondCamCoeffs, matrices.R2, matrices.P2);
 
-	cv::Mat triangCoords;
-	triangulatePoints(matrices.P1, matrices.P2, undistCoords1, undistCoords2, triangCoords);
-	return triangCoords;
+	cv::Mat coordinates3D;
+	triangulatePoints(matrices.P1, matrices.P2, undistCoords1, undistCoords2, coordinates3D);
+	return coordinates3D;
 }
 
-void ImgProcUtility::getMarkersCoordinates3D(cv::Mat triangCoords, Coordinates* outBalls)
+void ImgProcUtility::homogenousToCartesianCoordinates(cv::Mat triangCoords, Coordinates* outBalls)
 {
 	for (int i = 0; i < triangCoords.cols; ++i)
 	{
@@ -183,30 +183,22 @@ BSTR ImgProcUtility::getFrameSetId(std::string path)
 	return SysAllocString(bs);
 }
 
-void ImgProcUtility::detectMarkers(cv::Mat& frame, cv::Mat& displayFrame, std::vector<cv::Vec3f>& circles)
-{
-	//cv::Mat gray;
-	//cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-	//cv::Mat threshFrame;
-	//int threshLevel = StereoCapture::getInstance()->getFirstCapture().getThreshLevel();
-	//cv::threshold(gray, threshFrame, threshLevel, 255, cv::THRESH_BINARY);
-
-
-
-	cv::Mat cannyFrame;
-	cv::Canny(frame, cannyFrame, 200, 255);
-
-	cv::HoughCircles(cannyFrame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 30, 255, 10, 1, 30);
-
-	std::sort(circles.begin(), circles.end(), contourSorter());
-
-	for (int i = 0; i < circles.size(); ++i)
-	{
-		cv::putText(displayFrame, std::to_string(i),
-			cv::Point(circles[i](0) - 10, circles[i](1)), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 0, 255));
-		circle(displayFrame, cv::Point(circles[i](0), circles[i](1)), circles[i](2), cv::Scalar(0, 0, 255));
-	}
-}
+//void ImgProcUtility::detectMarkers(cv::Mat& frame, cv::Mat& displayFrame, std::vector<cv::Vec3f>& circles)
+//{
+//	cv::Mat cannyFrame;
+//	cv::Canny(frame, cannyFrame, 200, 255);
+//
+//	cv::HoughCircles(cannyFrame, circles, cv::HOUGH_GRADIENT, 1, frame.rows / 30, 255, 10, 1, 30);
+//
+//	std::sort(circles.begin(), circles.end(), contourSorter());
+//
+//	for (int i = 0; i < circles.size(); ++i)
+//	{
+//		cv::putText(displayFrame, std::to_string(i),
+//			cv::Point(circles[i](0) - 10, circles[i](1)), cv::FONT_HERSHEY_COMPLEX, 1, cv::Scalar(0, 0, 255));
+//		circle(displayFrame, cv::Point(circles[i](0), circles[i](1)), circles[i](2), cv::Scalar(0, 0, 255));
+//	}
+//}
 bool ImgProcUtility::isROIinFrame(cv::Rect ROI, cv::Mat frame)
 {
 	bool isInsideFrame = (ROI.x > 0 && ROI.x < (frame.cols - ROI.width) && ROI.y > 0 && ROI.y < (frame.rows - ROI.height));
