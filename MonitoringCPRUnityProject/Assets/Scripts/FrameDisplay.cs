@@ -21,10 +21,10 @@ public class FrameDisplay
         secondTex = new Texture2D(640, 480, TextureFormat.ARGB32, false);
         firstPixel32 = firstTex.GetPixels32();
         secondPixel32 = secondTex.GetPixels32();
-        //Pin pixel32 array
+
         firstPixelHandle = GCHandle.Alloc(firstPixel32, GCHandleType.Pinned);
         secondPixelHandle = GCHandle.Alloc(secondPixel32, GCHandleType.Pinned);
-        //Get the pinned address
+
         firstPixelPtr = firstPixelHandle.AddrOfPinnedObject();
         secondPixelPtr = secondPixelHandle.AddrOfPinnedObject();
     }

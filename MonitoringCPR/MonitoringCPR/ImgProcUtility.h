@@ -76,7 +76,7 @@ namespace ImgProcUtility
 	BSTR getFrameSetId(std::string path);
 	//void detectMarkers(cv::Mat& frame, cv::Mat& displayFrame, std::vector<cv::Vec3f>& circles);
 	bool isROIinFrame(cv::Rect ROI, cv::Mat frame);
-	std::vector<std::string> getFileNames(std::string path);
+	std::vector<std::string> getFilePaths(std::string path);
 	std::string getCurrentDateStr();
 	std::string getCurrentTimeStr();
 	void drawDetectedCirclesGrid(cv::Mat& frame, cv::Ptr<cv::FeatureDetector> blobDetector);

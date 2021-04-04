@@ -19,7 +19,7 @@ namespace CameraCalibrationUtility
 	 * @param format - Format of the image file
 	 * @returns Vector of strings with paths to images without a pair
 	 */
-	std::vector<std::string> checkFramesPairs(std::string firstPath, std::string secondPath, std::string format);
+	std::vector<std::string> checkFramesPairs(std::string firstPath, std::string secondPath);
 	/**
 	 * @brief Return a vector of file names instead of whole file paths 
 	 * @param filePaths - Vector of strings with file paths

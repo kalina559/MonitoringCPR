@@ -55,9 +55,9 @@ public class MonitoringUtils : MonoBehaviour
     }
     internal static Vector3 getCoordinatesRelativeToPlane(CvCoordinates coordinates, Plane plane)
     {
-        return new Vector3(Vector3.Project(Vector3.ProjectOnPlane(new Vector3(coordinates.X, -coordinates.Y, coordinates.Z), plane.normal), Vector3.ProjectOnPlane(Vector3.right, plane.normal)).magnitude,
-               Math.Abs(plane.GetDistanceToPoint(new Vector3(coordinates.X, -coordinates.Y, coordinates.Z))),
-             Vector3.Project(Vector3.ProjectOnPlane(new Vector3(coordinates.X, -coordinates.Y, coordinates.Z), plane.normal), Vector3.Cross(plane.normal, Vector3.ProjectOnPlane(Vector3.right, plane.normal))).magnitude);
+        return new Vector3(Vector3.Project(MonitoringUtils.CvCoordinatesToVec3(coordinates), Vector3.ProjectOnPlane(Vector3.right, plane.normal)).magnitude,
+               Math.Abs(plane.GetDistanceToPoint(MonitoringUtils.CvCoordinatesToVec3(coordinates))),
+             Vector3.Project(MonitoringUtils.CvCoordinatesToVec3(coordinates), Vector3.Cross(plane.normal, Vector3.ProjectOnPlane(Vector3.right, plane.normal))).magnitude);
     }
 
     internal static float calculateElbowAngle(CvCoordinates arm, CvCoordinates elbow, CvCoordinates hands)

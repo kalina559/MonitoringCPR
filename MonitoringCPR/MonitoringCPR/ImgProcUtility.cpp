@@ -16,11 +16,11 @@ std::pair<cv::Mat, cv::Mat> ImgProcUtility::thresholdImages(std::pair<cv::Mat, c
 	return threshFrames;
 }
 
-std::vector<std::string> ImgProcUtility::getFileNames(std::string path)
+std::vector<std::string> ImgProcUtility::getFilePaths(std::string path)
 {
-	std::vector<std::string> fileNamesVec;
-	cv::glob(path, fileNamesVec, false);
-	return fileNamesVec;
+	std::vector<std::string> filePathsVec;
+	cv::glob(path, filePathsVec, false);
+	return filePathsVec;
 }
 
 std::string ImgProcUtility::getCurrentDateStr()
@@ -164,7 +164,7 @@ std::pair<cv::Mat, cv::Mat> ImgProcUtility::populateMatricesFromVectors(StereoCo
 BSTR ImgProcUtility::getFrameSetId(std::string path)
 {
 	BSTR bs;
-	std::vector<cv::String> fileNames = getFileNames(path);
+	std::vector<cv::String> fileNames = getFilePaths(path);
 
 	std::wstring outDigitString;
 	if (fileNames.size() != 0)

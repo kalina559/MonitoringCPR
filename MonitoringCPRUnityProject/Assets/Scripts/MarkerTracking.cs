@@ -103,7 +103,6 @@ public class MarkerTracking : MonoBehaviour
             fixed (CvCoordinates* outBalls = _balls)
             {
                 OpenCVInterop.realTimeMonitoring(pixelPtrs.Item1, pixelPtrs.Item2, textures.Item1.width, textures.Item2.height, outBalls, ref performTracking, ref delay) ;
-                Debug.Log("delay between frames:" + delay);
             }
         }
     }

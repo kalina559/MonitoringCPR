@@ -8,8 +8,6 @@ internal static class OpenCVInterop
 {
    //potwierdzanie poprawności zdjęć
     [DllImport("MonitoringCPR")]
-    internal static extern void GetCalibrationFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
-    [DllImport("MonitoringCPR")]
     internal static extern bool checkStereoCalibrationFrames(ref int invalidFrames, ref int singleFrames, ref int totalFrames);
     [DllImport("MonitoringCPR")]
     internal static extern bool checkSingleCameraCalibrationFrames(ref int invalidFrames, ref int totalFrames, int cameraId);
@@ -37,10 +35,12 @@ internal static class OpenCVInterop
     internal static extern string getFramesSetId(int cameraId);
     //kalibracja
     [DllImport("MonitoringCPR")]
-    internal static extern void stereoCalibrate(ref int pairCount, ref int time, ref bool isFinished);   
+    internal static extern void stereoCalibrate(ref int pairCount, ref int time);   
     [DllImport("MonitoringCPR")]
-    internal static extern int getEstimatedCalibrationTime();        
+    internal static extern int getEstimatedCalibrationTime();
     //real time monitoring
+    [DllImport("MonitoringCPR")]
+    internal static extern void GetCalibrationFrame(IntPtr firstFrame, IntPtr secondFrame, int width, int height);
     [DllImport("MonitoringCPR")]
     internal static extern int setExpectedNumberOfMarkerPairs(int number);
     [DllImport("MonitoringCPR")]

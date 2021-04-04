@@ -8,11 +8,10 @@ extern "C"
 	bool __declspec(dllexport) __stdcall checkStereoCalibrationFrames(int& invalidFramesCount, int& framesWithoutPair, int& totalFramesCount)
 	{
 		validStereoFramesPaths.clear();
-		std::string path1 = "../MonitoringCPR/CalibrationImages/Stereo/firstCam/";
-		std::string path2 = "../MonitoringCPR/CalibrationImages/Stereo/secondCam/";
-		std::string imgFormat = "*.jpg";
+		std::string path1 = "../MonitoringCPR/CalibrationImages/Stereo/firstCam/*.jpg";
+		std::string path2 = "../MonitoringCPR/CalibrationImages/Stereo/secondCam/*.jpg";
 
-		auto singleFrames = CameraCalibrationUtility::checkFramesPairs(path1, path2, imgFormat);
+		auto singleFrames = CameraCalibrationUtility::checkFramesPairs(path1, path2);
 		framesWithoutPair = singleFrames.size();
 		while (singleFrames.size() > 0)
 		{
@@ -21,10 +20,9 @@ extern "C"
 		}
 		int invalid = 0;
 
-		std::vector<cv::String> fileNames1, fileNames2;
+		auto fileNames1 = ImgProcUtility::getFilePaths(path1);
+		auto fileNames2 = ImgProcUtility::getFilePaths(path2);
 		std::vector<int> invalidIds;
-		cv::glob(path1 + imgFormat, fileNames1, false);
-		cv::glob(path2 + imgFormat, fileNames2, false);
 		if (fileNames1.size() == fileNames2.size())
 		{
 			totalFramesCount = fileNames1.size();
@@ -71,14 +69,7 @@ extern "C"
 		cvtColor(secondFrame, gray2, cv::COLOR_BGR2GRAY);
 		std::vector<cv::Point2f> centers1, centers2;
 
-		cv::SimpleBlobDetector::Params params;
-		params.minArea = 10;
-		params.minThreshold = 1;
-
-		params.filterByConvexity = 1;
-		params.minConvexity = 0.5;
-
-		cv::Ptr<cv::FeatureDetector> blobDetector = cv::SimpleBlobDetector::create(params);
+		auto blobDetector = ImgProcUtility::initBlobDetector();
 
 		bool patternFound1 = findCirclesGrid(gray1, arrayOfCirclesSize, centers1, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
 		bool patternFound2 = findCirclesGrid(gray2, arrayOfCirclesSize, centers2, cv::CALIB_CB_ASYMMETRIC_GRID + cv::CALIB_CB_CLUSTERING, blobDetector);
@@ -86,11 +77,8 @@ extern "C"
 		drawChessboardCorners(firstFrame, arrayOfCirclesSize, cv::Mat(centers1), patternFound1);
 		drawChessboardCorners(secondFrame, arrayOfCirclesSize, cv::Mat(centers2), patternFound2);
 
-		cv::Mat firstArgbImg, secondArgbImg;
-		cv::cvtColor(firstFrame, firstArgbImg, cv::COLOR_BGR2RGBA);
-		cv::cvtColor(secondFrame, secondArgbImg, cv::COLOR_BGR2RGBA);
-		std::memcpy(firstFrameData, firstArgbImg.data, firstArgbImg.total() * firstArgbImg.elemSize());
-		std::memcpy(secondFrameData, secondArgbImg.data, secondArgbImg.total() * secondArgbImg.elemSize());
+		ImgProcUtility::passFrameToUnity(firstFrame, firstFrameData);
+		ImgProcUtility::passFrameToUnity(secondFrame, secondFrameData);
 	}
 	void __declspec(dllexport) __stdcall clearStereoCalibrationFramesFolder()
 	{
@@ -118,7 +106,7 @@ extern "C"
 			return false;
 		}
 	}
-	void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount, int& time, bool& isFinished)
+	void __declspec(dllexport) __stdcall  stereoCalibrate(int& pairCount, int& time)
 	{
 		Uint32 start_ticks = SDL_GetTicks();
 		std::vector<cv::Mat> images1, images2, singleFrames1, singleFrames2;
@@ -147,13 +135,12 @@ extern "C"
 		Uint32 end_ticks = SDL_GetTicks();
 		pairCount = images1.size();
 		time = (end_ticks - start_ticks) / 1000;
-		isFinished = true;
 		StereoCapture::getInstance()->initializeMatrices();
 	}
 
 	int __declspec(dllexport) __stdcall  getEstimatedCalibrationTime() 
 	{
-		std::vector<cv::String> fileNamesVec = ImgProcUtility::getFileNames("..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg");
+		std::vector<cv::String> fileNamesVec = ImgProcUtility::getFilePaths("..\\MonitoringCPR\\CalibrationImages\\Stereo\\firstCam\\*.jpg");
 		int x = fileNamesVec.size();            //number of pairs of frames
 		double estimatedTime = 0.0004 * pow(x, 3) + 0.0216 * pow(x, 2) - 0.5134 * x + 2.8644;
 

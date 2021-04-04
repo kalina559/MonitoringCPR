@@ -10,11 +10,10 @@ void CameraCalibrationUtility::loadPhotos(std::string path, std::vector<cv::Mat>
 		images.push_back(cv::imread(fileNames[i]));
 	}
 }
-std::vector<std::string> CameraCalibrationUtility::checkFramesPairs(std::string firstPath, std::string secondPath, std::string format)
+std::vector<std::string> CameraCalibrationUtility::checkFramesPairs(std::string firstPath, std::string secondPath)
 {
-	std::vector<cv::String> firstFilePaths, secondFilePaths;
-	cv::glob(firstPath + format, firstFilePaths, false);
-	cv::glob(secondPath + format, secondFilePaths, false);
+	auto firstFilePaths = ImgProcUtility::getFilePaths(firstPath);
+	auto secondFilePaths = ImgProcUtility::getFilePaths(secondPath);
 	auto firstFileNames = getFileNames(firstFilePaths);
 	auto secondFileNames = getFileNames(secondFilePaths);
 

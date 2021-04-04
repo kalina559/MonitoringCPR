@@ -94,7 +94,7 @@ public class Monitoring : MarkerTracking
     }
     void calculateAngles()
     {
-        rightElbowAngle = Math.Abs(MonitoringUtils.calculateElbowAngle(_balls[0], _balls[2], _balls[4]) - initialRightArmAngle);
+        rightElbowAngle = Math.Abs(MonitoringUtils.calculateElbowAngle(_balls[0], _balls[2], _balls[4]) - initialRightArmAngle);  
         leftElbowAngle = Math.Abs(MonitoringUtils.calculateElbowAngle(_balls[1], _balls[3], _balls[4]) - initialLeftHandAngle);
         var armsPlane = new Plane();
         armsPlane.Set3Points(

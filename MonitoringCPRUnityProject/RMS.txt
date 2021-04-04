@@ -14,3 +14,11 @@ stereo RMS: 0.216511
 first camera RMS: 0.337130
 second camera RMS: 0.352762
 stereo RMS: 0.216691
+04/04/21	21:42:39
+first camera RMS: 0.339440
+second camera RMS: 0.352762
+stereo RMS: 0.21874
+04/04/21	21:45:47
+first camera RMS: 0.339440
+second camera RMS: 0.352762
+stereo RMS: 0.21874

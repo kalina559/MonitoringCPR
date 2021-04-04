@@ -12,7 +12,6 @@ public class CalibrationMessage : MonoBehaviour
     public Button calibrateButton;
     int estimatedTimeInSeconds = 0;
     int frameCount = 0, seconds = 0;
-    bool done = false;
     float timer;
     int timerSeconds = 0;
     void Update()
@@ -22,13 +21,8 @@ public class CalibrationMessage : MonoBehaviour
             if (thread.IsAlive)
             {
                 gameObject.GetComponentInChildren<TextMeshProUGUI>().SetText("DO KOŃCA KALIBRACJI ZOSTAŁO OKOŁO : " + formatTimeInSeconds(estimatedTimeInSeconds - timerSeconds));
-                timer += Time.deltaTime;
-                if (timer >= 1)
-                {
-                    timer = 0f;
-                    if (timerSeconds < estimatedTimeInSeconds)
-                        timerSeconds++;
-                }
+                updateTimer();
+                
             }
             else
             {
@@ -55,7 +49,7 @@ public class CalibrationMessage : MonoBehaviour
     }
     void stereoCalibrate()
     {
-        OpenCVInterop.stereoCalibrate(ref frameCount, ref seconds, ref done);
+        OpenCVInterop.stereoCalibrate(ref frameCount, ref seconds);
     }
     string formatTimeInSeconds(int seconds)
     {
@@ -75,7 +69,7 @@ public class CalibrationMessage : MonoBehaviour
         if (thread != null)
             thread.Abort();
     }
-    public void getCurrentFrameSetId()
+    public void checkCurrentFrameSetId()
     {
         string currentStereoFramesSetId = OpenCVInterop.getFramesSetId(2);
         string currentFirstCameraFramesSet = OpenCVInterop.getFramesSetId(0);
@@ -125,5 +119,15 @@ public class CalibrationMessage : MonoBehaviour
             message += " DO STEREO KALIBRACJI";
         }
         return message;
+    }
+    void updateTimer()
+    {
+        timer += Time.deltaTime;
+        if (timer >= 1)
+        {
+            timer = 0f;
+            if (timerSeconds < estimatedTimeInSeconds)
+                timerSeconds++;
+        }
     }
 }
