@@ -21,7 +21,7 @@ public class MarkerTracking : MonoBehaviour
     //marker tracking variables
     protected CvCoordinates[] _balls;
     protected Int64 delay;
-    float lastFPS = 0;
+    protected float lastFPS = 0;
     protected StreamWriter writer;
     protected void Update()
     {

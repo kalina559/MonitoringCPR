@@ -62,7 +62,7 @@ public class Monitoring : MarkerTracking
             markers[(int)markerIds.Hands].transform.position, ref performTracking);
         subject.updateSubjectPose(markers[(int)markerIds.rightArm].transform.position, markers[(int)markerIds.leftArm].transform.position);
 
-        checkCompressionParameters();
+        checkCompressionDepth();
         calculateCompressionRate();
         updateMeasurementMessages();
         updateGraphs();
@@ -104,7 +104,7 @@ public class Monitoring : MarkerTracking
 
         armsFloorAngle = Vector3.Angle(floorPlane.normal, armsPlane.normal);        
     }
-    void checkCompressionParameters()
+    void checkCompressionDepth()
     {
         currentChestCompression = dummy.getDummyHeight() - markers[4].transform.position.y;
         if (firstMeasurement == true)
@@ -120,7 +120,7 @@ public class Monitoring : MarkerTracking
             }            
             else if (currentChestCompression <= 0)
             {
-                if(maxCompressionDepth >= 0.02)
+                if(maxCompressionDepth >= 0.01)
                 {
                     ++compressionCount;
                     lastCompressionDepth = maxCompressionDepth * 1000;
@@ -133,13 +133,7 @@ public class Monitoring : MarkerTracking
     void updateMeasurementMessages()
     {
         compressionsCountText.SetText("Liczba uciśnięć: " + compressionCount);
-        compressionsRateText.SetText("Częstotliwość ostatnich 5 uciśnięć: " + Math.Round(compressionRate, 2) + " uciśnięć/minutę");
-        if (compressionCount > 0 && compressionCount % 5 == 0)
-        {
-            compressionRateGraph.addValue(compressionCount * 60 / (Time.time - lastTimeStamp));
-            lastTimeStamp = Time.time;
-            compressionCount = 1;
-        }
+        compressionsRateText.SetText("Częstotliwość ostatnich 5 uciśnięć: " + Math.Round(compressionRate, 2) + " uciśnięć/minutę");       
         firstElbowAngleText.SetText("Kąt w prawym łokciu: " + Math.Round(rightElbowAngle, 2));
         secondElbowAngleText.SetText("Kąt w lewym łokciu: " + Math.Round(leftElbowAngle, 2));
         armAngleText.SetText("Kąt między rękami, a podłogą: " + Math.Round(armsFloorAngle, 2));
@@ -164,7 +158,7 @@ public class Monitoring : MarkerTracking
     }
     void saveDataToTextFile()
     {
-        string newLine = String.Format("{0};{1};{2};{3};{4};{5}", DateTime.Now.ToString("HH:mm:ss:fff"), rightElbowAngle, leftElbowAngle, armsFloorAngle, compressionRate, currentChestCompression);
+        string newLine = String.Format("{0};{1};{2};{3};{4};{5};{6}", DateTime.Now.ToString("HH:mm:ss:fff"), rightElbowAngle, leftElbowAngle, armsFloorAngle, compressionRate, currentChestCompression, lastFPS);
         writer.WriteLine(newLine);
     }
     void setInitialAngleValues()
@@ -185,9 +179,11 @@ public class Monitoring : MarkerTracking
     }
     void calculateCompressionRate()
     {
-        if (Time.time - lastTimeStamp != 0)
+        if (compressionCount % 5 == 0)
         {
-            compressionRate = compressionCount * 60 / (Time.time - lastTimeStamp);
+            compressionRateGraph.addValue(compressionCount * 60 / (Time.time - lastTimeStamp));
+            lastTimeStamp = Time.time;
+            compressionCount = 1;
         }
     }
     void setInitialValues()
